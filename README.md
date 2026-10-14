@@ -28,7 +28,7 @@ A calm, responsive AI workspace with a warm editorial interface, powered by Goog
 
    ```env
    GEMINI_API_KEY=your_key_here
-   GEMINI_MODEL=gemini-2.5-flash
+   GEMINI_MODEL=gemini-3.8-flash
    PORT=3000
    ```
 
