@@ -291,6 +291,7 @@ app.post("/api/chat", async (req, res) => {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemText }] },
         contents,
+        ...(req.body?.webSearch === true ? { tools: [{ google_search: {} }] } : {}),
         generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
       }),
       signal: AbortSignal.timeout(60_000)
