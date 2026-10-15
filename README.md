@@ -19,6 +19,7 @@ A calm, responsive AI workspace with a warm editorial interface, supporting Goog
 ## Requirements
 
 - Node.js 20+
+- A Gemini API key is required for live web search, even if APInex is your usual chat provider
 - At least one provider key: a Gemini key from [Google AI Studio](https://aistudio.google.com/app/apikey) or an APInex key from [APInex](https://apinex.bond/)
 - Gemini API access/quota for image generation and PDF analysis; APInex for OpenAI-compatible chat models
 
