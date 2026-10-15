@@ -139,7 +139,7 @@ function persist(){try{
  }))}));
  localStorage.setItem(STORAGE_KEY,JSON.stringify(safe));
  }catch{toast('Storage is full. Some older chats may not be saved.')}}
-function newConversation(){currentId=null;chatView.innerHTML='';content.classList.remove('chat-mode');input.value='';pendingFiles=[];renderAttachmentTray();resizeInput();if(innerWidth<=760)$('#sidebar').classList.remove('open');input.focus();$$$('.history-item').forEach(b=>b.classList.remove('active'))}
+function newConversation(){currentId=null;chatView.innerHTML='';content.classList.remove('chat-mode');input.value='';pendingFiles=[];renderAttachmentTray();resizeInput();if(innerWidth<=760)$('#sidebar').classList.remove('open');input.focus();$$('.history-item').forEach(b=>b.classList.remove('active'))}
 $('#newChat').onclick=newConversation;
 function resizeInput(){input.style.height='auto';input.style.height=Math.min(input.scrollHeight,180)+'px'}
 input.addEventListener('input',resizeInput);
