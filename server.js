@@ -182,7 +182,7 @@ app.post("/api/chat", async (req, res) => {
       if (index === messages.length - 1 && checked.files.length) {
         const parts = [{ type: "text", text: content }];
         for (const file of checked.files) {
-          if (file.text !== undefined) parts.push({ type: "text", text: "\\n\\n[Attached text file: " + file.name + "]\\n" + file.text });
+          if (file.text !== undefined) parts.push({ type: "text", text: "\n\n[Attached text file: " + file.name + "]\n" + file.text });
           else if (file.type.startsWith("image/")) parts.push({
             type: "image_url",
             image_url: { url: "data:" + file.type + ";base64," + file.data }
@@ -220,8 +220,8 @@ app.post("/api/chat", async (req, res) => {
           while (true) {
             const { value, done } = await reader.read();
             if (done) break;
-            buffer += decoder.decode(value, { stream: true }).replace(/\\r\\n/g, "\\n");
-            const events = buffer.split("\\n\\n");
+            buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, "\n");
+            const events = buffer.split("\n\n");
             buffer = events.pop() || "";
             for (const event of events) {
               const line = event.split("\\n").find(row => row.startsWith("data:"));
@@ -231,21 +231,21 @@ app.post("/api/chat", async (req, res) => {
               try {
                 const data = JSON.parse(payload);
                 const chunk = data?.choices?.[0]?.delta?.content;
-                if (typeof chunk === "string" && chunk) res.write("data: " + JSON.stringify({ text: chunk }) + "\\n\\n");
+                if (typeof chunk === "string" && chunk) res.write("data: " + JSON.stringify({ text: chunk }) + "\n\n");
                 else if (Array.isArray(chunk)) {
                   const text = chunk.map(part => part?.text || "").join("");
-                  if (text) res.write("data: " + JSON.stringify({ text }) + "\\n\\n");
+                  if (text) res.write("data: " + JSON.stringify({ text }) + "\n\n");
                 }
-                if (data?.error) res.write("data: " + JSON.stringify({ error: data.error.message || "APInex stream failed." }) + "\\n\\n");
+                if (data?.error) res.write("data: " + JSON.stringify({ error: data.error.message || "APInex stream failed." }) + "\n\n");
               } catch { /* Ignore non-JSON keep-alive events. */ }
             }
           }
-          res.write("data: [DONE]\\n\\n");
+          res.write("data: [DONE]\n\n");
           return res.end();
         } catch (streamError) {
           console.error("APInex stream failed:", streamError.message);
           if (!res.headersSent) return res.status(502).json({ error: "The APInex response stream was interrupted. Please try again." });
-          res.write("data: " + JSON.stringify({ error: "The APInex response stream was interrupted." }) + "\\n\\n");
+          res.write("data: " + JSON.stringify({ error: "The APInex response stream was interrupted." }) + "\n\n");
           return res.end();
         }
       }
