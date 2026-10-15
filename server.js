@@ -142,12 +142,12 @@ app.get("/api/models", async (_req, res) => {
 });
 
 function isNewsQuery(query) {
-  return /\b(latest|news|headlines?|breaking|today|recent|this week|current events|202\d)\b/i.test(String(query || ""));
+  return /\b(latest|news|headlines?|breaking|today|recent|this week|current events|20\d{0,2})\b/i.test(String(query || ""));
 }
 
 function cleanNewsQuery(query) {
   return String(query || "")
-    .replace(/\b(latest|news|headlines?|breaking|today|recent|current|this week|this month|right now|202\d)\b/gi, " ")
+    .replace(/\b(latest|news|headlines?|breaking|today|recent|current|this week|this month|right now|20\d{0,2})\b/gi, " ")
     .replace(/\s+/g, " ").trim().slice(0, 300) || "artificial intelligence";
 }
 
