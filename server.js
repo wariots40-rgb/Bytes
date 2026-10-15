@@ -141,6 +141,25 @@ app.get("/api/models", async (_req, res) => {
   });
 });
 
+async function searchWeb(query) {
+  const q = String(query || "").trim().slice(0, 300);
+  if (!q) return [];
+  const endpoint = "https://freeserp.ai/api.php?index=web&q=" + encodeURIComponent(q) + "&size=6";
+  const response = await fetch(endpoint, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
+  if (!response.ok) throw new Error("Search endpoint returned HTTP " + response.status);
+  const data = await response.json();
+  const rows = Array.isArray(data) ? data : Array.isArray(data.results) ? data.results : Array.isArray(data.organic) ? data.organic : Array.isArray(data.items) ? data.items : [];
+  return rows.map(item => ({ title: String(item.title || item.name || "").slice(0, 180), url: String(item.url || item.link || ""), snippet: String(item.snippet || item.description || item.text || "").slice(0, 500) }))
+    .filter(item => item.title && /^https?:\/\//i.test(item.url)).slice(0, 6);
+}
+
+app.post("/api/search", async (req, res) => {
+  const query = typeof req.body?.query === "string" ? req.body.query.trim() : "";
+  if (!query || query.length > 300) return res.status(400).json({ error: "Enter a search query under 300 characters." });
+  try { return res.json({ query, results: await searchWeb(query) }); }
+  catch (error) { console.error("Web search failed:", error.message); return res.status(502).json({ error: "Live web search is temporarily unavailable. Try again shortly." }); }
+});
+
 app.post("/api/chat", async (req, res) => {
   const messages = req.body?.messages;
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > 30) {
