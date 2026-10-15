@@ -147,7 +147,7 @@ $('#attachBtn').onclick=()=>openModal('Add a file','<p>File uploads and document
 $('#shareBtn').onclick=async()=>{const conv=conversations.find(c=>c.id===currentId);if(!conv){toast('Start a conversation before sharing.');return}await copyText(conv.messages.map(m=>(m.role==='user'?'You':'Bytes')+': '+m.text).join('\n\n'))};
 document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();newConversation()}if(e.key==='Escape'){$('#sidebar').classList.remove('open');$('#modalBackdrop').classList.remove('open')}});
 try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');if(Array.isArray(saved))conversations=saved.filter(c=>c&&typeof c.id==='string'&&Array.isArray(c.messages)).slice(0,100)}catch{conversations=[]}
-conversations.forEach(addHistory);filterHistory();
+const initialHistoryNote=historyEl.querySelector('div[style]');if(initialHistoryNote)initialHistoryNote.remove();conversations.forEach(addHistory);filterHistory();
 </script>
 </body>
 </html>
