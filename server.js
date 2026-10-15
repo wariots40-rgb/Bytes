@@ -27,7 +27,8 @@ app.use(express.static(path.join(__dirname)));
 app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
-    providerConfigured: Boolean(GEMINI_API_KEY),
+    providerConfigured: Boolean(GEMINI_API_KEY || APINEX_API_KEY),
+    providers: { gemini: Boolean(GEMINI_API_KEY), apinex: Boolean(APINEX_API_KEY) },
     chatModel: GEMINI_MODEL,
     imageModel: GEMINI_IMAGE_MODEL
   });
@@ -141,10 +142,6 @@ app.get("/api/models", async (_req, res) => {
 });
 
 app.post("/api/chat", async (req, res) => {
-  if (!GEMINI_API_KEY) {
-    return res.status(503).json({ error: "Bytes needs a Gemini API key. Add GEMINI_API_KEY to your server environment variables." });
-  }
-
   const messages = req.body?.messages;
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > 30) {
     return res.status(400).json({ error: "Send between 1 and 30 messages." });
@@ -282,7 +279,8 @@ app.post("/api/chat", async (req, res) => {
 
   try {
     const stream = req.body?.stream === true;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:${stream ? "streamGenerateContent?alt=sse" : "generateContent"}`;
+    const model = requestedModel || GEMINI_MODEL;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:${stream ? "streamGenerateContent?alt=sse" : "generateContent"}`;
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
@@ -352,7 +350,7 @@ app.post("/api/chat", async (req, res) => {
     const data = await response.json().catch(() => ({}));
     const answer = data?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
     if (!answer) return res.status(502).json({ error: "Gemini returned an empty response. Please try again." });
-    return res.json({ reply: answer, model: GEMINI_MODEL });
+    return res.json({ reply: answer, model, provider: "gemini" });
   } catch (error) {
     console.error("Chat request failed:", error.message);
     const timedOut = error.name === "TimeoutError" || error.name === "AbortError";
@@ -425,5 +423,5 @@ app.get("*", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
 
 app.listen(PORT, () => {
   console.log(`Bytes is running on port ${PORT}`);
-  if (!GEMINI_API_KEY) console.warn("GEMINI_API_KEY is not set. Add it to your environment before using AI chat.");
+  if (!GEMINI_API_KEY && !APINEX_API_KEY) console.warn("No AI provider key is set. Add GEMINI_API_KEY or APINEX_API_KEY.");
 });
