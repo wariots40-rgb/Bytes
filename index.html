@@ -87,11 +87,16 @@ const input=$('#messageInput'),chatView=$('#chatView'),content=$('#content'),his
 const STORAGE_KEY='bytes.conversations.v2';
 async function loadModelCatalog(){
  const select=$('#modelSelect');
+ select.disabled=true;
+ select.title='Loading available AI models…';
  try{
   const response=await fetch('/api/models',{cache:'no-store'});
+  if(!response.ok)throw new Error('Model catalog returned HTTP '+response.status);
   const data=await response.json();
-  modelCatalog=data||modelCatalog;
- }catch{modelCatalog={providers:[],configured:{gemini:false,apinex:false}}}
+  modelCatalog=data&&typeof data==='object'?data:modelCatalog;
+ }catch(error){
+  modelCatalog={providers:[],configured:{gemini:false,apinex:false},errors:{catalog:error.message}};
+ }
  select.innerHTML='';
  const auto=document.createElement('option');auto.value='auto';auto.textContent='Auto · Best available';select.appendChild(auto);
  for(const provider of modelCatalog.providers||[]){
@@ -103,9 +108,22 @@ async function loadModelCatalog(){
   if(group.children.length)select.appendChild(group);
  }
  try{selectedModel=localStorage.getItem('bytes.model-selection.v1')||'auto'}catch{selectedModel='auto'}
- if(!Array.from(select.options).some(option=>option.value===selectedModel))selectedModel='auto';
- select.value=selectedModel;updateModelLabel();
- if(!(modelCatalog.providers||[]).length)select.title='Configure GEMINI_API_KEY or APINEX_API_KEY on the server to enable AI chat.';
+ const hasSavedModel=Array.from(select.options).some(option=>option.value===selectedModel);
+ if(!hasSavedModel)selectedModel='auto';
+ select.value=selectedModel;
+ updateModelLabel();
+ select.disabled=false;
+ const errors=Object.values(modelCatalog.errors||{}).filter(Boolean);
+ if(!(modelCatalog.providers||[]).length){
+  select.title=errors.length?errors.join(' · '):'Configure GEMINI_API_KEY or APINEX_API_KEY on the server to enable AI chat.';
+  const unavailable=document.createElement('option');unavailable.value='unavailable';unavailable.textContent='No models available · check provider setup';unavailable.disabled=true;select.appendChild(unavailable);
+  select.value='auto';
+ }else{
+  select.title=errors.length?'Some model lists could not load: '+errors.join(' · '):'Choose which AI model Bytes uses.';
+ }
+ if(selectedModel!== 'auto' && !hasSavedModel){
+  try{localStorage.setItem('bytes.model-selection.v1','auto')}catch{}
+ }
 }
 function updateModelLabel(){
  const select=$('#modelSelect');const option=select.options[select.selectedIndex];
