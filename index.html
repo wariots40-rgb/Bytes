@@ -90,12 +90,16 @@ async function loadModelCatalog(){
  select.disabled=true;
  select.title='Loading available AI models…';
  try{
-  const response=await fetch('/api/models',{cache:'no-store'});
+  // Bound the browser wait: the selector must never stay locked on Auto indefinitely.
+  const response=await fetch('/api/models',{cache:'no-store',signal:AbortSignal.timeout(6000)});
   if(!response.ok)throw new Error('Model catalog returned HTTP '+response.status);
   const data=await response.json();
   modelCatalog=data&&typeof data==='object'?data:modelCatalog;
  }catch(error){
-  modelCatalog={providers:[],configured:{gemini:false,apinex:false},errors:{catalog:error.message}};
+  modelCatalog={providers:[
+   {id:'gemini',label:'Google Gemini · fallback',models:[{id:'gemini-2.5-flash',label:'Gemini 2.5 Flash (fallback)'},{id:'gemini-2.5-pro',label:'Gemini 2.5 Pro (fallback)'}]},
+   {id:'apinex',label:'APInex · fallback',models:[{id:'free/gemini-3.8-flash',label:'free/gemini-3.8-flash (fallback)'}]}
+  ],configured:{},errors:{catalog:'Could not load live model catalog: '+error.message+' — fallback choices shown; availability depends on your API keys.'}};
  }
  select.innerHTML='';
  const auto=document.createElement('option');auto.value='auto';auto.textContent='Auto · Best available';select.appendChild(auto);
@@ -114,14 +118,12 @@ async function loadModelCatalog(){
  updateModelLabel();
  select.disabled=false;
  const errors=Object.values(modelCatalog.errors||{}).filter(Boolean);
+ select.title=errors.length?errors.join(' · '):'Choose which AI model Bytes uses.';
  if(!(modelCatalog.providers||[]).length){
-  select.title=errors.length?errors.join(' · '):'Configure GEMINI_API_KEY or APINEX_API_KEY on the server to enable AI chat.';
   const unavailable=document.createElement('option');unavailable.value='unavailable';unavailable.textContent='No models available · check provider setup';unavailable.disabled=true;select.appendChild(unavailable);
   select.value='auto';
- }else{
-  select.title=errors.length?'Some model lists could not load: '+errors.join(' · '):'Choose which AI model Bytes uses.';
  }
- if(selectedModel!== 'auto' && !hasSavedModel){
+ if(selectedModel!=='auto'&&!hasSavedModel){
   try{localStorage.setItem('bytes.model-selection.v1','auto')}catch{}
  }
 }
