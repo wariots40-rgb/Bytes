@@ -272,7 +272,7 @@ function openSettings(){
 }
 $('#settingsBtn').onclick=$('#settingsTop').onclick=openSettings;
 $('#modalBody').addEventListener('click',e=>{if(e.target.id==='clearChats'){if(confirm('Delete all locally saved Bytes conversations?')){conversations=[];persist();historyEl.innerHTML='';filterHistory();newConversation();toast('Saved chats cleared.')}}});
-$('#toolsBtn').onclick=()=>openModal('Tools','<p><strong>Available now</strong></p><p>▧ Image generation and image edits<br>📎 Image, PDF, TXT, Markdown, CSV and JSON uploads<br>🎙 Voice input and spoken responses<br>🧠 Saved cross-chat memory</p>','Nice');
+$('#toolsBtn').onclick=()=>openModal('Tools','<p><strong>Available now</strong></p><p>⌕ Live web search with Gemini grounding<br>▧ Image generation and image edits<br>📎 Image, PDF, TXT, Markdown, CSV and JSON uploads<br>🎙 Voice input and spoken responses<br>🧠 Saved cross-chat memory</p><p class="help-note">Turn on Web in the composer to search current information. Web search needs a Gemini API key and may incur Google Search grounding charges.</p>','Nice');
 $('#attachBtn').onclick=()=>$('#fileInput').click();
 $('#shareBtn').onclick=async()=>{const conv=conversations.find(c=>c.id===currentId);if(!conv){toast('Start a conversation before sharing.');return}await copyText(conv.messages.map(m=>(m.role==='user'?'You':'Bytes')+': '+m.text).join('\n\n'))};
 document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();newConversation()}if(e.key==='Escape'){$('#sidebar').classList.remove('open');$('#modalBackdrop').classList.remove('open')}});
