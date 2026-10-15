@@ -220,11 +220,16 @@ function normalizeSearchResults(rows, provider) {
 async function searchSearXNG(query, news = false) {
   const base = String(process.env.SEARXNG_URL || "").trim().replace(/\/+$/, "");
   if (!base) return [];
+  let parsedBase;
+  try { parsedBase = new URL(base); } catch { throw new Error("SEARXNG_URL must be a valid http(s) URL."); }
+  if (!["http:", "https:"].includes(parsedBase.protocol) || parsedBase.username || parsedBase.password) {
+    throw new Error("SEARXNG_URL must use http(s) and must not contain embedded credentials.");
+  }
   const params = new URLSearchParams({ q: query, format: "json", language: "en", pageno: "1", safesearch: "0" });
   if (news) params.set("categories", "news");
-  const response = await fetch(base + "/search?" + params.toString(), {
+  const response = await fetch(new URL("/search?" + params.toString(), parsedBase).toString(), {
     headers: { Accept: "application/json", "User-Agent": "Bytes/1.0 (+https://github.com/wariots40-rgb/Bytes)" },
-    signal: AbortSignal.timeout(10000)
+    signal: AbortSignal.timeout(7000)
   });
   if (!response.ok) throw new Error("SearXNG returned HTTP " + response.status + "; confirm JSON format is enabled on your instance.");
   const data = await response.json();
@@ -235,7 +240,7 @@ async function searchFreeSerp(query) {
   const endpoint = "https://freeserp.ai/api.php?" + new URLSearchParams({ q: query, size: "8" }).toString();
   const response = await fetch(endpoint, {
     headers: { Accept: "application/json", "User-Agent": "Bytes/1.0 (+https://github.com/wariots40-rgb/Bytes)" },
-    signal: AbortSignal.timeout(12000)
+    signal: AbortSignal.timeout(8000)
   });
   if (!response.ok) throw new Error("FreeSerp returned HTTP " + response.status);
   const data = await response.json();
@@ -245,26 +250,23 @@ async function searchFreeSerp(query) {
 
 async function searchWeb(query, news = false) {
   const q = String(query || "").trim().slice(0, 300);
-  if (!q) return [];
+  if (!q) throw new Error("Enter a search query.");
+  const providers = [
+    ...(process.env.SEARXNG_URL ? [["SearXNG", () => searchSearXNG(q, news)]] : []),
+    ["FreeSerp", () => searchFreeSerp(q)]
+  ];
+  const settled = await Promise.allSettled(providers.map(([, run]) => run()));
+  const groups = [];
   const failures = [];
-  if (process.env.SEARXNG_URL) {
-    try {
-      const results = await searchSearXNG(q, news);
-      if (results.length) return results;
-      failures.push("SearXNG returned no usable results");
-    } catch (error) {
-      failures.push(error.message);
-      console.warn("SearXNG search failed:", error.message);
-    }
-  }
-  try {
-    const results = await searchFreeSerp(q);
-    if (results.length) return results;
-    failures.push("FreeSerp returned no usable results");
-  } catch (error) {
-    failures.push(error.message);
-    console.warn("FreeSerp search failed:", error.message);
-  }
+  settled.forEach((result, index) => {
+    if (result.status === "fulfilled" && result.value.length) groups.push(result.value);
+    else if (result.status === "rejected") {
+      failures.push(providers[index][0] + ": " + result.reason.message);
+      console.warn(providers[index][0] + " search failed:", result.reason.message);
+    } else failures.push(providers[index][0] + ": no usable results");
+  });
+  const results = mergeSearchResults(groups, 12);
+  if (results.length) return results;
   throw new Error(failures.join("; ") || "No search provider returned results");
 }
 
@@ -349,7 +351,7 @@ function mergeSearchResults(groups, limit = 12) {
   return merged.slice(0, limit);
 }
 
-async function runWebSearch(input) {
+async function runWebSearchUncached(input) {
   const query = extractSearchQuery(input);
   if (!query) throw new Error("Enter a search query.");
   const news = isNewsQuery(input) || isNewsQuery(query);
@@ -390,13 +392,43 @@ async function runWebSearch(input) {
   return { query, type: "web", provider: results[0]?.source || "web search", results };
 }
 
+// Small bounded in-memory cache avoids repeat provider calls and shields short provider outages.
+const SEARCH_CACHE_TTL_MS = 90_000;
+const SEARCH_CACHE_MAX = 80;
+const searchCache = new Map();
+const searchInFlight = new Map();
+
+async function runWebSearch(input) {
+  const query = extractSearchQuery(input);
+  if (!query) throw new Error("Enter a search query.");
+  const key = (isNewsQuery(input) ? "news:" : "web:") + query.toLowerCase();
+  const now = Date.now();
+  const cached = searchCache.get(key);
+  if (cached && cached.expiresAt > now) return { ...cached.value, cached: true };
+  if (searchInFlight.has(key)) return searchInFlight.get(key);
+  const task = runWebSearchUncached(input).then(value => {
+    searchCache.set(key, { value, expiresAt: Date.now() + SEARCH_CACHE_TTL_MS });
+    if (searchCache.size > SEARCH_CACHE_MAX) {
+      const oldestKey = searchCache.keys().next().value;
+      if (oldestKey) searchCache.delete(oldestKey);
+    }
+    return value;
+  }).finally(() => searchInFlight.delete(key));
+  searchInFlight.set(key, task);
+  return task;
+}
+
 app.post("/api/search", async (req, res) => {
   const rawQuery = typeof req.body?.query === "string" ? req.body.query.trim() : "";
   if (!rawQuery || rawQuery.length > 1000) return res.status(400).json({ error: "Enter a search query under 1,000 characters." });
   try { return res.json(await runWebSearch(rawQuery)); }
   catch (error) {
     console.error("Web search failed:", error.message);
-    return res.status(502).json({ error: "All live search providers failed. Check SEARXNG_URL if configured, then try again." });
+    return res.status(502).json({
+      error: "Live search providers returned no usable results.",
+      details: String(error.message || "Unknown search error").slice(0, 700),
+      retryable: true
+    });
   }
 });
 
