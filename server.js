@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-const path = require("path");
 const { searchProviderRunner } = require("./search-resilience");
 
 const app = express();
@@ -39,7 +38,6 @@ app.use((req, res, next) => {
   if (req.method === "OPTIONS" && req.path.startsWith("/api/")) return res.sendStatus(origin && (configuredOrigins.includes(origin) || process.env.NODE_ENV !== "production" && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) ? 204 : 403);
   next();
 });
-app.use(express.static(path.join(__dirname)));
 
 app.get("/api/health", (_req, res) => {
   res.json({
@@ -764,7 +762,9 @@ app.post("/api/image", async (req, res) => {
   }
 });
 
-app.get("*", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
+app.use((req, res) => {
+  res.status(404).json({ error: "API route not found." });
+});
 
 app.listen(PORT, () => {
   console.log(`Bytes is running on port ${PORT}`);
