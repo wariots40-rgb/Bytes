@@ -490,7 +490,7 @@ app.post("/api/chat", async (req, res) => {
             const events = buffer.split("\n\n");
             buffer = events.pop() || "";
             for (const event of events) {
-              const line = event.split("\\n").find(row => row.startsWith("data:"));
+              const line = event.split("\n").find(row => row.startsWith("data:"));
               if (!line) continue;
               const payload = line.slice(5).trim();
               if (payload === "[DONE]") continue;
