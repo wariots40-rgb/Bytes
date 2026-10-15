@@ -192,7 +192,7 @@ async function sendMessage(text){
   }else{
    const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
     stream:true,memory:memoryText,
-    messages:conv.messages.map(m=>({role:m.role,text:m.text})),
+    messages:conv.messages.slice(-30).map(m=>({role:m.role,text:m.text})),
     attachments:sentFiles.map(f=>f.text!==undefined?({name:f.name,type:f.type,text:f.text}):({name:f.name,type:f.type,data:f.data}))
    })});
    const answer=await readStream(response,partial=>{
