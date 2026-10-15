@@ -148,7 +148,7 @@ function makeMessage(role,text,options={}){
   const actions=document.createElement('div');actions.className='message-actions';
   for(const [label,action] of [['Copy','copy'],['Speak','speak'],['Regenerate','regenerate']]){
    const b=document.createElement('button');b.className='message-action';b.textContent=label;
-   b.onclick=()=>action==='copy'?copyText(text):action==='speak'?speakText(text):regenerate();actions.appendChild(b)
+   b.onclick=()=>action==='copy'?copyText(text):action==='speak'?speakText(text,b):regenerate();actions.appendChild(b)
   }
   body.appendChild(actions)
  }
@@ -294,11 +294,16 @@ function toggleImageMode(force){
  toast(imageMode?'Image generation enabled.':'Back to chat.');
 }
 $('#imageModeBtn').onclick=()=>toggleImageMode();
-function speakText(text){
+let speakingButton=null;
+function speakText(text,button){
  if(!('speechSynthesis'in window)||!('SpeechSynthesisUtterance'in window)){toast('Spoken responses are not supported in this browser.');return}
- window.speechSynthesis.cancel();
+ if(window.speechSynthesis.speaking&&speakingButton===button){window.speechSynthesis.cancel();if(button)button.textContent='Speak';speakingButton=null;return}
+ window.speechSynthesis.cancel();if(speakingButton)speakingButton.textContent='Speak';
  const utterance=new SpeechSynthesisUtterance(String(text||'').replace(/\n{2,}/g,'. ').replace(/[#*_>`]/g,''));
- utterance.lang=navigator.language||'en-US';utterance.rate=1;window.speechSynthesis.speak(utterance);
+ utterance.lang=navigator.language||'en-US';utterance.rate=1;
+ speakingButton=button;if(button)button.textContent='Stop';
+ const reset=()=>{if(speakingButton===button){speakingButton=null;if(button)button.textContent='Speak'}};
+ utterance.onend=reset;utterance.onerror=reset;window.speechSynthesis.speak(utterance);
 }
 function toggleVoiceInput(){
  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
