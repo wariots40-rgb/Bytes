@@ -144,7 +144,7 @@ app.get("/api/models", async (_req, res) => {
 
 function extractSearchQuery(input) {
   let q = String(input || "").trim();
-  const embedded = q.match(/<parameter\s+query\s*>([\s\S]*?)(?:<\/parameter|$)/i);
+  const embedded = q.match(/<parameter(?:\s+|=)\s*query\s*>([\s\S]*?)(?:<\/parameter|$)/i);
   if (embedded?.[1]) q = embedded[1];
   return q
     .replace(/<[^>]*>/g, " ")
