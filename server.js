@@ -23,6 +23,22 @@ app.disable("x-powered-by");
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: "12mb" }));
 app.use("/api/", rateLimit({ windowMs: 60_000, limit: 20, standardHeaders: "draft-7", legacyHeaders: false }));
+const configuredOrigins = String(process.env.FRONTEND_URL || process.env.ALLOWED_ORIGINS || "")
+  .split(",").map(value => value.trim()).filter(Boolean).map(value => {
+    try { return new URL(value).origin; } catch { return ""; }
+  }).filter(Boolean);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && (configuredOrigins.includes(origin) || process.env.NODE_ENV !== "production" && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Max-Age", "600");
+  }
+  if (req.method === "OPTIONS" && req.path.startsWith("/api/")) return res.sendStatus(origin && (configuredOrigins.includes(origin) || process.env.NODE_ENV !== "production" && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) ? 204 : 403);
+  next();
+});
 app.use(express.static(path.join(__dirname)));
 
 app.get("/api/health", (_req, res) => {
