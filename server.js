@@ -176,10 +176,7 @@ app.post("/api/chat", async (req, res) => {
   const requestedModel = typeof req.body?.model === "string" ? req.body.model.trim().slice(0, 180) : "";
   let provider = requestedProvider;
   if (provider === "auto") provider = GEMINI_API_KEY ? "gemini" : APINEX_API_KEY ? "apinex" : "none";
-  if (req.body?.webSearch === true && provider === "apinex") {
-    if (GEMINI_API_KEY) provider = "gemini";
-    else return res.status(503).json({ error: "Live web search currently requires a Gemini API key. Add GEMINI_API_KEY on the server, then try again." });
-  }
+
   if (provider === "gemini" && !GEMINI_API_KEY) {
     return res.status(503).json({ error: "Gemini is not configured. Add GEMINI_API_KEY to the server environment." });
   }
