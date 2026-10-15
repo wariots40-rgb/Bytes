@@ -315,6 +315,7 @@ app.post("/api/chat", async (req, res) => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      const sources = new Map();
       try {
         while (true) {
           const { value, done } = await reader.read();
@@ -327,6 +328,7 @@ app.post("/api/chat", async (req, res) => {
             if (!line) continue;
             try {
               const payload = JSON.parse(line.slice(5).trim());
+              for (const item of payload?.candidates?.[0]?.groundingMetadata?.groundingChunks || []) { const source = item?.web; if (source?.uri && source.uri.startsWith("http")) sources.set(source.uri, { title: source.title || source.uri, url: source.uri }); }
               const chunk = payload?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("");
               if (chunk) res.write("data: " + JSON.stringify({ text: chunk }) + "\n\n");
             } catch { /* Ignore incomplete or non-JSON provider events. */ }
@@ -337,6 +339,7 @@ app.post("/api/chat", async (req, res) => {
           if (line) {
             try {
               const payload = JSON.parse(line.slice(5).trim());
+              for (const item of payload?.candidates?.[0]?.groundingMetadata?.groundingChunks || []) { const source = item?.web; if (source?.uri && source.uri.startsWith("http")) sources.set(source.uri, { title: source.title || source.uri, url: source.uri }); }
               const chunk = payload?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("");
               if (chunk) res.write("data: " + JSON.stringify({ text: chunk }) + "\n\n");
             } catch { /* Ignore trailing incomplete provider data. */ }
