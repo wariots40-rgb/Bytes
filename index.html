@@ -230,7 +230,7 @@ async function sendMessage(text){
    conv.messages.push({role:'assistant',text:data.reply||'Image generated.',generatedImage:true});
   }else{
    const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-    stream:true,memory:memoryText,...modelRequest(),
+    stream:true,memory:memoryText,webSearch:webSearchEnabled,...modelRequest(),
     messages:conv.messages.slice(-30).map(m=>({role:m.role,text:m.text})),
     attachments:sentFiles.map(f=>f.text!==undefined?({name:f.name,type:f.type,text:f.text}):({name:f.name,type:f.type,data:f.data}))
    })});
