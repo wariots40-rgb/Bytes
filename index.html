@@ -127,7 +127,7 @@ $('#modelSelect').addEventListener('change',()=>{
 let conversations=[],currentId=null,busy=false,lastPrompt='';
 let selectedModel='auto',modelCatalog={providers:[],configured:{gemini:false,apinex:false}};
 let memoryText='';try{memoryText=localStorage.getItem('bytes.user-memory.v1')||''}catch{}
-let pendingFiles=[],imageMode=false,recognition=null,recording=false;
+let pendingFiles=[],imageMode=false,webSearchEnabled=false,recognition=null,recording=false;
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2600)}
 function openModal(title,html,confirm='Got it',onConfirm=null){$('#modalTitle').textContent=title;$('#modalBody').innerHTML=html;$('#modalConfirm').textContent=confirm;$('#modalBackdrop').classList.add('open');$('#modalConfirm').onclick=()=>{if(onConfirm)onConfirm();$('#modalBackdrop').classList.remove('open')}}
 $('#modalCancel').onclick=()=>$('#modalBackdrop').classList.remove('open');
