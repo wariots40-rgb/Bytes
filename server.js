@@ -102,7 +102,7 @@ async function fetchGeminiModels() {
   if (!GEMINI_API_KEY) return [];
   const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
     headers: { "x-goog-api-key": GEMINI_API_KEY, Accept: "application/json" },
-    signal: AbortSignal.timeout(10000)
+    signal: AbortSignal.timeout(3500)
   });
   if (!response.ok) throw new Error("Gemini model list returned HTTP " + response.status);
   const data = await response.json();
@@ -133,6 +133,10 @@ app.get("/api/models", async (_req, res) => {
     } catch (error) {
       errors.gemini = error.message;
       console.warn("Gemini model list unavailable:", error.message);
+      // Keep model selection usable even when Google's catalog endpoint is unreachable.
+      providers.push({ id: "gemini", label: "Google Gemini (configured default)", models: [
+        { id: GEMINI_MODEL, label: GEMINI_MODEL + " · configured default", provider: "gemini" }
+      ] });
     }
   }
   if (APINEX_API_KEY) {
@@ -140,7 +144,7 @@ app.get("/api/models", async (_req, res) => {
     try {
       const response = await fetch(APINEX_BASE_URL + "/models", {
         headers: { Authorization: "Bearer " + APINEX_API_KEY, Accept: "application/json" },
-        signal: AbortSignal.timeout(10000)
+        signal: AbortSignal.timeout(3500)
       });
       if (!response.ok) throw new Error("APInex model list returned HTTP " + response.status);
       const data = await response.json();
