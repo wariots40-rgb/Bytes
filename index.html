@@ -28,7 +28,7 @@
 .modal .help-note{font-size:11px;color:#929288;margin-top:7px}
 @media(min-width:1200px){.content{padding-top:72px}.welcome{padding-bottom:35px}}
 @media(max-width:760px){:root{--sidebar:258px}.sidebar{transform:translateX(-100%);box-shadow:10px 0 30px #0000}.sidebar.open{transform:translateX(0);box-shadow:10px 0 35px #0002}.main{margin-left:0;width:100%}.topbar{height:60px;padding:0 17px}.mobile-menu{display:grid}.mobile-brand{display:block;font:800 19px Manrope;letter-spacing:-.8px;margin-right:auto;margin-left:10px}.topbar-left{display:flex;align-items:center}.model-select{font-size:11px;padding:8px}.top-actions .icon-btn:first-child{display:none}.content{width:calc(100% - 34px);padding:40px 0 17px}.headline{letter-spacing:-1.6px}.subhead{font-size:14px}.prompt-grid{gap:8px;margin-top:23px}.prompt-card{padding:12px;min-height:100px}.prompt-card strong{font-size:12px}.prompt-card span:last-child{font-size:10px}.tool-btn{padding:0 8px}.chat-mode .content{padding-top:25px}.disclaimer{font-size:9px}.upgrade{margin-top:8px}}
-@media(max-width:380px){.prompt-grid{grid-template-columns:1fr}.prompt-card{min-height:83px}.prompt-top{margin-bottom:8px}.headline{font-size:34px}.model-select{max-width:132px;overflow:hidden;white-space:nowrap}}
+@media(max-width:380px){.prompt-grid{grid-template-columns:1fr}.prompt-card{min-height:83px}.prompt-top{margin-bottom:8px}.headline{font-size:34px}.model-select{max-width:132px;overflow:hidden;white-space:nowrap}.tool-btn span{display:none}.tool-btn{padding:0 7px}}
 </style>
 </head>
 <body>
@@ -74,7 +74,7 @@
         <div class="attachment-tray" id="attachmentTray" hidden></div>
         <div class="composer-tools"><div class="tool-left"><button type="button" class="tool-btn" id="attachBtn">＋ <span>Attach</span></button><button type="button" class="tool-btn" id="imageModeBtn" aria-pressed="false" title="Generate or edit images">▧ <span>Image</span></button><button type="button" class="tool-btn" id="voiceBtn" aria-label="Start voice input" title="Voice input">🎙 <span>Voice</span></button><button type="button" class="tool-btn" id="toolsBtn">✧ <span>Tools</span></button></div><button class="send-btn" id="sendBtn" aria-label="Send message" type="submit">↑</button></div>
       </form>
-      <p class="disclaimer">Bytes can make mistakes. Check important information. &nbsp;·&nbsp; Built for better thinking.</p>
+      <p class="disclaimer">Bytes can make mistakes. Check important information. &nbsp;·&nbsp; Uploads are sent to Gemini and aren't saved in chat history.</p>
     </div>
   </section>
 </main>
