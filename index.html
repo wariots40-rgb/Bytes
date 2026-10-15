@@ -81,7 +81,11 @@
 </div>
 <div class="toast" id="toast" role="status"></div>
 <div class="modal-backdrop" id="modalBackdrop"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><h2 id="modalTitle">Connect your AI</h2><div id="modalBody"></div><div class="modal-actions"><button id="modalCancel">Not now</button><button class="primary" id="modalConfirm">Got it</button></div></section></div>
+<!-- BYTES_RUNTIME_CONFIG -->
 <script>
+const BYTES_CONFIG=window.BYTES_CONFIG&&typeof window.BYTES_CONFIG==="object"?window.BYTES_CONFIG:{};
+const API_BASE_URL=String(BYTES_CONFIG.API_BASE_URL||"").trim().replace(/\/+$/,"");
+const apiUrl=path=>API_BASE_URL+path;
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
 const input=$('#messageInput'),chatView=$('#chatView'),content=$('#content'),historyEl=$('#history');
 const STORAGE_KEY='bytes.conversations.v2';
@@ -91,7 +95,7 @@ async function loadModelCatalog(){
  select.title='Loading available AI models…';
  try{
   // Bound the browser wait: the selector must never stay locked on Auto indefinitely.
-  const response=await fetch('/api/models',{cache:'no-store',signal:AbortSignal.timeout(6000)});
+  const response=await fetch(apiUrl('/api/models'),{cache:'no-store',signal:AbortSignal.timeout(6000)});
   if(!response.ok)throw new Error('Model catalog returned HTTP '+response.status);
   const data=await response.json();
   modelCatalog=data&&typeof data==='object'?data:modelCatalog;
@@ -242,7 +246,7 @@ async function sendMessage(text){
  try{
   if(imageMode){
    if(sentFiles.some(f=>!f.type.startsWith('image/')))throw new Error('Image mode accepts image attachments only. Remove PDFs or text files and try again.');
-   const response=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+   const response=await fetch(apiUrl('/api/image'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
     prompt:text,attachments:sentFiles.map(f=>({name:f.name,type:f.type,data:f.data}))
    })});
    const data=await response.json().catch(()=>({}));
@@ -250,7 +254,7 @@ async function sendMessage(text){
    loading.remove();makeMessage('assistant',data.reply||'Here is your image.',{imageData:data.imageData,mimeType:data.mimeType});
    conv.messages.push({role:'assistant',text:data.reply||'Image generated.',generatedImage:true});
   }else{
-   const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+   const response=await fetch(apiUrl('/api/chat'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
     stream:true,memory:memoryText,webSearch:webSearchEnabled,...modelRequest(),
     messages:conv.messages.slice(-30).map(m=>({role:m.role,text:m.text})),
     attachments:sentFiles.map(f=>f.text!==undefined?({name:f.name,type:f.type,text:f.text}):({name:f.name,type:f.type,data:f.data}))
