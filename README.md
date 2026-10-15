@@ -13,13 +13,12 @@ A calm, responsive AI workspace with a warm editorial interface, supporting Goog
 - Image generation and image editing through Gemini's Nano Banana image model
 - Uploads for PNG, JPG, WebP, HEIC/HEIF, PDF, TXT, Markdown, CSV, and JSON files
 - Auto model routing plus a top-bar model selector for Gemini and the live APInex model catalog
-- Optional live web search using Gemini's Google Search grounding, with source references in responses
+- Optional live web search through a free, keyless web search API, with source references in responses
 - Express backend keeps provider keys server-side, with security headers, request limits, and API rate limiting
 
 ## Requirements
 
 - Node.js 20+
-- A Gemini API key is required for live web search, even if APInex is your usual chat provider
 - At least one provider key: a Gemini key from [Google AI Studio](https://aistudio.google.com/app/apikey) or an APInex key from [APInex](https://apinex.bond/)
 - Gemini API access/quota for image generation and PDF analysis; APInex for OpenAI-compatible chat models
 
