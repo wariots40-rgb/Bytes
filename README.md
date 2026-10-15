@@ -13,7 +13,7 @@ A calm, responsive AI workspace with a warm editorial interface, supporting Goog
 - Image generation and image editing through Gemini's Nano Banana image model
 - Uploads for PNG, JPG, WebP, HEIC/HEIF, PDF, TXT, Markdown, CSV, and JSON files
 - Auto model routing plus a top-bar model selector for Gemini and the live APInex model catalog
-- Multi-route live search: optional self-hosted open-source SearXNG first, FreeSerp fallback for general web, and FreeNewsAPI for recent news; results include source URLs and publication dates
+- Resilient live search: SearXNG (optional) and FreeSerp run as parallel general-web providers; news queries combine FreeNewsAPI, Google News RSS, optional SearXNG, and FreeSerp in parallel, deduplicate results, and report partial-provider failures. Identical queries are cached briefly to reduce provider load.
 - Express backend keeps provider keys server-side, with security headers, request limits, and API rate limiting
 
 ## Requirements
@@ -71,10 +71,10 @@ After deployment, open the service URL and test a chat message. The health endpo
 
 ## API
 
-- `GET /api/health` — server and provider configuration status
+- `GET /api/health` — server/provider configuration plus configured search routes and cache TTL (no API keys exposed)
 - `GET /api/models` — configured providers and APInex model catalog
 - `POST /api/chat` — streaming or non-streaming conversation responses; supports user memory, per-request files, and optional `webSearch: true` grounding (news-intent queries use the recent-news index)
-- `POST /api/search` — direct search endpoint; news queries use FreeNewsAPI with SearXNG/FreeSerp fallback, and general queries use SearXNG when configured then FreeSerp. SearXNG must have JSON output enabled.
+- `POST /api/search` — direct search endpoint; general providers run in parallel, news queries aggregate FreeNewsAPI, Google News RSS, optional SearXNG, and FreeSerp. Errors include sanitized provider diagnostics; results are cached for 90 seconds. SearXNG must have JSON output enabled. Time-sensitive chat questions trigger search automatically, even if the Web toggle is off.
 - `POST /api/image` — image generation/editing; returns image bytes as a base64 data URL payload
 
 ## Notes
