@@ -167,6 +167,7 @@ async function sendMessage(text){
  text=(text||'').trim();
  if(!text&&pendingFiles.length)text='Please analyze the attached file'+(pendingFiles.length>1?'s':'')+': '+pendingFiles.map(f=>f.name).join(', ')+'.';
  if(!text||busy)return;
+ if(imageMode&&pendingFiles.some(f=>!f.type.startsWith('image/'))){toast('Image mode accepts images only. Remove PDF/text files or switch back to chat.');return}
  lastPrompt=text;content.classList.add('chat-mode');
  if(!currentId){currentId=String(Date.now())+'-'+Math.random().toString(36).slice(2,7);const conv={id:currentId,title:text.slice(0,34)+(text.length>34?'…':''),messages:[]};conversations.unshift(conv);addHistory(conv)}
  const conv=conversations.find(c=>c.id===currentId);
@@ -174,9 +175,9 @@ async function sendMessage(text){
  const fileMeta=sentFiles.map(f=>({name:f.name,type:f.type,size:f.size}));
  const displayFiles=sentFiles.map(f=>({name:f.name,type:f.type,size:f.size,preview:f.preview}));
  conv.messages.push({role:'user',text,attachments:fileMeta});
- makeMessage('user',text,{attachments:displayFiles});
+ const userBubble=makeMessage('user',text,{attachments:displayFiles});
  input.value='';resizeInput();pendingFiles=[];renderAttachmentTray();busy=true;$('#sendBtn').disabled=true;
- const loading=showTyping();chatView.scrollIntoView({behavior:'smooth',block:'end'});
+ const loading=showTyping();let assistantWrap=null;chatView.scrollIntoView({behavior:'smooth',block:'end'});
  try{
   if(imageMode){
    if(sentFiles.some(f=>!f.type.startsWith('image/')))throw new Error('Image mode accepts image attachments only. Remove PDFs or text files and try again.');
@@ -194,7 +195,6 @@ async function sendMessage(text){
     messages:conv.messages.map(m=>({role:m.role,text:m.text})),
     attachments:sentFiles.map(f=>f.text!==undefined?({name:f.name,type:f.type,text:f.text}):({name:f.name,type:f.type,data:f.data}))
    })});
-   let assistantWrap=null;
    const answer=await readStream(response,partial=>{
     if(!assistantWrap){loading.remove();assistantWrap=makeMessage('assistant','');}
     const node=assistantWrap.querySelector('.message-text');node.innerHTML=renderMarkdown(partial);
@@ -256,6 +256,10 @@ async function queueFiles(fileList){
   if(!media&&!textType){toast('Unsupported file: '+file.name);continue}
   if(file.size>(4*1024*1024)){toast(file.name+' is over 4 MB.');continue}
   if(textType&&file.size>250000){toast(file.name+' is too large. Keep text files under 250 KB.');continue}
+  const mediaUsed=pendingFiles.filter(f=>f.data).reduce((sum,f)=>sum+f.size,0);
+  const textUsed=pendingFiles.filter(f=>f.text!==undefined).reduce((sum,f)=>sum+f.size,0);
+  if(media&&mediaUsed+file.size>6*1024*1024){toast('Combined images/PDFs must stay under 6 MB.');continue}
+  if(textType&&textUsed+file.size>400000){toast('Combined text files must stay under 400 KB.');continue}
   try{
    if(textType){
     const text=await file.text();
