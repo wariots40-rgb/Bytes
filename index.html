@@ -332,6 +332,7 @@ function toggleImageMode(force){
  toast(imageMode?'Image generation enabled.':'Back to chat.');
 }
 $('#imageModeBtn').onclick=()=>toggleImageMode();
+$('#webSearchBtn').onclick=function(){webSearchEnabled=!webSearchEnabled;$('#webSearchBtn').classList.toggle('active',webSearchEnabled);$('#webSearchBtn').setAttribute('aria-pressed',String(webSearchEnabled));toast(webSearchEnabled?'Web search on':'Web search off')};
 let speakingButton=null;
 function speakText(text,button){
  if(!('speechSynthesis'in window)||!('SpeechSynthesisUtterance'in window)){toast('Spoken responses are not supported in this browser.');return}
