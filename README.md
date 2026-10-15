@@ -13,7 +13,7 @@ A calm, responsive AI workspace with a warm editorial interface, supporting Goog
 - Image generation and image editing through Gemini's Nano Banana image model
 - Uploads for PNG, JPG, WebP, HEIC/HEIF, PDF, TXT, Markdown, CSV, and JSON files
 - Auto model routing plus a top-bar model selector for Gemini and the live APInex model catalog
-- Optional live web search through free, keyless APIs: FreeSerp for general web discovery and FreeNewsAPI for recent news, with source URLs and publication dates
+- Multi-route live search: optional self-hosted open-source SearXNG first, FreeSerp fallback for general web, and FreeNewsAPI for recent news; results include source URLs and publication dates
 - Express backend keeps provider keys server-side, with security headers, request limits, and API rate limiting
 
 ## Requirements
@@ -41,6 +41,8 @@ A calm, responsive AI workspace with a warm editorial interface, supporting Goog
    APINEX_BASE_URL=https://api.apinex.bond/v1
    APINEX_MODEL=free/gemini-3.8-flash
    PORT=3000
+   # Optional open-source metasearch: set this to your SearXNG instance URL
+   # SEARXNG_URL=http://localhost:8080
    ```
 
 4. Start Bytes:
@@ -72,7 +74,7 @@ After deployment, open the service URL and test a chat message. The health endpo
 - `GET /api/health` — server and provider configuration status
 - `GET /api/models` — configured providers and APInex model catalog
 - `POST /api/chat` — streaming or non-streaming conversation responses; supports user memory, per-request files, and optional `webSearch: true` grounding (news-intent queries use the recent-news index)
-- `POST /api/search` — direct search endpoint; routes news/latest/today queries to FreeNewsAPI and general web queries to FreeSerp
+- `POST /api/search` — direct search endpoint; news queries use FreeNewsAPI with SearXNG/FreeSerp fallback, and general queries use SearXNG when configured then FreeSerp. SearXNG must have JSON output enabled.
 - `POST /api/image` — image generation/editing; returns image bytes as a base64 data URL payload
 
 ## Notes
