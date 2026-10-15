@@ -90,3 +90,23 @@ After deployment, open the service URL and test a chat message. The health endpo
 ## Notes
 
 Gemini usage, models, quotas, and charges are controlled by Google AI Studio / Google Cloud. APInex usage and billing follow the APInex account. Image generation and PDF analysis currently use Gemini; APInex chat supports text and compatible image inputs. Voice features vary by browser.
+
+
+## Netlify frontend + Railway API
+
+Bytes can run as a split deployment: Netlify publishes only the static frontend from `dist/`, while the Express API and AI/search provider keys stay on Railway.
+
+### Netlify setup
+1. Import this GitHub repository into Netlify.
+2. Set the build command to `npm run build:netlify` and the publish directory to `dist` (also defined in `netlify.toml`).
+3. Add the environment variable `BYTES_API_URL` with the public HTTPS base URL of your Railway service, without a trailing slash, e.g. `https://your-service.up.railway.app`.
+4. Once Supabase Auth is configured, set `SUPABASE_URL` and `SUPABASE_ANON_KEY` in Netlify. These are public frontend settings; never put a Supabase service-role key in Netlify.
+
+### Railway setup
+- Keep `npm start` as the start command and use Railway's assigned `PORT`.
+- Set `FRONTEND_URL` to the exact Netlify site origin (for example `https://your-bytes-site.netlify.app`). For multiple approved origins, use a comma-separated list.
+- Keep `GEMINI_API_KEY` and `APINEX_API_KEY` only in Railway variables. Do not add provider secrets to Netlify.
+- The API uses explicit CORS origin allowlisting in production. CORS is not a substitute for authentication.
+
+### Local development
+Running `npm start` continues to serve the frontend and API from the same origin, so `BYTES_API_URL` is not needed locally.
