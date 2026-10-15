@@ -1,6 +1,6 @@
 # Bytes
 
-A calm, responsive AI workspace with a warm editorial interface, powered by Google's Gemini API.
+A calm, responsive AI workspace with a warm editorial interface, supporting Google Gemini and APInex's OpenAI-compatible model gateway.
 
 ## Features
 
@@ -12,13 +12,14 @@ A calm, responsive AI workspace with a warm editorial interface, powered by Goog
 - Image understanding and PDF analysis in chat
 - Image generation and image editing through Gemini's Nano Banana image model
 - Uploads for PNG, JPG, WebP, HEIC/HEIF, PDF, TXT, Markdown, CSV, and JSON files
+- Auto model routing plus a top-bar model selector for Gemini and the live APInex model catalog
 - Express backend keeps provider keys server-side, with security headers, request limits, and API rate limiting
 
 ## Requirements
 
 - Node.js 20+
-- A Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
-- API access/quota for the chat model and image model configured below
+- At least one provider key: a Gemini key from [Google AI Studio](https://aistudio.google.com/app/apikey) or an APInex key from [APInex](https://apinex.bond/)
+- Gemini API access/quota for image generation and PDF analysis; APInex for OpenAI-compatible chat models
 
 ## Run locally
 
@@ -29,12 +30,15 @@ A calm, responsive AI workspace with a warm editorial interface, powered by Goog
    npm install
    ```
 
-3. Copy `.env.example` to `.env` and add your API key:
+3. Copy `.env.example` to `.env` and add one or both provider keys:
 
    ```env
-   GEMINI_API_KEY=your_key_here
+   GEMINI_API_KEY=your_gemini_key_here
    GEMINI_MODEL=gemini-3.8-flash
    GEMINI_IMAGE_MODEL=gemini-nano-banana-2.1
+   APINEX_API_KEY=your_apinex_key_here
+   APINEX_BASE_URL=https://api.apinex.bond/v1
+   APINEX_MODEL=free/gemini-3.8-flash
    PORT=3000
    ```
 
@@ -46,7 +50,7 @@ A calm, responsive AI workspace with a warm editorial interface, powered by Goog
 
 5. Open http://localhost:3000.
 
-**Never commit your real `.env` file or expose your Gemini API key in browser JavaScript.** The `.gitignore` file excludes it.
+**Never commit your real `.env` file or expose provider keys in browser JavaScript.** The `.gitignore` file excludes it. Auto chooses Gemini when its key is configured; otherwise it uses APInex. You can override this with the top-bar model selector.
 
 ## How memory and files work
 
@@ -58,16 +62,17 @@ Voice input depends on browser support for the Web Speech API and may require mi
 
 ## Deploy
 
-Deploy this repository as a **Node.js web service**, not as a static-only site. For example, create a web service on [Render](https://render.com/), connect this GitHub repository, set the build command to `npm install`, and the start command to `npm start`. Add `GEMINI_API_KEY` as a private environment variable in the host dashboard. You can optionally set `GEMINI_MODEL`, `GEMINI_IMAGE_MODEL`, and `NODE_VERSION` as environment variables.
+Deploy this repository as a **Node.js web service**, not as a static-only site. For example, create a web service on [Render](https://render.com/), connect this GitHub repository, set the build command to `npm install`, and the start command to `npm start`. Add `GEMINI_API_KEY` and/or `APINEX_API_KEY` as private environment variables in the host dashboard. You can optionally set `GEMINI_MODEL`, `GEMINI_IMAGE_MODEL`, `APINEX_BASE_URL`, `APINEX_MODEL`, and `NODE_VERSION` as environment variables.
 
 After deployment, open the service URL and test a chat message. The health endpoint is `/api/health`; it reports the configured model names and whether the API key is configured, but never returns the key itself.
 
 ## API
 
-- `GET /api/health` — server and model configuration status
+- `GET /api/health` — server and provider configuration status
+- `GET /api/models` — configured providers and APInex model catalog
 - `POST /api/chat` — streaming or non-streaming conversation responses; supports user memory and per-request files
 - `POST /api/image` — image generation/editing; returns image bytes as a base64 data URL payload
 
 ## Notes
 
-Gemini usage, available models, quotas, and charges are controlled by the Google AI Studio / Google Cloud account. Image generation requires access to the configured image model. Voice features vary by browser.
+Gemini usage, models, quotas, and charges are controlled by Google AI Studio / Google Cloud. APInex usage and billing follow the APInex account. Image generation and PDF analysis currently use Gemini; APInex chat supports text and compatible image inputs. Voice features vary by browser.
