@@ -3,6 +3,7 @@ const express = require("express");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const path = require("path");
+const { searchProviderRunner } = require("./search-resilience");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -33,7 +34,8 @@ app.get("/api/health", (_req, res) => {
       searxngConfigured: Boolean(process.env.SEARXNG_URL),
       generalProviders: process.env.SEARXNG_URL ? ["SearXNG", "FreeSerp"] : ["FreeSerp"],
       newsProviders: ["FreeNewsAPI", "Google News RSS", ...(process.env.SEARXNG_URL ? ["SearXNG"] : []), "FreeSerp"],
-      cacheTtlSeconds: Math.round(SEARCH_CACHE_TTL_MS / 1000)
+      cacheTtlSeconds: Math.round(SEARCH_CACHE_TTL_MS / 1000),
+      providerHealth: searchProviderRunner.snapshot()
     },
     chatModel: GEMINI_MODEL,
     imageModel: GEMINI_IMAGE_MODEL
@@ -260,7 +262,7 @@ async function searchWeb(query, news = false) {
     ...(process.env.SEARXNG_URL ? [["SearXNG", () => searchSearXNG(q, news)]] : []),
     ["FreeSerp", () => searchFreeSerp(q)]
   ];
-  const settled = await Promise.allSettled(providers.map(([, run]) => run()));
+  const settled = await Promise.allSettled(providers.map(([name, run]) => searchProviderRunner.run(name, run)));
   const groups = [];
   const failures = [];
   settled.forEach((result, index) => {
@@ -367,7 +369,7 @@ async function runWebSearchUncached(input) {
       ...(process.env.SEARXNG_URL ? [["SearXNG", () => searchSearXNG(cleanNewsQuery(query), true)]] : []),
       ["FreeSerp", () => searchFreeSerp(cleanNewsQuery(query))]
     ];
-    const settled = await Promise.allSettled(providers.map(([, run]) => run()));
+    const settled = await Promise.allSettled(providers.map(([name, run]) => searchProviderRunner.run(name, run)));
     const resultGroups = [];
     const successfulProviders = [];
     const failures = [];
