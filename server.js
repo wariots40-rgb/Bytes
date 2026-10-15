@@ -284,7 +284,7 @@ app.post("/api/chat", async (req, res) => {
 
   try {
     const stream = req.body?.stream === true;
-    const model = requestedModel || GEMINI_MODEL;
+    const model = req.body?.webSearch === true && requestedProvider === "apinex" ? GEMINI_MODEL : requestedModel || GEMINI_MODEL;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:${stream ? "streamGenerateContent?alt=sse" : "generateContent"}`;
     const response = await fetch(url, {
       method: "POST",
