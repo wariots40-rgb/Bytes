@@ -207,10 +207,10 @@ async function sendMessage(text){
   }
   persist();addHistory(conv);
  }catch(error){
-  loading.remove();
+  loading.remove();if(assistantWrap)assistantWrap.remove();userBubble.remove();
   if(error.message==='Failed to fetch')error.message='Could not reach Bytes. Check that the server is running.';
   makeMessage('assistant','**Could not complete that request**\n\n'+error.message);
-  conv.messages.pop();persist();
+  conv.messages.pop();input.value=text;pendingFiles=sentFiles;renderAttachmentTray();resizeInput();persist();
  }finally{busy=false;$('#sendBtn').disabled=false;chatView.scrollIntoView({behavior:'smooth',block:'end'});input.focus()}
 }
 async function regenerate(){if(busy||!currentId)return;const conv=conversations.find(c=>c.id===currentId);if(!conv)return;while(conv.messages.length&&conv.messages[conv.messages.length-1].role==='assistant')conv.messages.pop();const last=conv.messages[conv.messages.length-1];if(!last||last.role!=='user')return;const prompt=last.text;chatView.innerHTML='';conv.messages.forEach(m=>makeMessage(m.role,m.text));conv.messages.pop();persist();await sendMessage(prompt)}
