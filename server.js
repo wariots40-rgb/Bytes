@@ -79,24 +79,24 @@ app.post("/api/chat", async (req, res) => {
           const { value, done } = await reader.read();
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
-          const events = buffer.split("\\n\\n");
+          const events = buffer.split("\n\n");
           buffer = events.pop() || "";
           for (const event of events) {
-            const line = event.split("\\n").find(row => row.startsWith("data:"));
+            const line = event.split("\n").find(row => row.startsWith("data:"));
             if (!line) continue;
             try {
               const payload = JSON.parse(line.slice(5).trim());
               const chunk = payload?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("");
-              if (chunk) res.write("data: " + JSON.stringify({ text: chunk }) + "\\n\\n");
+              if (chunk) res.write("data: " + JSON.stringify({ text: chunk }) + "\n\n");
             } catch { /* Ignore incomplete or non-JSON provider events. */ }
           }
         }
-        res.write("data: [DONE]\\n\\n");
+        res.write("data: [DONE]\n\n");
         return res.end();
       } catch (streamError) {
         console.error("Gemini stream failed:", streamError.message);
         if (!res.headersSent) return res.status(502).json({ error: "The response stream was interrupted. Please try again." });
-        res.write("data: " + JSON.stringify({ error: "The response stream was interrupted." }) + "\\n\\n");
+        res.write("data: " + JSON.stringify({ error: "The response stream was interrupted." }) + "\n\n");
         return res.end();
       }
     }
