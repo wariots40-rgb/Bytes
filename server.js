@@ -29,6 +29,7 @@ app.get("/api/health", (_req, res) => {
     ok: true,
     providerConfigured: Boolean(GEMINI_API_KEY || APINEX_API_KEY),
     providers: { gemini: Boolean(GEMINI_API_KEY), apinex: Boolean(APINEX_API_KEY) },
+    search: { searxngConfigured: Boolean(process.env.SEARXNG_URL), generalFallback: "FreeSerp", newsPrimary: "FreeNewsAPI" },
     chatModel: GEMINI_MODEL,
     imageModel: GEMINI_IMAGE_MODEL
   });
@@ -239,11 +240,7 @@ async function searchNews(query) {
   });
   if (!response.ok) throw new Error("FreeNewsAPI returned HTTP " + response.status);
   const data = await response.json();
-  return normalizeSearchResults(data.results, "FreeNewsAPI").map((item, i) => ({
-    ...item,
-    publishedAt: String(data.results[i]?.published_at || item.publishedAt || ""),
-    source: String(data.results[i]?.sitename || data.results[i]?.host || item.source || "FreeNewsAPI")
-  }));
+  return normalizeSearchResults(data.results, "FreeNewsAPI");
 }
 
 async function runWebSearch(input) {
