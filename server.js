@@ -95,7 +95,7 @@ function addFileParts(parts, files) {
 
 
 const APINEX_API_KEY = process.env.APINEX_API_KEY;
-const APINEX_BASE_URL = (process.env.APINEX_BASE_URL || "https://api.apinex.bond/v1").replace(/\\/+$/, "");
+const APINEX_BASE_URL = (process.env.APINEX_BASE_URL || "https://api.apinex.bond/v1").replace(/\/+$/, "");
 const APINEX_MODEL = process.env.APINEX_MODEL || "free/gemini-3.8-flash";
 const GEMINI_MODELS = [
   { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash" },
