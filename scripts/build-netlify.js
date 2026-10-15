@@ -3,7 +3,7 @@ const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
 const dist = path.join(root, "dist");
-const apiUrl = String(process.env.BYTES_API_URL || "").trim().replace(/\\/+$/, "");
+const apiUrl = String(process.env.BYTES_API_URL || "").trim().replace(/\/+$/, "");
 
 if (!apiUrl) {
   console.error("Missing BYTES_API_URL. Set it in Netlify to your Railway API base URL, e.g. https://your-service.up.railway.app");
