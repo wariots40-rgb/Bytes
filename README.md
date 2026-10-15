@@ -72,7 +72,7 @@ After deployment, open the service URL and test a chat message. The health endpo
 
 - `GET /api/health` — server and provider configuration status
 - `GET /api/models` — configured providers and APInex model catalog
-- `POST /api/chat` — streaming or non-streaming conversation responses; supports user memory and per-request files
+- `POST /api/chat` — streaming or non-streaming conversation responses; supports user memory, per-request files, and optional `webSearch: true` grounding
 - `POST /api/image` — image generation/editing; returns image bytes as a base64 data URL payload
 
 ## Notes
