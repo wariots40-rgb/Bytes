@@ -13,6 +13,7 @@ A calm, responsive AI workspace with a warm editorial interface, supporting Goog
 - Image generation and image editing through Gemini's Nano Banana image model
 - Uploads for PNG, JPG, WebP, HEIC/HEIF, PDF, TXT, Markdown, CSV, and JSON files
 - Auto model routing plus a top-bar model selector for Gemini and the live APInex model catalog
+- Optional live web search using Gemini's Google Search grounding, with source references in responses
 - Express backend keeps provider keys server-side, with security headers, request limits, and API rate limiting
 
 ## Requirements
