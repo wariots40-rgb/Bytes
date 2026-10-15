@@ -2,6 +2,16 @@
 
 A calm, responsive AI workspace with a warm editorial interface, supporting Google Gemini and APInex's OpenAI-compatible model gateway.
 
+### Search resilience and diagnostics
+
+Search providers are isolated with per-provider circuit breakers. After 3 consecutive failures, a provider is temporarily skipped for 30 seconds while other providers continue; a recovery probe is allowed after cooldown. The health endpoint at `/api/health` reports provider call counts, success rate, average and last latency, last success/failure timestamps, sanitized last error, and circuit state. These counters are in-memory and reset when the server restarts. Search responses are checked for malformed result payloads before they are used.
+
+Run the built-in resilience tests with:
+
+```bash
+npm test
+```
+
 ## Features
 
 - Responsive, streaming chat on desktop and mobile browsers
