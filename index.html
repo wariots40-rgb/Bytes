@@ -11,6 +11,21 @@
 .history-search{width:100%;margin:16px 0 2px;padding:9px 10px;border:1px solid #e1e0d8;border-radius:9px;background:#f8f7f2;font-size:11px;outline:0}.history-search:focus{border-color:#b8c88c}
 .message-actions{display:flex;gap:6px;margin-top:8px}.message-action{border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:5px 8px;color:#77786f;font-size:10px}.message-action:hover{color:var(--ink);border-color:#c7c8b9}
 .message-body p{margin:0 0 10px}.message-body p:last-child{margin-bottom:0}.message-body h1,.message-body h2,.message-body h3{font-family:Manrope,sans-serif;line-height:1.3;margin:16px 0 8px}.message-body h1{font-size:23px}.message-body h2{font-size:19px}.message-body h3{font-size:16px}.message-body ul,.message-body ol{padding-left:22px;margin:8px 0}.message-body li{margin:4px 0}.message-body a{color:#526b22;text-decoration:underline}.message-body code{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;background:#eeede7;border-radius:4px;padding:2px 4px}.code-block{margin:12px 0;border-radius:11px;overflow:hidden;background:#24251f;color:#f4f3eb}.code-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#303129;color:#c7c7ba;font-size:10px}.code-head button{border:1px solid #55564b;background:transparent;color:#f4f3eb;border-radius:6px;padding:4px 7px;font-size:10px}.code-block pre{margin:0;padding:13px;overflow:auto;white-space:pre;font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}.search-empty{padding:8px 11px;color:#999;font-size:11px}
+.attachment-tray{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 8px}
+.file-chip{display:flex;align-items:center;gap:7px;max-width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:9px;background:#f8f7f1;color:#62635b;font-size:11px}
+.file-chip .file-name{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-chip button{border:0;background:transparent;color:#888;padding:0 2px;font-size:15px}
+.tool-btn.active{border-color:#b7c987;background:#edf2df;color:#465a21}
+.voice-btn.listening{background:#fae6e2;border-color:#e8b6ac;color:#a13c2c;animation:voicepulse 1.2s infinite}
+@keyframes voicepulse{50%{box-shadow:0 0 0 4px #e8b6ac33}}
+.message-files{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.message-file{padding:5px 8px;border:1px solid var(--line);background:#f8f7f1;color:#77786f;border-radius:8px;font-size:10px}
+.message-attachment-image{display:block;max-width:min(300px,100%);max-height:240px;border-radius:12px;border:1px solid var(--line);margin-top:10px;object-fit:contain;background:#eeede7}
+.generated-image{display:block;width:100%;max-width:620px;max-height:620px;object-fit:contain;border:1px solid var(--line);border-radius:13px;margin:12px 0 8px;background:#eeede7}
+.image-download{display:inline-flex;margin:0 0 10px;padding:7px 10px;border:1px solid var(--line);background:#fff;border-radius:8px;color:#62635b;text-decoration:none;font-size:11px}
+.image-memory-note{padding:9px 11px;margin-top:8px;border-radius:8px;background:#f1f0e9;color:#828278;font-size:11px;line-height:1.5}
+.memory-editor{width:100%;min-height:115px;resize:vertical;padding:11px;border:1px solid var(--line);border-radius:10px;background:white;font:12px/1.6 'DM Sans',sans-serif}
+.modal .help-note{font-size:11px;color:#929288;margin-top:7px}
 @media(min-width:1200px){.content{padding-top:72px}.welcome{padding-bottom:35px}}
 @media(max-width:760px){:root{--sidebar:258px}.sidebar{transform:translateX(-100%);box-shadow:10px 0 30px #0000}.sidebar.open{transform:translateX(0);box-shadow:10px 0 35px #0002}.main{margin-left:0;width:100%}.topbar{height:60px;padding:0 17px}.mobile-menu{display:grid}.mobile-brand{display:block;font:800 19px Manrope;letter-spacing:-.8px;margin-right:auto;margin-left:10px}.topbar-left{display:flex;align-items:center}.model-select{font-size:11px;padding:8px}.top-actions .icon-btn:first-child{display:none}.content{width:calc(100% - 34px);padding:40px 0 17px}.headline{letter-spacing:-1.6px}.subhead{font-size:14px}.prompt-grid{gap:8px;margin-top:23px}.prompt-card{padding:12px;min-height:100px}.prompt-card strong{font-size:12px}.prompt-card span:last-child{font-size:10px}.tool-btn{padding:0 8px}.chat-mode .content{padding-top:25px}.disclaimer{font-size:9px}.upgrade{margin-top:8px}}
 @media(max-width:380px){.prompt-grid{grid-template-columns:1fr}.prompt-card{min-height:83px}.prompt-top{margin-bottom:8px}.headline{font-size:34px}.model-select{max-width:132px;overflow:hidden;white-space:nowrap}}
@@ -55,7 +70,9 @@
     <div class="composer-wrap">
       <form class="composer" id="composer">
         <textarea id="messageInput" rows="1" placeholder="Ask anything, or start with a thought…" aria-label="Your message"></textarea>
-        <div class="composer-tools"><div class="tool-left"><button type="button" class="tool-btn" id="attachBtn">＋ <span>Attach</span></button><button type="button" class="tool-btn" id="toolsBtn">✧ <span>Tools</span></button></div><button class="send-btn" id="sendBtn" aria-label="Send message" type="submit">↑</button></div>
+        <input type="file" id="fileInput" hidden multiple accept="image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf,.txt,.md,.csv,.json">
+        <div class="attachment-tray" id="attachmentTray" hidden></div>
+        <div class="composer-tools"><div class="tool-left"><button type="button" class="tool-btn" id="attachBtn">＋ <span>Attach</span></button><button type="button" class="tool-btn" id="imageModeBtn" aria-pressed="false" title="Generate or edit images">▧ <span>Image</span></button><button type="button" class="tool-btn" id="voiceBtn" aria-label="Start voice input" title="Voice input">🎙 <span>Voice</span></button><button type="button" class="tool-btn" id="toolsBtn">✧ <span>Tools</span></button></div><button class="send-btn" id="sendBtn" aria-label="Send message" type="submit">↑</button></div>
       </form>
       <p class="disclaimer">Bytes can make mistakes. Check important information. &nbsp;·&nbsp; Built for better thinking.</p>
     </div>
@@ -69,11 +86,19 @@ const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
 const input=$('#messageInput'),chatView=$('#chatView'),content=$('#content'),historyEl=$('#history');
 const STORAGE_KEY='bytes.conversations.v2';
 let conversations=[],currentId=null,busy=false,lastPrompt='';
+let memoryText=localStorage.getItem('bytes.user-memory.v1')||'';
+let pendingFiles=[],imageMode=false,recognition=null,recording=false;
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2600)}
 function openModal(title,html,confirm='Got it',onConfirm=null){$('#modalTitle').textContent=title;$('#modalBody').innerHTML=html;$('#modalConfirm').textContent=confirm;$('#modalBackdrop').classList.add('open');$('#modalConfirm').onclick=()=>{if(onConfirm)onConfirm();$('#modalBackdrop').classList.remove('open')}}
 $('#modalCancel').onclick=()=>$('#modalBackdrop').classList.remove('open');
 $('#modalBackdrop').addEventListener('click',e=>{if(e.target===$('#modalBackdrop'))$('#modalBackdrop').classList.remove('open')});
-function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(conversations.slice(0,100)))}catch{toast('Storage is full. Some older chats may not be saved.')}}
+function persist(){try{
+ const safe=conversations.slice(0,100).map(c=>({...c,messages:c.messages.map(m=>({
+  role:m.role,text:m.text,generatedImage:!!m.generatedImage,
+  attachments:Array.isArray(m.attachments)?m.attachments.map(a=>({name:a.name,type:a.type,size:a.size||0})):undefined
+ }))}));
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(safe));
+ }catch{toast('Storage is full. Some older chats may not be saved.')}}
 function newConversation(){currentId=null;chatView.innerHTML='';content.classList.remove('chat-mode');input.value='';resizeInput();if(innerWidth<=760)$('#sidebar').classList.remove('open');input.focus();$$('.history-item').forEach(b=>b.classList.remove('active'))}
 $('#newChat').onclick=newConversation;
 function resizeInput(){input.style.height='auto';input.style.height=Math.min(input.scrollHeight,180)+'px'}
@@ -103,10 +128,30 @@ function makeMessage(role,text,options={}){
  const av=document.createElement('div');av.className='message-avatar';av.textContent=role==='user'?'Y':'b.';
  const body=document.createElement('div');body.className='message-body';
  if(role==='assistant'){const label=document.createElement('div');label.className='message-label';label.textContent='BYTES';body.appendChild(label)}
- const txt=document.createElement('div');txt.className='message-text';if(role==='assistant')txt.innerHTML=renderMarkdown(text);else txt.textContent=text;body.appendChild(txt);
- if(role==='assistant'&&!options.loading){const actions=document.createElement('div');actions.className='message-actions';
- for(const [label,action] of [['Copy','copy'],['Regenerate','regenerate']]){const b=document.createElement('button');b.className='message-action';b.textContent=label;b.onclick=()=>action==='copy'?copyText(text):regenerate();actions.appendChild(b)}
- body.appendChild(actions)}
+ const txt=document.createElement('div');txt.className='message-text';
+ if(role==='assistant')txt.innerHTML=renderMarkdown(text);else txt.textContent=text;
+ body.appendChild(txt);
+ if(Array.isArray(options.attachments)&&options.attachments.length){
+  const files=document.createElement('div');files.className='message-files';
+  options.attachments.forEach(file=>{
+   const chip=document.createElement('span');chip.className='message-file';chip.textContent='▤ '+file.name;files.appendChild(chip);
+   if(file.preview&&file.type&&file.type.startsWith('image/')){const img=document.createElement('img');img.className='message-attachment-image';img.src=file.preview;img.alt=file.name;body.appendChild(img)}
+  });body.appendChild(files);
+ }
+ if(options.imageData){
+  const img=document.createElement('img');img.className='generated-image';img.alt='Image generated by Bytes';img.src='data:'+(options.mimeType||'image/png')+';base64,'+options.imageData;body.appendChild(img);
+  const link=document.createElement('a');link.className='image-download';link.href=img.src;link.download='bytes-generated-image.png';link.textContent='↓ Download image';body.appendChild(link);
+ }else if(options.generatedImage){
+  const note=document.createElement('div');note.className='image-memory-note';note.textContent='This image was generated in an earlier session and its image data was not saved in browser history.';body.appendChild(note);
+ }
+ if(role==='assistant'&&!options.loading){
+  const actions=document.createElement('div');actions.className='message-actions';
+  for(const [label,action] of [['Copy','copy'],['Speak','speak'],['Regenerate','regenerate']]){
+   const b=document.createElement('button');b.className='message-action';b.textContent=label;
+   b.onclick=()=>action==='copy'?copyText(text):action==='speak'?speakText(text):regenerate();actions.appendChild(b)
+  }
+  body.appendChild(actions)
+ }
  wrap.append(av,body);chatView.appendChild(wrap);return wrap;
 }
 async function copyText(text){try{await navigator.clipboard.writeText(text);toast('Copied to clipboard.')}catch{toast('Clipboard unavailable in this browser.')}}
@@ -114,38 +159,155 @@ chatView.addEventListener('click',e=>{const b=e.target.closest('[data-copy-code]
 function addHistory(conv){let b=historyEl.querySelector('[data-id="'+conv.id+'"]');if(!b){b=document.createElement('button');b.className='history-item';b.dataset.id=conv.id;b.onclick=()=>loadConversation(conv.id);historyEl.prepend(b)}b.textContent=conv.title||'New conversation';filterHistory()}
 function filterHistory(){const q=($('#historySearch').value||'').trim().toLowerCase();let count=0;$$('.history-item').forEach(b=>{const c=conversations.find(x=>x.id===b.dataset.id);const match=!!c&&(!q||(c.title+' '+c.messages.map(m=>m.text).join(' ')).toLowerCase().includes(q));b.hidden=!match;if(match)count++});let empty=historyEl.querySelector('.search-empty');if(!empty){empty=document.createElement('div');empty.className='search-empty';historyEl.appendChild(empty)}empty.textContent=count?'':(q?'No matching conversations.':(conversations.length?'':'Your conversations will appear here.'));empty.hidden=count>0}
 $('#historySearch').addEventListener('input',filterHistory);
-function loadConversation(id){const conv=conversations.find(c=>c.id===id);if(!conv)return;currentId=id;chatView.innerHTML='';conv.messages.forEach(m=>makeMessage(m.role,m.text));content.classList.add('chat-mode');$$('.history-item').forEach(b=>b.classList.toggle('active',b.dataset.id===id));if(innerWidth<=760)$('#sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
+function loadConversation(id){const conv=conversations.find(c=>c.id===id);if(!conv)return;currentId=id;chatView.innerHTML='';conv.messages.forEach(m=>makeMessage(m.role,m.text,{attachments:m.attachments,generatedImage:m.generatedImage}));content.classList.add('chat-mode');$$('.history-item').forEach(b=>b.classList.toggle('active',b.dataset.id===id));if(innerWidth<=760)$('#sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
 function showTyping(){const loading=document.createElement('div');loading.className='message assistant';loading.innerHTML='<div class="message-avatar">b.</div><div class="message-body"><div class="message-label">BYTES</div><div class="typing"><i></i><i></i><i></i></div></div>';chatView.appendChild(loading);return loading}
 async function readStream(response,onText){if(!response.ok){const data=await response.json().catch(()=>({}));throw new Error(data.error||'Bytes could not complete that request.')}if(!response.body)throw new Error('Streaming is not supported by this browser.');const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='',answer='';
 while(true){const {value,done}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});const events=buffer.split('\n\n');buffer=events.pop()||'';for(const event of events){const line=event.split('\n').find(x=>x.startsWith('data:'));if(!line)continue;const payload=line.slice(5).trim();if(payload==='[DONE]')continue;let data;try{data=JSON.parse(payload)}catch{continue}if(data.error)throw new Error(data.error);if(data.text){answer+=data.text;onText(answer)}}}return answer}
 async function sendMessage(text){
- text=text.trim();if(!text||busy)return;lastPrompt=text;content.classList.add('chat-mode');
+ text=(text||'').trim();
+ if(!text&&pendingFiles.length)text='Please analyze the attached file'+(pendingFiles.length>1?'s':'')+': '+pendingFiles.map(f=>f.name).join(', ')+'.';
+ if(!text||busy)return;
+ lastPrompt=text;content.classList.add('chat-mode');
  if(!currentId){currentId=String(Date.now())+'-'+Math.random().toString(36).slice(2,7);const conv={id:currentId,title:text.slice(0,34)+(text.length>34?'…':''),messages:[]};conversations.unshift(conv);addHistory(conv)}
- const conv=conversations.find(c=>c.id===currentId);conv.messages.push({role:'user',text});makeMessage('user',text);persist();input.value='';resizeInput();busy=true;$('#sendBtn').disabled=true;
+ const conv=conversations.find(c=>c.id===currentId);
+ const sentFiles=pendingFiles.slice();
+ const fileMeta=sentFiles.map(f=>({name:f.name,type:f.type,size:f.size,preview:f.preview}));
+ conv.messages.push({role:'user',text,attachments:fileMeta});
+ makeMessage('user',text,{attachments:fileMeta});
+ input.value='';resizeInput();pendingFiles=[];renderAttachmentTray();busy=true;$('#sendBtn').disabled=true;
  const loading=showTyping();chatView.scrollIntoView({behavior:'smooth',block:'end'});
  try{
-  const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stream:true,messages:conv.messages.map(m=>({role:m.role,text:m.text}))})});
-  let assistantWrap=null,assistantText='';
-  const answer=await readStream(response,partial=>{if(!assistantWrap){loading.remove();assistantWrap=makeMessage('assistant','');}assistantText=partial;const node=assistantWrap.querySelector('.message-text');node.innerHTML=renderMarkdown(partial);});
-  loading.remove();if(!assistantWrap)assistantWrap=makeMessage('assistant',answer||'I couldn’t produce a response. Please try again.');else assistantWrap.querySelector('.message-text').innerHTML=renderMarkdown(answer);
-  if(answer.trim())conv.messages.push({role:'assistant',text:answer});else conv.messages.pop();persist();addHistory(conv);$('#modelLabel').textContent='Gemini Flash';
- }catch(error){loading.remove();if(error.message==='Failed to fetch')error.message='Could not reach Bytes. Check that the server is running.';makeMessage('assistant','**Could not get a response**\n\n'+error.message);conv.messages.pop();persist()}
- finally{busy=false;$('#sendBtn').disabled=false;chatView.scrollIntoView({behavior:'smooth',block:'end'});input.focus()}
+  if(imageMode){
+   if(sentFiles.some(f=>!f.type.startsWith('image/')))throw new Error('Image mode accepts image attachments only. Remove PDFs or text files and try again.');
+   const response=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    prompt:text,attachments:sentFiles.map(f=>({name:f.name,type:f.type,data:f.data}))
+   })});
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw new Error(data.error||'Image generation failed.');
+   loading.remove();makeMessage('assistant',data.reply||'Here is your image.',{imageData:data.imageData,mimeType:data.mimeType});
+   conv.messages.push({role:'assistant',text:data.reply||'Image generated.',generatedImage:true});
+   $('#modelLabel').textContent='Image Studio';
+  }else{
+   const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    stream:true,memory:memoryText,
+    messages:conv.messages.map(m=>({role:m.role,text:m.text})),
+    attachments:sentFiles.map(f=>f.text!==undefined?({name:f.name,type:f.type,text:f.text}):({name:f.name,type:f.type,data:f.data}))
+   })});
+   let assistantWrap=null;
+   const answer=await readStream(response,partial=>{
+    if(!assistantWrap){loading.remove();assistantWrap=makeMessage('assistant','');}
+    const node=assistantWrap.querySelector('.message-text');node.innerHTML=renderMarkdown(partial);
+   });
+   loading.remove();
+   if(!assistantWrap)assistantWrap=makeMessage('assistant',answer||'I couldn’t produce a response. Please try again.');
+   else assistantWrap.querySelector('.message-text').innerHTML=renderMarkdown(answer);
+   if(answer.trim())conv.messages.push({role:'assistant',text:answer});else conv.messages.pop();
+   $('#modelLabel').textContent='Gemini Flash';
+  }
+  persist();addHistory(conv);
+ }catch(error){
+  loading.remove();
+  if(error.message==='Failed to fetch')error.message='Could not reach Bytes. Check that the server is running.';
+  makeMessage('assistant','**Could not complete that request**\n\n'+error.message);
+  conv.messages.pop();persist();
+ }finally{busy=false;$('#sendBtn').disabled=false;chatView.scrollIntoView({behavior:'smooth',block:'end'});input.focus()}
 }
 async function regenerate(){if(busy||!currentId)return;const conv=conversations.find(c=>c.id===currentId);if(!conv)return;while(conv.messages.length&&conv.messages[conv.messages.length-1].role==='assistant')conv.messages.pop();const last=conv.messages[conv.messages.length-1];if(!last||last.role!=='user')return;const prompt=last.text;chatView.innerHTML='';conv.messages.forEach(m=>makeMessage(m.role,m.text));conv.messages.pop();persist();await sendMessage(prompt)}
 $('#composer').addEventListener('submit',e=>{e.preventDefault();sendMessage(input.value)});
-$$('[data-feature]').forEach(b=>b.onclick=()=>toast(b.dataset.feature+' is on the roadmap.'));
+$('[data-feature]').forEach(b=>b.onclick=()=>{
+ if(b.dataset.feature==='Images'){toggleImageMode(true);if(innerWidth<=760)$('#sidebar').classList.remove('open')}
+ else toast(b.dataset.feature+' is on the roadmap.')
+});
 $('#menuBtn').onclick=()=>$('#sidebar').classList.toggle('open');
 document.addEventListener('click',e=>{if(innerWidth<=760&&$('#sidebar').classList.contains('open')&&!$('#sidebar').contains(e.target)&&!$('#menuBtn').contains(e.target))$('#sidebar').classList.remove('open')});
 function providerModal(){openModal('Connect your AI','<p>Bytes uses Gemini through your server. Keep GEMINI_API_KEY in the server environment only—never in browser code.</p><p>Check the server’s <code>/api/health</code> endpoint to confirm provider configuration.</p>','Sounds good')}
 $('#connectProvider').onclick=providerModal;
 $('#modelBtn').onclick=()=>openModal('Current model','<p>Bytes is connected to the Gemini model configured by <code>GEMINI_MODEL</code> on your server.</p>','Understood');
-$('#settingsBtn').onclick=$('#settingsTop').onclick=()=>openModal('Workspace settings','<p><strong>Bytes · Personal edition</strong></p><p>Theme: warm paper<br>Conversation storage: this browser (local storage)<br>AI provider: server-configured Gemini</p><p>Chats are stored in this browser and are not synced across devices.</p><div class="modal-actions" style="justify-content:flex-start"><button id="clearChats">Clear saved chats</button></div>','Done',null);
+function openSettings(){
+ openModal('Workspace settings','<p><strong>Bytes · Personal edition</strong></p><p>Chats are saved in this browser. Memory below is included in future AI requests to personalize replies.</p><label for="memoryInput" style="display:block;font-size:12px;font-weight:700;margin:14px 0 6px">Your memory</label><textarea id="memoryInput" class="memory-editor" maxlength="4000" placeholder="Examples: I prefer concise answers. I’m learning JavaScript. My project is called Bytes."></textarea><p class="help-note">Only add details you want Bytes to remember. Stored locally in this browser, not synced across devices.</p><div class="modal-actions" style="justify-content:flex-start;margin-top:12px"><button id="clearChats">Clear saved chats</button></div>','Save memory',()=>{
+  memoryText=($('#memoryInput')?.value||'').trim().slice(0,4000);
+  try{localStorage.setItem('bytes.user-memory.v1',memoryText)}catch{}
+  toast('Memory saved for future conversations.');
+ });
+ const editor=$('#memoryInput');if(editor)editor.value=memoryText;
+}
+$('#settingsBtn').onclick=$('#settingsTop').onclick=openSettings;
 $('#modalBody').addEventListener('click',e=>{if(e.target.id==='clearChats'){if(confirm('Delete all locally saved Bytes conversations?')){conversations=[];persist();historyEl.innerHTML='';filterHistory();newConversation();toast('Saved chats cleared.')}}});
-$('#toolsBtn').onclick=()=>openModal('Tools','<p>Image generation, writing tools, coding workflows, and document analysis are planned for upcoming versions.</p>','Nice');
-$('#attachBtn').onclick=()=>openModal('Add a file','<p>File uploads and document analysis are not connected yet.</p>','Got it');
+$('#toolsBtn').onclick=()=>openModal('Tools','<p><strong>Available now</strong></p><p>▧ Image generation and image edits<br>📎 Image, PDF, TXT, Markdown, CSV and JSON uploads<br>🎙 Voice input and spoken responses<br>🧠 Saved cross-chat memory</p>','Nice');
+$('#attachBtn').onclick=()=>$('#fileInput').click();
 $('#shareBtn').onclick=async()=>{const conv=conversations.find(c=>c.id===currentId);if(!conv){toast('Start a conversation before sharing.');return}await copyText(conv.messages.map(m=>(m.role==='user'?'You':'Bytes')+': '+m.text).join('\n\n'))};
 document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();newConversation()}if(e.key==='Escape'){$('#sidebar').classList.remove('open');$('#modalBackdrop').classList.remove('open')}});
+
+// Uploads are read in-browser and sent directly to the Bytes server for this request only.
+function getAllowedMime(file){
+ const ext=(file.name.split('.').pop()||'').toLowerCase();
+ const map={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif',pdf:'application/pdf',txt:'text/plain',md:'text/markdown',markdown:'text/markdown',csv:'text/csv',json:'application/json'};
+ return map[ext]||file.type||'application/octet-stream';
+}
+function bytesToBase64(bytes){let binary='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(binary)}
+async function queueFiles(fileList){
+ const files=Array.from(fileList||[]);if(!files.length)return;
+ for(const file of files){
+  if(pendingFiles.length>=4){toast('Attach up to 4 files per message.');break}
+  const type=getAllowedMime(file);
+  const media=type.startsWith('image/')||type==='application/pdf';
+  const textType=['text/plain','text/markdown','text/csv','application/json'].includes(type);
+  if(!media&&!textType){toast('Unsupported file: '+file.name);continue}
+  if(file.size>(4*1024*1024)){toast(file.name+' is over 4 MB.');continue}
+  if(textType&&file.size>250000){toast(file.name+' is too large. Keep text files under 250 KB.');continue}
+  try{
+   if(textType){
+    const text=await file.text();
+    pendingFiles.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),name:file.name,type,size:file.size,text});
+   }else{
+    const bytes=new Uint8Array(await file.arrayBuffer());
+    const data=bytesToBase64(bytes);
+    pendingFiles.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),name:file.name,type,size:file.size,data,preview:type.startsWith('image/')?'data:'+type+';base64,'+data:null});
+   }
+  }catch{toast('Could not read '+file.name)}
+ }
+ renderAttachmentTray();$('#fileInput').value='';
+}
+function renderAttachmentTray(){
+ const tray=$('#attachmentTray');tray.innerHTML='';tray.hidden=!pendingFiles.length;
+ pendingFiles.forEach(file=>{
+  const chip=document.createElement('div');chip.className='file-chip';
+  const icon=document.createElement('span');icon.textContent=file.type.startsWith('image/')?'▧':file.type==='application/pdf'?'▤':'≡';
+  const name=document.createElement('span');name.className='file-name';name.textContent=file.name;
+  const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.setAttribute('aria-label','Remove '+file.name);remove.onclick=()=>{pendingFiles=pendingFiles.filter(f=>f.id!==file.id);renderAttachmentTray()};
+  chip.append(icon,name,remove);tray.appendChild(chip);
+ });
+}
+$('#fileInput').addEventListener('change',e=>queueFiles(e.target.files));
+function toggleImageMode(force){
+ imageMode=typeof force==='boolean'?force:!imageMode;
+ const btn=$('#imageModeBtn');btn.classList.toggle('active',imageMode);btn.setAttribute('aria-pressed',String(imageMode));
+ btn.innerHTML=imageMode?'▧ <span>Image mode on</span>':'▧ <span>Image</span>';
+ input.placeholder=imageMode?'Describe an image to create, or describe edits to an attached image…':'Ask anything, or start with a thought…';
+ const studio=$('[data-feature="Images"]');if(studio)studio.classList.toggle('active',imageMode);
+ $('#modelLabel').textContent=imageMode?'Image Studio':'Gemini Flash';
+ toast(imageMode?'Image generation enabled.':'Back to chat.');
+}
+$('#imageModeBtn').onclick=()=>toggleImageMode();
+function speakText(text){
+ if(!('speechSynthesis'in window)||!('SpeechSynthesisUtterance'in window)){toast('Spoken responses are not supported in this browser.');return}
+ window.speechSynthesis.cancel();
+ const utterance=new SpeechSynthesisUtterance(String(text||'').replace(/\n{2,}/g,'. ').replace(/[#*_>`]/g,''));
+ utterance.lang=navigator.language||'en-US';utterance.rate=1;window.speechSynthesis.speak(utterance);
+}
+function toggleVoiceInput(){
+ const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SpeechRecognition){toast('Voice input is not supported here. Try Chrome on Android.');return}
+ if(recording){recognition?.stop();recording=false;$('#voiceBtn').classList.remove('listening');$('#voiceBtn').innerHTML='🎙 <span>Voice</span>';return}
+ recognition=new SpeechRecognition();recognition.lang=navigator.language||'en-US';recognition.interimResults=false;recognition.continuous=false;
+ recognition.onstart=()=>{recording=true;$('#voiceBtn').classList.add('listening');$('#voiceBtn').innerHTML='◉ <span>Listening…</span>';toast('Listening. Speak now.')};
+ recognition.onresult=e=>{const words=Array.from(e.results).map(r=>r[0].transcript).join(' ').trim();input.value=(input.value.trim()?input.value.trim()+' ':'')+words;resizeInput();input.focus()};
+ recognition.onerror=e=>{if(e.error!=='no-speech'&&e.error!=='aborted')toast('Voice input error: '+e.error)};
+ recognition.onend=()=>{recording=false;$('#voiceBtn').classList.remove('listening');$('#voiceBtn').innerHTML='🎙 <span>Voice</span>'};
+ try{recognition.start()}catch{toast('Could not start voice input. Please try again.')}
+}
+$('#voiceBtn').onclick=toggleVoiceInput;
+
 try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');if(Array.isArray(saved))conversations=saved.filter(c=>c&&typeof c.id==='string'&&Array.isArray(c.messages)).slice(0,100)}catch{conversations=[]}
 const initialHistoryNote=historyEl.querySelector('div[style]');if(initialHistoryNote)initialHistoryNote.remove();conversations.forEach(addHistory);filterHistory();
 </script>
