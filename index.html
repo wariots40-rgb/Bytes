@@ -165,7 +165,7 @@ async function readStream(response,onText){if(!response.ok){const data=await res
 while(true){const {value,done}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});const events=buffer.split('\n\n');buffer=events.pop()||'';for(const event of events){const line=event.split('\n').find(x=>x.startsWith('data:'));if(!line)continue;const payload=line.slice(5).trim();if(payload==='[DONE]')continue;let data;try{data=JSON.parse(payload)}catch{continue}if(data.error)throw new Error(data.error);if(data.text){answer+=data.text;onText(answer)}}}return answer}
 async function sendMessage(text){
  text=(text||'').trim();
- if(!text&&pendingFiles.length)text='Please analyze the attached file'+(pendingFiles.length>1?'s':'')+': '+pendingFiles.map(f=>f.name).join(', ')+'.';
+ if(!text&&pendingFiles.length)text=imageMode?'Create a polished, improved version of the attached image.':'Please analyze the attached file'+(pendingFiles.length>1?'s':'')+': '+pendingFiles.map(f=>f.name).join(', ')+'.';
  if(!text||busy)return;
  if(imageMode&&pendingFiles.some(f=>!f.type.startsWith('image/'))){toast('Image mode accepts images only. Remove PDF/text files or switch back to chat.');return}
  lastPrompt=text;content.classList.add('chat-mode');
