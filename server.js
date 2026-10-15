@@ -98,39 +98,66 @@ function addFileParts(parts, files) {
 const APINEX_API_KEY = process.env.APINEX_API_KEY;
 const APINEX_BASE_URL = (process.env.APINEX_BASE_URL || "https://api.apinex.bond/v1").replace(/\/+$/, "");
 const APINEX_MODEL = process.env.APINEX_MODEL || "free/gemini-3.8-flash";
-const GEMINI_MODELS = [
-  { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash" },
-  { id: "gemini-3.1-pro", label: "Gemini 3.1 Pro" }
-];
+async function fetchGeminiModels() {
+  if (!GEMINI_API_KEY) return [];
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
+    headers: { "x-goog-api-key": GEMINI_API_KEY, Accept: "application/json" },
+    signal: AbortSignal.timeout(10000)
+  });
+  if (!response.ok) throw new Error("Gemini model list returned HTTP " + response.status);
+  const data = await response.json();
+  return (Array.isArray(data.models) ? data.models : [])
+    .filter(model => Array.isArray(model.supportedGenerationMethods) &&
+      model.supportedGenerationMethods.includes("generateContent") &&
+      typeof model.name === "string")
+    .map(model => {
+      const id = model.name.replace(/^models\//, "");
+      return { id, label: model.displayName || id, provider: "gemini" };
+    })
+    .filter(model => /^[a-zA-Z0-9._-]{1,180}$/.test(model.id))
+    .sort((a, b) => {
+      const score = model => /flash/i.test(model.id) ? 0 : /pro/i.test(model.id) ? 1 : 2;
+      return score(a) - score(b) || a.label.localeCompare(b.label);
+    })
+    .slice(0, 100);
+}
 
 app.get("/api/models", async (_req, res) => {
   const providers = [];
-  if (GEMINI_API_KEY) providers.push({
-    id: "gemini", label: "Google Gemini",
-    models: GEMINI_MODELS.map(m => ({ ...m, provider: "gemini" }))
-  });
+  const errors = {};
+  if (GEMINI_API_KEY) {
+    try {
+      const models = await fetchGeminiModels();
+      if (models.length) providers.push({ id: "gemini", label: "Google Gemini", models });
+      else errors.gemini = "Gemini returned no models supporting generateContent.";
+    } catch (error) {
+      errors.gemini = error.message;
+      console.warn("Gemini model list unavailable:", error.message);
+    }
+  }
   if (APINEX_API_KEY) {
     let models = [];
     try {
       const response = await fetch(APINEX_BASE_URL + "/models", {
-        headers: { Authorization: "Bearer " + APINEX_API_KEY },
-        signal: AbortSignal.timeout(12000)
+        headers: { Authorization: "Bearer " + APINEX_API_KEY, Accept: "application/json" },
+        signal: AbortSignal.timeout(10000)
       });
-      if (response.ok) {
-        const data = await response.json();
-        models = (Array.isArray(data?.data) ? data.data : Array.isArray(data?.models) ? data.models : [])
-          .map(m => typeof m === "string" ? { id: m } : m)
-          .filter(m => typeof m.id === "string" && m.id.length < 180)
-          .map(m => ({ id: m.id, label: m.name || m.id, provider: "apinex" }))
-          .slice(0, 150);
-      } else {
-        console.warn("APInex model list unavailable:", response.status);
-      }
+      if (!response.ok) throw new Error("APInex model list returned HTTP " + response.status);
+      const data = await response.json();
+      models = (Array.isArray(data?.data) ? data.data : Array.isArray(data?.models) ? data.models : [])
+        .map(model => typeof model === "string" ? { id: model } : model)
+        .filter(model => typeof model.id === "string" && model.id.length > 0 && model.id.length < 180)
+        .map(model => ({ id: model.id, label: model.name || model.id, provider: "apinex" }))
+        .filter((model, index, all) => all.findIndex(other => other.id === model.id) === index)
+        .slice(0, 150);
     } catch (error) {
-      console.warn("APInex model list failed:", error.message);
+      errors.apinex = error.message;
+      console.warn("APInex model list unavailable:", error.message);
     }
-    if (!models.some(m => m.id === APINEX_MODEL)) models.unshift({ id: APINEX_MODEL, label: APINEX_MODEL, provider: "apinex" });
-    providers.push({ id: "apinex", label: "APInex", models });
+    if (!models.some(model => model.id === APINEX_MODEL)) {
+      models.unshift({ id: APINEX_MODEL, label: APINEX_MODEL, provider: "apinex" });
+    }
+    if (models.length) providers.push({ id: "apinex", label: "APInex", models });
   }
   res.setHeader("Cache-Control", "no-store");
   res.json({
@@ -138,7 +165,8 @@ app.get("/api/models", async (_req, res) => {
     auto: true,
     default: GEMINI_API_KEY ? { provider: "gemini", model: GEMINI_MODEL } :
       APINEX_API_KEY ? { provider: "apinex", model: APINEX_MODEL } : null,
-    configured: { gemini: Boolean(GEMINI_API_KEY), apinex: Boolean(APINEX_API_KEY) }
+    configured: { gemini: Boolean(GEMINI_API_KEY), apinex: Boolean(APINEX_API_KEY) },
+    errors
   });
 });
 
