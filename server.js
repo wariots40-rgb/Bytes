@@ -345,6 +345,7 @@ app.post("/api/chat", async (req, res) => {
             } catch { /* Ignore trailing incomplete provider data. */ }
           }
         }
+        if (sources.size) res.write("data: " + JSON.stringify({ sources: Array.from(sources.values()).slice(0, 8) }) + "\n\n");
         res.write("data: [DONE]\n\n");
         return res.end();
       } catch (streamError) {
