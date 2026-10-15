@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "build:netlify": "node scripts/build-netlify.js"
   },
   "engines": {
     "node": ">=20"
