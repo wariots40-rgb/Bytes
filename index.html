@@ -152,7 +152,7 @@ function renderMarkdown(raw){
  source=source.replace(/```([\w+-]*)\n([\s\S]*?)```/g,(_,lang,code)=>{const n=blocks.length;blocks.push('<div class="code-block"><div class="code-head"><span>'+escapeHtml(lang||'CODE')+'</span><button type="button" data-copy-code="'+n+'">Copy code</button></div><pre><code>'+escapeHtml(code.replace(/\n$/,''))+'</code></pre></div>');return '\n@@CODE'+n+'@@\n'});
  let out=escapeHtml(source);
  out=out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,(_,label,url)=>{const safe=safeUrl(url);return safe?'<a href="'+escapeHtml(safe)+'" target="_blank" rel="noopener noreferrer">'+label+'</a>':label});
- out=out.replace(/(^|[\\s(])(https?:\\/\\/[^\\s<]+)/g,(_,prefix,url)=>{const safe=safeUrl(url);return safe?prefix+'<a href="'+escapeHtml(safe)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(url)+'</a>':prefix+url});
+ out=out.replace(/(^|[\s(])(https?:\/\/[^\s<]+)/g,(_,prefix,url)=>{const safe=safeUrl(url);return safe?prefix+'<a href="'+escapeHtml(safe)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(url)+'</a>':prefix+url});
  out=out.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`]+)`/g,'<code>$1</code>');
  const lines=out.split('\n'),parts=[];let para=[],list=null;
  const flush=()=>{if(para.length){parts.push('<p>'+para.join('<br>')+'</p>');para=[]}};
