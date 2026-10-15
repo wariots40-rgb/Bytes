@@ -43,7 +43,7 @@ app.post("/api/chat", async (req, res) => {
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:${req.body?.stream === true ? "streamGenerateContent?alt=sse" : "generateContent"}` ,
       {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
@@ -56,8 +56,8 @@ app.post("/api/chat", async (req, res) => {
       }
     );
 
-    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
       console.error("Gemini API error:", response.status, data?.error?.message || "Unknown provider error");
       return res.status(response.status === 429 ? 429 : 502).json({
         error: response.status === 429
@@ -66,6 +66,42 @@ app.post("/api/chat", async (req, res) => {
       });
     }
 
+    if (req.body?.stream === true) {
+      res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+      res.setHeader("Cache-Control", "no-cache, no-transform");
+      res.setHeader("Connection", "keep-alive");
+      res.flushHeaders?.();
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const events = buffer.split("\\n\\n");
+          buffer = events.pop() || "";
+          for (const event of events) {
+            const line = event.split("\\n").find(row => row.startsWith("data:"));
+            if (!line) continue;
+            try {
+              const payload = JSON.parse(line.slice(5).trim());
+              const chunk = payload?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("");
+              if (chunk) res.write("data: " + JSON.stringify({ text: chunk }) + "\\n\\n");
+            } catch { /* Ignore incomplete or non-JSON provider events. */ }
+          }
+        }
+        res.write("data: [DONE]\\n\\n");
+        return res.end();
+      } catch (streamError) {
+        console.error("Gemini stream failed:", streamError.message);
+        if (!res.headersSent) return res.status(502).json({ error: "The response stream was interrupted. Please try again." });
+        res.write("data: " + JSON.stringify({ error: "The response stream was interrupted." }) + "\\n\\n");
+        return res.end();
+      }
+    }
+
+    const data = await response.json().catch(() => ({}));
     const answer = data?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
     if (!answer) return res.status(502).json({ error: "Gemini returned an empty response. Please try again." });
     res.json({ reply: answer, model: GEMINI_MODEL });
