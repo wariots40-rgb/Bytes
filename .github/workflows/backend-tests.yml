@@ -1,0 +1,32 @@
+name: Backend tests
+
+on:
+  pull_request:
+    branches:
+      - railway/backend-only
+    paths:
+      - "server.js"
+      - "search-resilience.js"
+      - "test/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/backend-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run API tests
+        run: npm test
