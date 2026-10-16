@@ -96,7 +96,7 @@ const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
 const input=$('#messageInput'),chatView=$('#chatView'),content=$('#content'),historyEl=$('#history');
 const STORAGE_KEY_BASE='bytes.conversations.v2';
 const MEMORY_KEY_BASE='bytes.user-memory.v1';
-let STORAGE_KEY=STORAGE_KEY_BASE,MEMORY_KEY=MEMORY_KEY_BASE;
+let STORAGE_KEY=STORAGE_KEY_BASE,MEMORY_KEY=MEMORY_KEY_BASE,workspaceLoaded=false;
 async function loadModelCatalog(){
  const select=$('#modelSelect');
  select.disabled=true;
@@ -312,8 +312,8 @@ function updateAuthUi(){
 function activateWorkspaceStorage(){
  const nextStorage=STORAGE_KEY_BASE+(authUser?.id?'.user.'+authUser.id:'');
  const nextMemory=MEMORY_KEY_BASE+(authUser?.id?'.user.'+authUser.id:'');
- if(nextStorage===STORAGE_KEY&&nextMemory===MEMORY_KEY)return;
- STORAGE_KEY=nextStorage;MEMORY_KEY=nextMemory;
+ if(nextStorage===STORAGE_KEY&&nextMemory===MEMORY_KEY&&workspaceLoaded)return;
+ STORAGE_KEY=nextStorage;MEMORY_KEY=nextMemory;workspaceLoaded=true;
  try{memoryText=localStorage.getItem(MEMORY_KEY)||''}catch{memoryText=''}
  try{
   const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
@@ -376,10 +376,10 @@ function showAccountModal(){
 async function initAuth(){
  updateAuthUi();
  if(!supabaseClient){activateWorkspaceStorage();await loadModelCatalog();return}
- supabaseClient.auth.onAuthStateChange((_event,session)=>{
+ supabaseClient.auth.onAuthStateChange((event,session)=>{
   const previousUserId=authUser?.id||null;
   authSession=session||null;authUser=session?.user||null;updateAuthUi();
-  if(previousUserId!==(authUser?.id||null))activateWorkspaceStorage();
+  if(event!=="INITIAL_SESSION"&&previousUserId!==(authUser?.id||null))activateWorkspaceStorage();
  });
  try{
   const {data,error}=await supabaseClient.auth.getSession();
