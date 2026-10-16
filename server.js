@@ -6,6 +6,9 @@ const { searchProviderRunner } = require("./search-resilience");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+const REQUIRE_AUTH = String(process.env.REQUIRE_AUTH || "").toLowerCase() === "true";
+const SUPABASE_URL = String(process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
+const SUPABASE_PUBLIC_KEY = String(process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "").trim();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-nano-banana-2.1";
@@ -19,10 +22,17 @@ const ALLOWED_TEXT = new Set([
 ]);
 
 app.disable("x-powered-by");
+// Railway terminates TLS at its edge proxy; trust only that first proxy hop for client IPs.
+app.set("trust proxy", 1);
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(express.json({ limit: "12mb" }));
-app.use("/api/", rateLimit({ windowMs: 60_000, limit: 20, standardHeaders: "draft-7", legacyHeaders: false }));
-const configuredOrigins = String(process.env.FRONTEND_URL || process.env.ALLOWED_ORIGINS || "")
+app.use(express.json({ limit: "12mb", strict: true }));
+const apiRateLimit = { windowMs: 60_000, standardHeaders: "draft-7", legacyHeaders: false };
+app.use("/api/", rateLimit({ ...apiRateLimit, limit: 20, message: { error: "Too many requests. Please wait a minute and try again." } }));
+const chatLimiter = rateLimit({ ...apiRateLimit, limit: 10, message: { error: "Chat is rate-limited. Please wait a minute and try again." } });
+const searchLimiter = rateLimit({ ...apiRateLimit, limit: 8, message: { error: "Search is rate-limited. Please wait a minute and try again." } });
+const modelsLimiter = rateLimit({ ...apiRateLimit, limit: 12, message: { error: "Too many model-list requests. Please try again shortly." } });
+const imageLimiter = rateLimit({ windowMs: 5 * 60_000, limit: 3, standardHeaders: "draft-7", legacyHeaders: false, message: { error: "Image generation is rate-limited. Please wait a few minutes and try again." } });
+const configuredOrigins = String([process.env.FRONTEND_URL, process.env.ALLOWED_ORIGINS].filter(Boolean).join(","))
   .split(",").map(value => value.trim()).filter(Boolean).map(value => {
     try { return new URL(value).origin; } catch { return ""; }
   }).filter(Boolean);
@@ -39,7 +49,66 @@ app.use((req, res, next) => {
   next();
 });
 
+async function requireSupabaseUser(req, res, next) {
+  if (!REQUIRE_AUTH) return next();
+
+  if (!SUPABASE_URL || !SUPABASE_PUBLIC_KEY) {
+    return res.status(503).json({ error: "Authentication is enabled but Supabase auth is not configured on the server." });
+  }
+
+  const match = String(req.headers.authorization || "").match(/^Bearer\s+([^\s]+)$/i);
+  if (!match || match[1].length > 8192) {
+    return res.status(401).json({ error: "Sign in to use this Bytes feature.", code: "AUTH_REQUIRED" });
+  }
+
+  try {
+    const authUrl = new URL("/auth/v1/user", SUPABASE_URL);
+    if (authUrl.protocol !== "https:" && !(process.env.NODE_ENV !== "production" && authUrl.hostname === "localhost")) {
+      return res.status(503).json({ error: "Supabase auth must use HTTPS." });
+    }
+    const response = await fetch(authUrl, {
+      headers: {
+        apikey: SUPABASE_PUBLIC_KEY,
+        Authorization: "Bearer " + match[1],
+        Accept: "application/json"
+      },
+      signal: AbortSignal.timeout(5000)
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      return res.status(401).json({ error: "Your session is invalid or expired. Sign in again.", code: "AUTH_REQUIRED" });
+    }
+    if (!response.ok) {
+      console.error("Supabase token validation returned HTTP", response.status);
+      return res.status(503).json({ error: "Authentication is temporarily unavailable. Please try again." });
+    }
+
+    const user = await response.json();
+    if (!user || typeof user.id !== "string" ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(user.id)) {
+      return res.status(401).json({ error: "Supabase returned an invalid user session.", code: "AUTH_REQUIRED" });
+    }
+
+    req.user = { id: user.id, email: typeof user.email === "string" ? user.email : null };
+    return next();
+  } catch (error) {
+    console.error("Supabase token validation failed:", error.message);
+    return res.status(503).json({ error: "Could not verify your session right now. Please retry." });
+  }
+}
+
+
 app.get("/api/health", (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  const providerHealth = searchProviderRunner.snapshot();
+  const safeProviderHealth = Object.fromEntries(Object.entries(providerHealth).map(([name, state]) => [name, {
+    calls: state.calls,
+    successes: state.successes,
+    failures: state.failures,
+    successRate: state.successRate,
+    averageLatencyMs: state.averageLatencyMs,
+    circuit: state.circuit
+  }]));
   res.json({
     ok: true,
     providerConfigured: Boolean(GEMINI_API_KEY || APINEX_API_KEY),
@@ -49,7 +118,7 @@ app.get("/api/health", (_req, res) => {
       generalProviders: process.env.SEARXNG_URL ? ["SearXNG", "FreeSerp"] : ["FreeSerp"],
       newsProviders: ["FreeNewsAPI", "Google News RSS", ...(process.env.SEARXNG_URL ? ["SearXNG"] : []), "FreeSerp"],
       cacheTtlSeconds: Math.round(SEARCH_CACHE_TTL_MS / 1000),
-      providerHealth: searchProviderRunner.snapshot()
+      providerHealth: safeProviderHealth
     },
     chatModel: GEMINI_MODEL,
     imageModel: GEMINI_IMAGE_MODEL
@@ -143,7 +212,7 @@ async function fetchGeminiModels() {
     .slice(0, 100);
 }
 
-app.get("/api/models", async (_req, res) => {
+app.get("/api/models", requireSupabaseUser, modelsLimiter, async (_req, res) => {
   const providers = [];
   const errors = {};
   if (GEMINI_API_KEY) {
@@ -446,7 +515,7 @@ async function runWebSearch(input) {
   return task;
 }
 
-app.post("/api/search", async (req, res) => {
+app.post("/api/search", requireSupabaseUser, searchLimiter, async (req, res) => {
   const rawQuery = typeof req.body?.query === "string" ? req.body.query.trim() : "";
   if (!rawQuery || rawQuery.length > 1000) return res.status(400).json({ error: "Enter a search query under 1,000 characters." });
   try { return res.json(await runWebSearch(rawQuery)); }
@@ -460,7 +529,7 @@ app.post("/api/search", async (req, res) => {
   }
 });
 
-app.post("/api/chat", async (req, res) => {
+app.post("/api/chat", requireSupabaseUser, chatLimiter, async (req, res) => {
   const messages = req.body?.messages;
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > 30) {
     return res.status(400).json({ error: "Send between 1 and 30 messages." });
@@ -468,12 +537,29 @@ app.post("/api/chat", async (req, res) => {
   if (messages[messages.length - 1]?.role !== "user") {
     return res.status(400).json({ error: "The final message must be from the user." });
   }
+  let totalMessageChars = 0;
+  for (const message of messages) {
+    if (!message || !["user", "assistant"].includes(message.role) ||
+        typeof message.text !== "string" || !message.text.trim() || message.text.length > 12_000) {
+      return res.status(400).json({ error: "Each message needs a valid role and non-empty text under 12,000 characters." });
+    }
+    totalMessageChars += message.text.length;
+    if (totalMessageChars > 60_000) {
+      return res.status(400).json({ error: "Conversation payload is too large. Keep combined message text under 60,000 characters." });
+    }
+  }
   const checked = checkFiles(req.body?.attachments, false);
   if (checked.error) return res.status(400).json({ error: checked.error });
 
 
   const requestedProvider = typeof req.body?.provider === "string" ? req.body.provider : "auto";
-  const requestedModel = typeof req.body?.model === "string" ? req.body.model.trim().slice(0, 180) : "";
+  const requestedModel = typeof req.body?.model === "string" ? req.body.model.trim() : "";
+  if (!["auto", "gemini", "apinex"].includes(requestedProvider)) {
+    return res.status(400).json({ error: "Provider must be auto, gemini, or apinex." });
+  }
+  if (requestedModel && !/^[A-Za-z0-9._:/-]{1,180}$/.test(requestedModel)) {
+    return res.status(400).json({ error: "The selected model ID contains unsupported characters." });
+  }
   let provider = requestedProvider;
   if (provider === "auto") provider = GEMINI_API_KEY ? "gemini" : APINEX_API_KEY ? "apinex" : "none";
 
@@ -703,7 +789,7 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-app.post("/api/image", async (req, res) => {
+app.post("/api/image", requireSupabaseUser, imageLimiter, async (req, res) => {
   if (!GEMINI_API_KEY) {
     return res.status(503).json({ error: "Bytes needs a Gemini API key configured on the server." });
   }
@@ -766,7 +852,24 @@ app.use((req, res) => {
   res.status(404).json({ error: "API route not found." });
 });
 
-app.listen(PORT, () => {
-  console.log(`Bytes is running on port ${PORT}`);
-  if (!GEMINI_API_KEY && !APINEX_API_KEY) console.warn("No AI provider key is set. Add GEMINI_API_KEY or APINEX_API_KEY.");
+// Normalize parser and unexpected errors so clients never receive framework stack traces.
+app.use((error, req, res, next) => {
+  if (res.headersSent) return next(error);
+  if (error?.type === "entity.too.large") {
+    return res.status(413).json({ error: "Request body is too large." });
+  }
+  if (error instanceof SyntaxError && error.status === 400 && "body" in error) {
+    return res.status(400).json({ error: "Request body must be valid JSON." });
+  }
+  console.error("Unhandled request error:", error?.message || "Unknown error");
+  return res.status(500).json({ error: "An unexpected server error occurred. Please try again." });
 });
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Bytes is running on port ${PORT}`);
+    if (!GEMINI_API_KEY && !APINEX_API_KEY) console.warn("No AI provider key is set. Add GEMINI_API_KEY or APINEX_API_KEY.");
+  });
+}
+
+module.exports = app;
