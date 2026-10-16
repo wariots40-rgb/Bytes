@@ -865,7 +865,11 @@ app.use((error, req, res, next) => {
   return res.status(500).json({ error: "An unexpected server error occurred. Please try again." });
 });
 
-app.listen(PORT, () => {
-  console.log(`Bytes is running on port ${PORT}`);
-  if (!GEMINI_API_KEY && !APINEX_API_KEY) console.warn("No AI provider key is set. Add GEMINI_API_KEY or APINEX_API_KEY.");
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Bytes is running on port ${PORT}`);
+    if (!GEMINI_API_KEY && !APINEX_API_KEY) console.warn("No AI provider key is set. Add GEMINI_API_KEY or APINEX_API_KEY.");
+  });
+}
+
+module.exports = app;
