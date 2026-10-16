@@ -94,7 +94,9 @@ async function bytesFetch(url,options={}){const headers=new Headers(options.head
 const apiUrl=path=>API_BASE_URL+path;
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
 const input=$('#messageInput'),chatView=$('#chatView'),content=$('#content'),historyEl=$('#history');
-const STORAGE_KEY='bytes.conversations.v2';
+const STORAGE_KEY_BASE='bytes.conversations.v2';
+const MEMORY_KEY_BASE='bytes.user-memory.v1';
+let STORAGE_KEY=STORAGE_KEY_BASE,MEMORY_KEY=MEMORY_KEY_BASE;
 async function loadModelCatalog(){
  const select=$('#modelSelect');
  select.disabled=true;
@@ -160,7 +162,7 @@ $('#modelSelect').addEventListener('change',()=>{
 
 let conversations=[],currentId=null,busy=false,lastPrompt='';
 let selectedModel='auto',modelCatalog={providers:[],configured:{gemini:false,apinex:false}};
-let memoryText='';try{memoryText=localStorage.getItem('bytes.user-memory.v1')||''}catch{}
+let memoryText='';
 let pendingFiles=[],imageMode=false,webSearchEnabled=false,recognition=null,recording=false;
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2600)}
 function openModal(title,html,confirm='Got it',onConfirm=null){$('#modalTitle').textContent=title;$('#modalBody').innerHTML=html;$('#modalConfirm').textContent=confirm;$('#modalBackdrop').classList.add('open');$('#modalConfirm').onclick=()=>{if(onConfirm)onConfirm();$('#modalBackdrop').classList.remove('open')}}
@@ -300,12 +302,27 @@ function updateAuthUi(){
  const button=$('#authBtn');
  if(!button)return;
  button.textContent=authUser?'Account':'Sign in';
- button.title=authUser?'Signed in as '+(authUser.email||'your account'):(supabaseClient?'Sign in to sync and secure your Bytes account.':'Set SUPABASE_URL and SUPABASE_ANON_KEY in Netlify to enable accounts.');
+ button.title=authUser?'Signed in as '+(authUser.email||'your account'):(supabaseClient?'Sign in to access your Bytes account.':'Set SUPABASE_URL and SUPABASE_ANON_KEY in Netlify to enable accounts.');
  const displayName=authUser?(authUser.user_metadata?.full_name||authUser.email?.split('@')[0]||'Your account'):'Bytes workspace';
  $('#profileName').textContent=displayName;
  $('#profileSubtitle').textContent=authUser?(authUser.email||'Signed in'):(supabaseClient?'Sign in to your account':'Personal edition');
  $('#profileAvatar').textContent=authUser?String(displayName).trim().split(/[\s@._-]+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase():'B';
 }
+
+function activateWorkspaceStorage(){
+ const nextStorage=STORAGE_KEY_BASE+(authUser?.id?'.user.'+authUser.id:'');
+ const nextMemory=MEMORY_KEY_BASE+(authUser?.id?'.user.'+authUser.id:'');
+ if(nextStorage===STORAGE_KEY&&nextMemory===MEMORY_KEY)return;
+ STORAGE_KEY=nextStorage;MEMORY_KEY=nextMemory;
+ try{memoryText=localStorage.getItem(MEMORY_KEY)||''}catch{memoryText=''}
+ try{
+  const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+  conversations=Array.isArray(saved)?saved.filter(c=>c&&typeof c.id==='string'&&Array.isArray(c.messages)).slice(0,100):[];
+ }catch{conversations=[]}
+ currentId=null;chatView.innerHTML='';content.classList.remove('chat-mode');historyEl.innerHTML='';
+ conversations.forEach(addHistory);filterHistory();
+}
+
 function showAuthModal(mode='login'){
  if(!supabaseClient){
   openModal('Sign-in is not configured','<p>Bytes account sign-in needs <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in the Netlify build environment. These are public client settings, not your service-role key.</p><p>Until configured, Bytes keeps using this browser without an account.</p>','Got it');
@@ -341,6 +358,7 @@ function showAuthModal(mode='login'){
    authSession=result.data.session||null;
    authUser=result.data.user||result.data.session?.user||null;
    updateAuthUi();
+   activateWorkspaceStorage();
    $('#modalBackdrop').classList.remove('open');
    await loadModelCatalog();
    toast(signingUp?'Your Bytes account is ready.':'Signed in to Bytes.');
@@ -353,13 +371,15 @@ function showAuthModal(mode='login'){
 }
 function showAccountModal(){
  if(!authUser){showAuthModal('login');return}
- openModal('Your Bytes account','<p>You are signed in as <strong>'+escapeHtml(authUser.email||'your account')+'</strong>.</p><p>Your Supabase identity is verified by the Bytes API when server-side authentication is enabled.</p><div class="modal-actions" style="justify-content:flex-start;margin-top:12px"><button type="button" id="signOutBtn">Sign out</button></div>','Done');
+ openModal('Your Bytes account','<p>You are signed in as <strong>'+escapeHtml(authUser.email||'your account')+'</strong>.</p><p>Your chat history and memory are stored in this browser, separated by signed-in account, and do not sync across devices yet.</p><p>The Bytes API verifies your Supabase session when server-side authentication is enabled.</p><div class="modal-actions" style="justify-content:flex-start;margin-top:12px"><button type="button" id="signOutBtn">Sign out</button></div>','Done');
 }
 async function initAuth(){
  updateAuthUi();
- if(!supabaseClient){await loadModelCatalog();return}
+ if(!supabaseClient){activateWorkspaceStorage();await loadModelCatalog();return}
  supabaseClient.auth.onAuthStateChange((_event,session)=>{
+  const previousUserId=authUser?.id||null;
   authSession=session||null;authUser=session?.user||null;updateAuthUi();
+  if(previousUserId!==(authUser?.id||null))activateWorkspaceStorage();
  });
  try{
   const {data,error}=await supabaseClient.auth.getSession();
@@ -367,6 +387,7 @@ async function initAuth(){
   authSession=data?.session||null;authUser=authSession?.user||null;
  }catch(error){console.warn('Could not restore the Bytes auth session:',error.message);authSession=null;authUser=null}
  updateAuthUi();
+ activateWorkspaceStorage();
  await loadModelCatalog();
 }
 $('#authBtn').onclick=()=>authUser?showAccountModal():showAuthModal('login');
@@ -374,15 +395,15 @@ $('#authBtn').onclick=()=>authUser?showAccountModal():showAuthModal('login');
 $('#connectProvider').onclick=providerModal;
 
 function openSettings(){
- openModal('Workspace settings','<p><strong>Bytes · Personal edition</strong></p><p>Chats are saved in this browser. Memory below is included in future AI requests to personalize replies.</p><label for="memoryInput" style="display:block;font-size:12px;font-weight:700;margin:14px 0 6px">Your memory</label><textarea id="memoryInput" class="memory-editor" maxlength="4000" placeholder="Examples: I prefer concise answers. I’m learning JavaScript. My project is called Bytes."></textarea><p class="help-note">Only add details you want Bytes to remember. Stored locally in this browser, not synced across devices.</p><div class="modal-actions" style="justify-content:flex-start;margin-top:12px"><button id="clearChats">Clear saved chats</button></div>','Save memory',()=>{
+ openModal('Workspace settings','<p><strong>Bytes · Personal edition</strong></p><p>Chats are saved locally in this browser workspace. Memory below is included in future AI requests to personalize replies.</p><label for="memoryInput" style="display:block;font-size:12px;font-weight:700;margin:14px 0 6px">Your memory</label><textarea id="memoryInput" class="memory-editor" maxlength="4000" placeholder="Examples: I prefer concise answers. I’m learning JavaScript. My project is called Bytes."></textarea><p class="help-note">Only add details you want Bytes to remember. Stored locally in this browser, not synced across devices.</p><div class="modal-actions" style="justify-content:flex-start;margin-top:12px"><button id="clearChats">Clear saved chats</button></div>','Save memory',()=>{
   memoryText=($('#memoryInput')?.value||'').trim().slice(0,4000);
-  try{localStorage.setItem('bytes.user-memory.v1',memoryText)}catch{}
+  try{localStorage.setItem(MEMORY_KEY,memoryText)}catch{}
   toast('Memory saved for future conversations.');
  });
  const editor=$('#memoryInput');if(editor)editor.value=memoryText;
 }
 $('#settingsBtn').onclick=$('#settingsTop').onclick=openSettings;
-$('#modalBody').addEventListener('click',async e=>{const modeButton=e.target.closest('[data-auth-mode]');if(modeButton){e.preventDefault();showAuthModal(modeButton.dataset.authMode);return}if(e.target.closest('#signOutBtn')){if(!supabaseClient)return;const {error}=await supabaseClient.auth.signOut();if(error){toast(error.message||'Could not sign out.');return}authSession=null;authUser=null;updateAuthUi();$('#modalBackdrop').classList.remove('open');await loadModelCatalog();toast('Signed out of Bytes.');return}if(e.target.id==='clearChats'){if(confirm('Delete all locally saved Bytes conversations?')){conversations=[];persist();historyEl.innerHTML='';filterHistory();newConversation();toast('Saved chats cleared.')}}});
+$('#modalBody').addEventListener('click',async e=>{const modeButton=e.target.closest('[data-auth-mode]');if(modeButton){e.preventDefault();showAuthModal(modeButton.dataset.authMode);return}if(e.target.closest('#signOutBtn')){if(!supabaseClient)return;const {error}=await supabaseClient.auth.signOut();if(error){toast(error.message||'Could not sign out.');return}authSession=null;authUser=null;updateAuthUi();activateWorkspaceStorage();$('#modalBackdrop').classList.remove('open');await loadModelCatalog();toast('Signed out of Bytes.');return}if(e.target.id==='clearChats'){if(confirm('Delete all locally saved Bytes conversations?')){conversations=[];persist();historyEl.innerHTML='';filterHistory();newConversation();toast('Saved chats cleared.')}}});
 $('#toolsBtn').onclick=()=>openModal('Tools','<p><strong>Available now</strong></p><p>⌕ Live web search via a free web search API<br>▧ Image generation and image edits<br>📎 Image, PDF, TXT, Markdown, CSV and JSON uploads<br>🎙 Voice input and spoken responses<br>🧠 Saved cross-chat memory</p><p class="help-note">Turn on Web in the composer to search current information. Search uses a third-party free search endpoint and may be rate-limited.</p>','Nice');
 $('#attachBtn').onclick=()=>$('#fileInput').click();
 $('#shareBtn').onclick=async()=>{const conv=conversations.find(c=>c.id===currentId);if(!conv){toast('Start a conversation before sharing.');return}await copyText(conv.messages.map(m=>(m.role==='user'?'You':'Bytes')+': '+m.text).join('\n\n'))};
@@ -469,8 +490,6 @@ function toggleVoiceInput(){
 $('#voiceBtn').onclick=toggleVoiceInput;
 
 initAuth();
-try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');if(Array.isArray(saved))conversations=saved.filter(c=>c&&typeof c.id==='string'&&Array.isArray(c.messages)).slice(0,100)}catch{conversations=[]}
-const initialHistoryNote=historyEl.querySelector('div[style]');if(initialHistoryNote)initialHistoryNote.remove();conversations.forEach(addHistory);filterHistory();
 </script>
 </body>
 </html>
