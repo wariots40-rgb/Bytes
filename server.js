@@ -6,6 +6,9 @@ const { searchProviderRunner } = require("./search-resilience");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+const REQUIRE_AUTH = String(process.env.REQUIRE_AUTH || "").toLowerCase() === "true";
+const SUPABASE_URL = String(process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
+const SUPABASE_PUBLIC_KEY = String(process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "").trim();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-nano-banana-2.1";
@@ -45,6 +48,55 @@ app.use((req, res, next) => {
   if (req.method === "OPTIONS" && req.path.startsWith("/api/")) return res.sendStatus(origin && (configuredOrigins.includes(origin) || process.env.NODE_ENV !== "production" && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) ? 204 : 403);
   next();
 });
+
+async function requireSupabaseUser(req, res, next) {
+  if (!REQUIRE_AUTH) return next();
+
+  if (!SUPABASE_URL || !SUPABASE_PUBLIC_KEY) {
+    return res.status(503).json({ error: "Authentication is enabled but Supabase auth is not configured on the server." });
+  }
+
+  const match = String(req.headers.authorization || "").match(/^Bearer\s+([^\s]+)$/i);
+  if (!match || match[1].length > 8192) {
+    return res.status(401).json({ error: "Sign in to use this Bytes feature.", code: "AUTH_REQUIRED" });
+  }
+
+  try {
+    const authUrl = new URL("/auth/v1/user", SUPABASE_URL);
+    if (authUrl.protocol !== "https:" && !(process.env.NODE_ENV !== "production" && authUrl.hostname === "localhost")) {
+      return res.status(503).json({ error: "Supabase auth must use HTTPS." });
+    }
+    const response = await fetch(authUrl, {
+      headers: {
+        apikey: SUPABASE_PUBLIC_KEY,
+        Authorization: "Bearer " + match[1],
+        Accept: "application/json"
+      },
+      signal: AbortSignal.timeout(5000)
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      return res.status(401).json({ error: "Your session is invalid or expired. Sign in again.", code: "AUTH_REQUIRED" });
+    }
+    if (!response.ok) {
+      console.error("Supabase token validation returned HTTP", response.status);
+      return res.status(503).json({ error: "Authentication is temporarily unavailable. Please try again." });
+    }
+
+    const user = await response.json();
+    if (!user || typeof user.id !== "string" ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(user.id)) {
+      return res.status(401).json({ error: "Supabase returned an invalid user session.", code: "AUTH_REQUIRED" });
+    }
+
+    req.user = { id: user.id, email: typeof user.email === "string" ? user.email : null };
+    return next();
+  } catch (error) {
+    console.error("Supabase token validation failed:", error.message);
+    return res.status(503).json({ error: "Could not verify your session right now. Please retry." });
+  }
+}
+
 
 app.get("/api/health", (_req, res) => {
   res.setHeader("Cache-Control", "no-store");
@@ -160,7 +212,7 @@ async function fetchGeminiModels() {
     .slice(0, 100);
 }
 
-app.get("/api/models", modelsLimiter, async (_req, res) => {
+app.get("/api/models", requireSupabaseUser, modelsLimiter, async (_req, res) => {
   const providers = [];
   const errors = {};
   if (GEMINI_API_KEY) {
@@ -463,7 +515,7 @@ async function runWebSearch(input) {
   return task;
 }
 
-app.post("/api/search", searchLimiter, async (req, res) => {
+app.post("/api/search", requireSupabaseUser, searchLimiter, async (req, res) => {
   const rawQuery = typeof req.body?.query === "string" ? req.body.query.trim() : "";
   if (!rawQuery || rawQuery.length > 1000) return res.status(400).json({ error: "Enter a search query under 1,000 characters." });
   try { return res.json(await runWebSearch(rawQuery)); }
@@ -477,7 +529,7 @@ app.post("/api/search", searchLimiter, async (req, res) => {
   }
 });
 
-app.post("/api/chat", chatLimiter, async (req, res) => {
+app.post("/api/chat", requireSupabaseUser, chatLimiter, async (req, res) => {
   const messages = req.body?.messages;
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > 30) {
     return res.status(400).json({ error: "Send between 1 and 30 messages." });
@@ -737,7 +789,7 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
   }
 });
 
-app.post("/api/image", imageLimiter, async (req, res) => {
+app.post("/api/image", requireSupabaseUser, imageLimiter, async (req, res) => {
   if (!GEMINI_API_KEY) {
     return res.status(503).json({ error: "Bytes needs a Gemini API key configured on the server." });
   }
