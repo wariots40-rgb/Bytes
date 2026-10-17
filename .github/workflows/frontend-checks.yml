@@ -1,0 +1,46 @@
+name: Frontend checks
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "index.html"
+      - "scripts/build-netlify.js"
+      - "package.json"
+      - ".github/workflows/frontend-checks.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Check inline application JavaScript syntax
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const html = fs.readFileSync("index.html", "utf8");
+          const scripts = [...html.matchAll(/<script>\s*([\s\S]*?)<\/script>/g)];
+          if (!scripts.length) throw new Error("No inline application script found.");
+          new Function(scripts[scripts.length - 1][1]);
+          console.log("Inline application JavaScript syntax OK.");
+          NODE
+      - name: Build static frontend
+        env:
+          BYTES_API_URL: https://example.invalid
+        run: npm run build:netlify
+      - name: Verify generated runtime config
+        run: |
+          test -s dist/index.html
+          test -s dist/runtime-config.js
+          grep -q 'https://example.invalid' dist/runtime-config.js
+          ! grep -q 'BYTES_RUNTIME_CONFIG' dist/index.html
