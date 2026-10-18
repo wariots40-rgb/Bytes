@@ -3,15 +3,23 @@ const express = require("express");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const { searchProviderRunner } = require("./search-resilience");
+const { createProviderGateway, ProviderError } = require("./services/provider-gateway");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const REQUIRE_AUTH = String(process.env.REQUIRE_AUTH || "").toLowerCase() === "true";
 const SUPABASE_URL = String(process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
 const SUPABASE_PUBLIC_KEY = String(process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "").trim();
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
-const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-nano-banana-2.1";
+
+const providerGateway = createProviderGateway({
+  geminiApiKey: process.env.GEMINI_API_KEY,
+  geminiModel: process.env.GEMINI_MODEL || "gemini-3.8-flash",
+  geminiImageModel: process.env.GEMINI_IMAGE_MODEL || "gemini-nano-banana-2.1",
+  apinexApiKey: process.env.APINEX_API_KEY,
+  apinexBaseUrl: process.env.APINEX_BASE_URL || "https://api.apinex.bond/v1",
+  apinexModel: process.env.APINEX_MODEL || "free/gemini-3.8-flash"
+});
+
 const MAX_FILES = 4;
 const MAX_INLINE_BASE64 = 9_000_000;
 const ALLOWED_MEDIA = new Set([
@@ -26,16 +34,19 @@ app.disable("x-powered-by");
 app.set("trust proxy", 1);
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: "12mb", strict: true }));
+
 const apiRateLimit = { windowMs: 60_000, standardHeaders: "draft-7", legacyHeaders: false };
 app.use("/api/", rateLimit({ ...apiRateLimit, limit: 20, message: { error: "Too many requests. Please wait a minute and try again." } }));
 const chatLimiter = rateLimit({ ...apiRateLimit, limit: 10, message: { error: "Chat is rate-limited. Please wait a minute and try again." } });
 const searchLimiter = rateLimit({ ...apiRateLimit, limit: 8, message: { error: "Search is rate-limited. Please wait a minute and try again." } });
 const modelsLimiter = rateLimit({ ...apiRateLimit, limit: 12, message: { error: "Too many model-list requests. Please try again shortly." } });
 const imageLimiter = rateLimit({ windowMs: 5 * 60_000, limit: 3, standardHeaders: "draft-7", legacyHeaders: false, message: { error: "Image generation is rate-limited. Please wait a few minutes and try again." } });
+
 const configuredOrigins = String([process.env.FRONTEND_URL, process.env.ALLOWED_ORIGINS].filter(Boolean).join(","))
   .split(",").map(value => value.trim()).filter(Boolean).map(value => {
     try { return new URL(value).origin; } catch { return ""; }
   }).filter(Boolean);
+
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (origin && (configuredOrigins.includes(origin) || process.env.NODE_ENV !== "production" && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))) {
@@ -97,7 +108,6 @@ async function requireSupabaseUser(req, res, next) {
   }
 }
 
-
 app.get("/api/health", (_req, res) => {
   res.setHeader("Cache-Control", "no-store");
   const providerHealth = searchProviderRunner.snapshot();
@@ -111,8 +121,11 @@ app.get("/api/health", (_req, res) => {
   }]));
   res.json({
     ok: true,
-    providerConfigured: Boolean(GEMINI_API_KEY || APINEX_API_KEY),
-    providers: { gemini: Boolean(GEMINI_API_KEY), apinex: Boolean(APINEX_API_KEY) },
+    providerConfigured: providerGateway.hasConfiguredProvider(),
+    providers: {
+      gemini: providerGateway.gemini.isConfigured(),
+      apinex: providerGateway.apinex.isConfigured()
+    },
     search: {
       searxngConfigured: Boolean(process.env.SEARXNG_URL),
       generalProviders: process.env.SEARXNG_URL ? ["SearXNG", "FreeSerp"] : ["FreeSerp"],
@@ -120,8 +133,8 @@ app.get("/api/health", (_req, res) => {
       cacheTtlSeconds: Math.round(SEARCH_CACHE_TTL_MS / 1000),
       providerHealth: safeProviderHealth
     },
-    chatModel: GEMINI_MODEL,
-    imageModel: GEMINI_IMAGE_MODEL
+    chatModel: providerGateway.gemini.defaultModel,
+    imageModel: providerGateway.gemini.imageModel
   });
 });
 
@@ -168,100 +181,14 @@ function checkFiles(raw, imageOnly = false) {
   return { files, error: null };
 }
 
-function addFileParts(parts, files) {
-  for (const file of files) {
-    if (file.text !== undefined) {
-      parts.push({ text: "\n\n[Attached text file: " + file.name + "]\n" + file.text });
-    } else {
-      parts.push({
-        inlineData: {
-          mimeType: file.type,
-          data: file.data
-        }
-      });
-      parts.push({ text: "[Attached file: " + file.name + "]" });
-    }
-  }
-}
-
-
-const APINEX_API_KEY = process.env.APINEX_API_KEY;
-const APINEX_BASE_URL = (process.env.APINEX_BASE_URL || "https://api.apinex.bond/v1").replace(/\/+$/, "");
-const APINEX_MODEL = process.env.APINEX_MODEL || "free/gemini-3.8-flash";
-async function fetchGeminiModels() {
-  if (!GEMINI_API_KEY) return [];
-  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
-    headers: { "x-goog-api-key": GEMINI_API_KEY, Accept: "application/json" },
-    signal: AbortSignal.timeout(3500)
-  });
-  if (!response.ok) throw new Error("Gemini model list returned HTTP " + response.status);
-  const data = await response.json();
-  return (Array.isArray(data.models) ? data.models : [])
-    .filter(model => Array.isArray(model.supportedGenerationMethods) &&
-      model.supportedGenerationMethods.includes("generateContent") &&
-      typeof model.name === "string")
-    .map(model => {
-      const id = model.name.replace(/^models\//, "");
-      return { id, label: model.displayName || id, provider: "gemini" };
-    })
-    .filter(model => /^[a-zA-Z0-9._-]{1,180}$/.test(model.id))
-    .sort((a, b) => {
-      const score = model => /flash/i.test(model.id) ? 0 : /pro/i.test(model.id) ? 1 : 2;
-      return score(a) - score(b) || a.label.localeCompare(b.label);
-    })
-    .slice(0, 100);
-}
-
 app.get("/api/models", requireSupabaseUser, modelsLimiter, async (_req, res) => {
-  const providers = [];
-  const errors = {};
-  if (GEMINI_API_KEY) {
-    try {
-      const models = await fetchGeminiModels();
-      if (models.length) providers.push({ id: "gemini", label: "Google Gemini", models });
-      else errors.gemini = "Gemini returned no models supporting generateContent.";
-    } catch (error) {
-      errors.gemini = error.message;
-      console.warn("Gemini model list unavailable:", error.message);
-      // Keep model selection usable even when Google's catalog endpoint is unreachable.
-      providers.push({ id: "gemini", label: "Google Gemini (configured default)", models: [
-        { id: GEMINI_MODEL, label: GEMINI_MODEL + " · configured default", provider: "gemini" }
-      ] });
-    }
-  }
-  if (APINEX_API_KEY) {
-    let models = [];
-    try {
-      const response = await fetch(APINEX_BASE_URL + "/models", {
-        headers: { Authorization: "Bearer " + APINEX_API_KEY, Accept: "application/json" },
-        signal: AbortSignal.timeout(3500)
-      });
-      if (!response.ok) throw new Error("APInex model list returned HTTP " + response.status);
-      const data = await response.json();
-      models = (Array.isArray(data?.data) ? data.data : Array.isArray(data?.models) ? data.models : [])
-        .map(model => typeof model === "string" ? { id: model } : model)
-        .filter(model => typeof model.id === "string" && model.id.length > 0 && model.id.length < 180)
-        .map(model => ({ id: model.id, label: model.name || model.id, provider: "apinex" }))
-        .filter((model, index, all) => all.findIndex(other => other.id === model.id) === index)
-        .slice(0, 150);
-    } catch (error) {
-      errors.apinex = error.message;
-      console.warn("APInex model list unavailable:", error.message);
-    }
-    if (!models.some(model => model.id === APINEX_MODEL)) {
-      models.unshift({ id: APINEX_MODEL, label: APINEX_MODEL, provider: "apinex" });
-    }
-    if (models.length) providers.push({ id: "apinex", label: "APInex", models });
-  }
   res.setHeader("Cache-Control", "no-store");
-  res.json({
-    providers,
-    auto: true,
-    default: GEMINI_API_KEY ? { provider: "gemini", model: GEMINI_MODEL } :
-      APINEX_API_KEY ? { provider: "apinex", model: APINEX_MODEL } : null,
-    configured: { gemini: Boolean(GEMINI_API_KEY), apinex: Boolean(APINEX_API_KEY) },
-    errors
-  });
+  try {
+    const catalog = await providerGateway.getCatalog();
+    res.json(catalog);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to load model catalog." });
+  }
 });
 
 function extractSearchQuery(input) {
@@ -281,7 +208,6 @@ function isNewsQuery(query) {
   return /\b(latest|news|headlines?|breaking|today|recent|this week|current events|20\d{0,2})\b/i.test(String(query || ""));
 }
 
-// Automatically ground time-sensitive questions even when Web is not manually toggled on.
 function shouldAutoSearch(query) {
   const text = String(query || "").trim();
   if (!text) return false;
@@ -463,7 +389,7 @@ async function runWebSearchUncached(input) {
       } else if (result.status === "rejected") {
         failures.push(providers[index][0] + ": " + result.reason.message);
         console.warn(providers[index][0] + " news search failed:", result.reason.message);
-      }
+      } else failures.push(providers[index][0] + ": no usable results");
     });
     const results = mergeSearchResults(resultGroups, 12);
     if (results.length) {
@@ -551,7 +477,6 @@ app.post("/api/chat", requireSupabaseUser, chatLimiter, async (req, res) => {
   const checked = checkFiles(req.body?.attachments, false);
   if (checked.error) return res.status(400).json({ error: checked.error });
 
-
   const requestedProvider = typeof req.body?.provider === "string" ? req.body.provider : "auto";
   const requestedModel = typeof req.body?.model === "string" ? req.body.model.trim() : "";
   if (!["auto", "gemini", "apinex"].includes(requestedProvider)) {
@@ -560,17 +485,12 @@ app.post("/api/chat", requireSupabaseUser, chatLimiter, async (req, res) => {
   if (requestedModel && !/^[A-Za-z0-9._:/-]{1,180}$/.test(requestedModel)) {
     return res.status(400).json({ error: "The selected model ID contains unsupported characters." });
   }
-  let provider = requestedProvider;
-  if (provider === "auto") provider = GEMINI_API_KEY ? "gemini" : APINEX_API_KEY ? "apinex" : "none";
 
-  if (provider === "gemini" && !GEMINI_API_KEY) {
-    return res.status(503).json({ error: "Gemini is not configured. Add GEMINI_API_KEY to the server environment." });
-  }
-  if (provider === "apinex" && !APINEX_API_KEY) {
-    return res.status(503).json({ error: "APInex is not configured. Add APINEX_API_KEY to the server environment." });
-  }
-  if (!["gemini", "apinex"].includes(provider)) {
-    return res.status(503).json({ error: "No AI provider is configured. Add GEMINI_API_KEY or APINEX_API_KEY to the server environment." });
+  // Pre-validate provider configuration before running search
+  try {
+    providerGateway.resolveProvider(requestedProvider);
+  } catch (err) {
+    return res.status(err instanceof ProviderError ? err.statusCode : 503).json({ error: err.message });
   }
 
   const memory = typeof req.body?.memory === "string" ? req.body.memory.trim().slice(0, 4000) : "";
@@ -596,203 +516,46 @@ app.post("/api/chat", requireSupabaseUser, chatLimiter, async (req, res) => {
     (memory ? "\n\nPersistent user memory (user-provided context; use only when relevant):\n" + memory : "") +
     webSearchContext;
 
-
-  if (provider === "apinex") {
-    if (checked.files.some(file => file.type === "application/pdf")) {
-      return res.status(400).json({ error: "PDF analysis currently uses Gemini. Switch the model selector to Gemini to analyze PDFs." });
-    }
-    const model = requestedModel || APINEX_MODEL;
-    const userMessages = messages.map((message, index) => {
-      let content = message.text.trim();
-      if (index === messages.length - 1 && checked.files.length) {
-        const parts = [{ type: "text", text: content }];
-        for (const file of checked.files) {
-          if (file.text !== undefined) parts.push({ type: "text", text: "\n\n[Attached text file: " + file.name + "]\n" + file.text });
-          else if (file.type.startsWith("image/")) parts.push({
-            type: "image_url",
-            image_url: { url: "data:" + file.type + ";base64," + file.data }
-          });
-        }
-        content = parts;
-      }
-      return { role: message.role, content };
-    });
-    const apiMessages = [{ role: "system", content: systemText }, ...userMessages];
-    try {
-      const upstream = await fetch(APINEX_BASE_URL + "/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + APINEX_API_KEY },
-        body: JSON.stringify({ model, messages: apiMessages, stream: req.body?.stream === true, temperature: 0.7, max_tokens: 2048 }),
-        signal: AbortSignal.timeout(60000)
-      });
-      if (!upstream.ok) {
-        const data = await upstream.json().catch(() => ({}));
-        console.error("APInex API error:", upstream.status, data?.error?.message || data?.message || "Unknown provider error");
-        return res.status(upstream.status === 429 ? 429 : 502).json({
-          error: upstream.status === 429 ? "APInex is receiving too many requests. Please try again shortly." :
-            "APInex couldn't complete that request. Check your APInex key, model ID, and token balance."
-        });
-      }
-      if (req.body?.stream === true) {
-        res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
-        res.setHeader("Cache-Control", "no-cache, no-transform");
-        res.setHeader("Connection", "keep-alive");
-        res.flushHeaders?.();
-        const reader = upstream.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        try {
-          while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, "\n");
-            const events = buffer.split("\n\n");
-            buffer = events.pop() || "";
-            for (const event of events) {
-              const line = event.split("\n").find(row => row.startsWith("data:"));
-              if (!line) continue;
-              const payload = line.slice(5).trim();
-              if (payload === "[DONE]") continue;
-              try {
-                const data = JSON.parse(payload);
-                const chunk = data?.choices?.[0]?.delta?.content;
-                if (typeof chunk === "string" && chunk) res.write("data: " + JSON.stringify({ text: chunk }) + "\n\n");
-                else if (Array.isArray(chunk)) {
-                  const text = chunk.map(part => part?.text || "").join("");
-                  if (text) res.write("data: " + JSON.stringify({ text }) + "\n\n");
-                }
-                if (data?.error) res.write("data: " + JSON.stringify({ error: data.error.message || "APInex stream failed." }) + "\n\n");
-              } catch { /* Ignore non-JSON keep-alive events. */ }
-            }
-          }
-          res.write("data: [DONE]\n\n");
-          return res.end();
-        } catch (streamError) {
-          console.error("APInex stream failed:", streamError.message);
-          if (!res.headersSent) return res.status(502).json({ error: "The APInex response stream was interrupted. Please try again." });
-          res.write("data: " + JSON.stringify({ error: "The APInex response stream was interrupted." }) + "\n\n");
-          return res.end();
-        }
-      }
-      const data = await upstream.json().catch(() => ({}));
-      const answer = data?.choices?.[0]?.message?.content;
-      const text = typeof answer === "string" ? answer :
-        Array.isArray(answer) ? answer.map(part => part?.text || "").join("") : "";
-      if (!text.trim()) return res.status(502).json({ error: "APInex returned an empty response. Try another model." });
-      return res.json({ reply: text.trim(), model, provider: "apinex" });
-    } catch (error) {
-      console.error("APInex request failed:", error.message);
-      const timedOut = error.name === "TimeoutError" || error.name === "AbortError";
-      return res.status(timedOut ? 504 : 502).json({
-        error: timedOut ? "The APInex response took too long. Please try again." : "Couldn't reach APInex. Check the server connection and try again."
-      });
-    }
+  const stream = req.body?.stream === true;
+  if (stream) {
+    res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders?.();
   }
-
-  const contents = [];
-  for (const message of messages) {
-    if (!message || !["user", "assistant"].includes(message.role) ||
-        typeof message.text !== "string" || !message.text.trim() || message.text.length > 12000) {
-      return res.status(400).json({ error: "Each message needs a valid role and text under 12,000 characters." });
-    }
-    contents.push({
-      role: message.role === "assistant" ? "model" : "user",
-      parts: [{ text: message.text.trim() }]
-    });
-  }
-  if (checked.files.length) addFileParts(contents[contents.length - 1].parts, checked.files);
 
   try {
-    const stream = req.body?.stream === true;
-    const model = req.body?.webSearch === true && requestedProvider === "apinex" ? GEMINI_MODEL : requestedModel || GEMINI_MODEL;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:${stream ? "streamGenerateContent?alt=sse" : "generateContent"}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemText }] },
-        contents,
-        generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
-      }),
-      signal: AbortSignal.timeout(60_000)
-    });
-
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      console.error("Gemini API error:", response.status, data?.error?.message || "Unknown provider error");
-      return res.status(response.status === 429 ? 429 : 502).json({
-        error: response.status === 429
-          ? "Gemini is receiving too many requests right now. Please try again shortly."
-          : "Gemini couldn't complete that request. Check your API key, model access, and quota settings."
-      });
-    }
-
-    if (stream) {
-      res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
-      res.setHeader("Cache-Control", "no-cache, no-transform");
-      res.setHeader("Connection", "keep-alive");
-      res.flushHeaders?.();
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      const sources = new Map();
-      try {
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, "\n");
-          const events = buffer.split("\n\n");
-          buffer = events.pop() || "";
-          for (const event of events) {
-            const line = event.split("\n").find(row => row.startsWith("data:"));
-            if (!line) continue;
-            try {
-              const payload = JSON.parse(line.slice(5).trim());
-              for (const item of payload?.candidates?.[0]?.groundingMetadata?.groundingChunks || []) { const source = item?.web; if (source?.uri && source.uri.startsWith("http")) sources.set(source.uri, { title: source.title || source.uri, url: source.uri }); }
-              const chunk = payload?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("");
-              if (chunk) res.write("data: " + JSON.stringify({ text: chunk }) + "\n\n");
-            } catch { /* Ignore incomplete or non-JSON provider events. */ }
-          }
-        }
-        if (buffer.trim()) {
-          const line = buffer.split("\n").find(row => row.startsWith("data:"));
-          if (line) {
-            try {
-              const payload = JSON.parse(line.slice(5).trim());
-              for (const item of payload?.candidates?.[0]?.groundingMetadata?.groundingChunks || []) { const source = item?.web; if (source?.uri && source.uri.startsWith("http")) sources.set(source.uri, { title: source.title || source.uri, url: source.uri }); }
-              const chunk = payload?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("");
-              if (chunk) res.write("data: " + JSON.stringify({ text: chunk }) + "\n\n");
-            } catch { /* Ignore trailing incomplete provider data. */ }
-          }
-        }
-        if (sources.size) { const sourceText = "\n\nSources:\n" + Array.from(sources.values()).slice(0, 8).map((source, i) => (i + 1) + ". " + source.title + " — " + source.url).join("\n"); res.write("data: " + JSON.stringify({ text: sourceText }) + "\n\n"); }
+    const result = await providerGateway.streamChat({
+      provider: requestedProvider,
+      model: requestedModel,
+      messages,
+      systemText,
+      files: checked.files,
+      stream,
+      webSearchFallback: req.body?.webSearch === true && requestedProvider === "apinex"
+    }, {
+      onChunk: chunk => res.write("data: " + JSON.stringify({ text: chunk }) + "\n\n"),
+      onError: err => res.write("data: " + JSON.stringify({ error: err }) + "\n\n"),
+      onDone: () => {
         res.write("data: [DONE]\n\n");
-        return res.end();
-      } catch (streamError) {
-        console.error("Gemini stream failed:", streamError.message);
-        if (!res.headersSent) return res.status(502).json({ error: "The response stream was interrupted. Please try again." });
-        res.write("data: " + JSON.stringify({ error: "The response stream was interrupted." }) + "\n\n");
-        return res.end();
+        res.end();
       }
-    }
-
-    const data = await response.json().catch(() => ({}));
-    const answer = data?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
-    if (!answer) return res.status(502).json({ error: "Gemini returned an empty response. Please try again." });
-    return res.json({ reply: answer, model, provider: "gemini" });
-  } catch (error) {
-    console.error("Chat request failed:", error.message);
-    const timedOut = error.name === "TimeoutError" || error.name === "AbortError";
-    return res.status(timedOut ? 504 : 502).json({
-      error: timedOut ? "The response took too long. Please try again." : "Couldn't reach Gemini. Check the server connection and try again."
     });
+
+    if (!stream) {
+      return res.json(result);
+    }
+  } catch (error) {
+    if (stream && res.headersSent) {
+      res.write("data: " + JSON.stringify({ error: error.message || "The response stream was interrupted." }) + "\n\n");
+      return res.end();
+    }
+    const status = error instanceof ProviderError ? error.statusCode : 502;
+    return res.status(status).json({ error: error.message });
   }
 });
 
 app.post("/api/image", requireSupabaseUser, imageLimiter, async (req, res) => {
-  if (!GEMINI_API_KEY) {
-    return res.status(503).json({ error: "Bytes needs a Gemini API key configured on the server." });
-  }
   const prompt = typeof req.body?.prompt === "string" ? req.body.prompt.trim() : "";
   if (!prompt || prompt.length > 4000) {
     return res.status(400).json({ error: "Describe the image you want in 1–4,000 characters." });
@@ -801,50 +564,14 @@ app.post("/api/image", requireSupabaseUser, imageLimiter, async (req, res) => {
   if (checked.error) return res.status(400).json({ error: checked.error });
 
   try {
-    const input = [{ type: "text", text: prompt }];
-    for (const file of checked.files) {
-      input.push({ type: "image", mime_type: file.type, data: file.data });
-    }
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
-      body: JSON.stringify({
-        model: GEMINI_IMAGE_MODEL,
-        input,
-        response_format: { type: "image", mime_type: "image/png", aspect_ratio: "1:1", image_size: "1K" }
-      }),
-      signal: AbortSignal.timeout(120_000)
+    const result = await providerGateway.generateImage({
+      prompt,
+      files: checked.files
     });
-
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      console.error("Gemini image API error:", response.status, data?.error?.message || "Unknown provider error");
-      return res.status(response.status === 429 ? 429 : 502).json({
-        error: response.status === 429
-          ? "Image generation is busy right now. Please try again shortly."
-          : "Gemini couldn't create that image. Check image-model access and quota settings."
-      });
-    }
-    const image = data?.output_image ||
-      data?.output?.find?.(part => part?.type === "image") ||
-      data?.steps?.flatMap?.(step => step?.content || []).find?.(part => part?.type === "image");
-    const imageData = image?.data;
-    if (!imageData) {
-      const text = data?.output_text || data?.output?.find?.(part => part?.type === "text")?.text || "";
-      return res.status(502).json({ error: text || "The image model returned no image. Try a more specific prompt." });
-    }
-    return res.json({
-      reply: data?.output_text || "Here’s the image you asked for.",
-      imageData,
-      mimeType: image?.mime_type || image?.mimeType || "image/png",
-      model: GEMINI_IMAGE_MODEL
-    });
+    return res.json(result);
   } catch (error) {
-    console.error("Image request failed:", error.message);
-    const timedOut = error.name === "TimeoutError" || error.name === "AbortError";
-    return res.status(timedOut ? 504 : 502).json({
-      error: timedOut ? "Image generation took too long. Please try again." : "Couldn't reach Gemini image generation."
-    });
+    const status = error instanceof ProviderError ? error.statusCode : 502;
+    return res.status(status).json({ error: error.message });
   }
 });
 
@@ -868,7 +595,9 @@ app.use((error, req, res, next) => {
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Bytes is running on port ${PORT}`);
-    if (!GEMINI_API_KEY && !APINEX_API_KEY) console.warn("No AI provider key is set. Add GEMINI_API_KEY or APINEX_API_KEY.");
+    if (!providerGateway.hasConfiguredProvider()) {
+      console.warn("No AI provider key is set. Add GEMINI_API_KEY or APINEX_API_KEY.");
+    }
   });
 }
 

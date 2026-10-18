@@ -3,66 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0c0d12">
+<meta name="theme-color" content="#111215">
 <meta name="description" content="Bytes — an intelligent, thoughtful workspace to think, make, and get things done with AI.">
 <title>Bytes — Intelligent AI Workspace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
   color-scheme: dark;
-  --bg: #0c0d12;
-  --sidebar-bg: #111217;
-  --card-bg: #16181f;
-  --card-hover: #1c1e28;
-  --surface: #181a22;
-  --paper: #16181f;
-  --ink: #f3f4f6;
-  --ink-secondary: #cbd5e1;
-  --muted: #838a99;
-  --line: #222530;
-  --line-strong: #2f3445;
-  --soft: #1a1c25;
-  --accent: #10b981;
-  --accent-glow: rgba(16, 185, 129, 0.18);
-  --accent-ink: #064e3b;
-  --accent-hover: #059669;
-  --user-bubble: #1f222e;
+  --bg: #111215;
+  --sidebar-bg: #15161b;
+  --card-bg: #1a1c22;
+  --card-hover: #22242e;
+  --surface: #1e2027;
+  --paper: #1a1c22;
+  --ink: #f5f4ef;
+  --ink-secondary: #c2c0b6;
+  --muted: #828178;
+  --line: #272933;
+  --line-strong: #363947;
+  --soft: #181920;
+  --accent: #e59324;
+  --accent-glow: rgba(229, 147, 36, 0.18);
+  --accent-ink: #191204;
+  --accent-hover: #f3a238;
+  --user-bubble: #222530;
   --user-ink: #f8fafc;
-  --code-bg: #090a0e;
+  --code-bg: #0b0c0f;
   --sidebar: 268px;
-  --radius-lg: 16px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
-  --shadow-lg: 0 20px 45px rgba(0,0,0,0.45);
-  --shadow-sm: 0 4px 12px rgba(0,0,0,0.25);
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+  --radius-xl: 20px;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.5), 0 1px 2px rgba(255,255,255,0.03);
+  --shadow-md: 0 10px 25px rgba(0,0,0,0.35);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.25);
+  --font-editorial: 'Newsreader', Georgia, serif;
+  --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #fafaf8;
-  --sidebar-bg: #f3f2eb;
+  --bg: #fcfbf8;
+  --sidebar-bg: #f4f0e6;
   --card-bg: #ffffff;
-  --card-hover: #f7f6f0;
+  --card-hover: #f9f6ef;
   --surface: #ffffff;
   --paper: #ffffff;
-  --ink: #18191d;
-  --ink-secondary: #3f424b;
-  --muted: #747883;
-  --line: #e3e2da;
-  --line-strong: #d2d0c5;
-  --soft: #ebe9e0;
-  --accent: #059669;
-  --accent-glow: rgba(5, 150, 105, 0.15);
+  --ink: #1c1917;
+  --ink-secondary: #44403c;
+  --muted: #78716c;
+  --line: #e6dfd3;
+  --line-strong: #d4cbbe;
+  --soft: #ede6d9;
+  --accent: #b46b14;
+  --accent-glow: rgba(180, 107, 20, 0.15);
   --accent-ink: #ffffff;
-  --accent-hover: #047857;
-  --user-bubble: #ebe9e0;
-  --user-ink: #18191d;
+  --accent-hover: #9c5a0e;
+  --user-bubble: #ece6da;
+  --user-ink: #1c1917;
   --code-bg: #1c1d22;
-  --shadow-lg: 0 16px 40px rgba(35,35,30,0.08);
-  --shadow-sm: 0 2px 8px rgba(35,35,30,0.05);
+  --shadow-lg: 0 20px 45px rgba(35,30,20,0.08), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md: 0 8px 24px rgba(35,30,20,0.05);
+  --shadow-sm: 0 2px 6px rgba(35,30,20,0.04);
 }
 
 * { box-sizing: border-box; }
@@ -70,8 +75,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 14px;
+  font-family: var(--font-ui);
+  font-size: 14.5px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.25s ease, color 0.25s ease;
@@ -115,23 +120,23 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   align-items: center;
   gap: 10px;
   padding: 0 8px 18px;
-  font: 800 22px 'Manrope', sans-serif;
-  letter-spacing: -0.8px;
+  font: 800 22px var(--font-ui);
+  letter-spacing: -0.6px;
   color: var(--ink);
 }
 .brand-mark {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, var(--accent) 0%, #047857 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, #d96924 100%);
   color: #fff;
   display: grid;
   place-items: center;
-  border-radius: 10px;
-  font: 800 16px 'Manrope';
+  border-radius: 9px;
+  font: 800 17px var(--font-ui);
   box-shadow: 0 4px 12px var(--accent-glow);
 }
 .brand small {
-  font: 600 10px 'DM Sans';
+  font: 700 10px var(--font-mono);
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--accent);
@@ -161,18 +166,17 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   border-color: var(--line-strong);
   transform: translateY(-1px);
 }
-.new-chat .plus {
-  font-size: 18px;
-  font-weight: 500;
+.new-chat .plus-icon {
+  display: inline-flex;
   color: var(--accent);
 }
 .new-chat .kbd {
   margin-left: auto;
-  font-size: 10px;
+  font-size: 10.5px;
   font-family: var(--font-mono);
   color: var(--muted);
   background: var(--soft);
-  padding: 2px 5px;
+  padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid var(--line);
 }
@@ -183,14 +187,14 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 }
 .sidebar-search input {
   width: 100%;
-  padding: 8px 12px 8px 30px;
+  padding: 8px 12px 8px 32px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--soft);
   color: var(--ink);
-  font-size: 12px;
+  font-size: 12.5px;
   outline: 0;
-  transition: border-color 0.18s;
+  transition: border-color 0.18s, background 0.18s;
 }
 .sidebar-search input:focus {
   border-color: var(--accent);
@@ -198,18 +202,19 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 }
 .sidebar-search .search-icon {
   position: absolute;
-  left: 9px;
+  left: 10px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--muted);
-  font-size: 12px;
+  display: flex;
+  align-items: center;
   pointer-events: none;
 }
 
 .nav-label {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
   margin: 18px 8px 8px;
@@ -235,7 +240,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   padding: 8px 10px;
   border-radius: var(--radius-sm);
   color: var(--ink-secondary);
-  font-size: 12.5px;
+  font-size: 13px;
   text-align: left;
   transition: all 0.15s ease;
   cursor: pointer;
@@ -253,24 +258,26 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 }
 .history-item.active {
   font-weight: 600;
-  border-left: 2px solid var(--accent);
+  border-left: 2.5px solid var(--accent);
   background: var(--card-bg);
 }
 .history-actions {
   display: none;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   margin-left: auto;
 }
 .history-item:hover .history-actions, .history-item.active .history-actions {
   display: flex;
 }
 .history-action-btn {
-  padding: 2px 4px;
+  padding: 3px 5px;
   border-radius: 4px;
   color: var(--muted);
   font-size: 11px;
-  transition: color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.15s;
 }
 .history-action-btn:hover {
   color: var(--ink);
@@ -279,7 +286,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 
 .persona-picker {
   margin: 10px 0;
-  padding: 10px;
+  padding: 10px 12px;
   background: var(--soft);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
@@ -288,12 +295,12 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   color: var(--muted);
   margin-bottom: 6px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.06em;
 }
 .persona-picker select {
   width: 100%;
@@ -301,9 +308,14 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   background: var(--card-bg);
   color: var(--ink);
   border-radius: 6px;
-  padding: 5px 8px;
+  padding: 6px 8px;
   font-size: 12px;
   cursor: pointer;
+  outline: 0;
+  transition: border-color 0.15s;
+}
+.persona-picker select:focus {
+  border-color: var(--accent);
 }
 
 .sidebar-bottom {
@@ -316,7 +328,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px;
+  padding: 8px 10px;
   border-radius: var(--radius-md);
   transition: background 0.15s;
   cursor: pointer;
@@ -328,12 +340,12 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, #b46b14 100%);
   color: #fff;
   display: grid;
   place-items: center;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   flex-shrink: 0;
 }
 .profile-details {
@@ -373,7 +385,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   padding: 0 28px;
   border-bottom: 1px solid var(--line);
   background: var(--bg);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
   position: sticky;
   top: 0;
   z-index: 20;
@@ -397,7 +409,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 }
 .mobile-brand {
   display: none;
-  font: 800 18px 'Manrope';
+  font: 800 18px var(--font-ui);
   letter-spacing: -0.5px;
 }
 
@@ -412,17 +424,21 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   font-size: 12.5px;
   font-weight: 600;
   box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s;
+}
+.model-pill:focus-within {
+  border-color: var(--accent);
 }
 .model-indicator {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
 }
 .model-indicator.thinking {
-  background: #f59e0b;
-  box-shadow: 0 0 8px #f59e0b;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
   animation: pulse-dot 1s infinite;
 }
 @keyframes pulse-dot { 50% { opacity: 0.3; transform: scale(0.85); } }
@@ -445,7 +461,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 
 .topbar-btn {
   height: 36px;
-  padding: 0 12px;
+  padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -453,8 +469,8 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 12.5px;
+  font-weight: 600;
   transition: all 0.15s;
 }
 .topbar-btn:hover {
@@ -482,19 +498,19 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 
 /* Content Container */
 .content {
-  width: min(800px, calc(100% - 48px));
+  width: min(820px, calc(100% - 48px));
   margin: 0 auto;
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 48px 0 24px;
+  padding: 44px 0 24px;
   position: relative;
 }
 
 /* Welcome View */
 .welcome-container {
   margin: auto 0;
-  padding: 20px 0 40px;
+  padding: 16px 0 40px;
   text-align: center;
 }
 
@@ -502,57 +518,63 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 99px;
   background: var(--accent-glow);
   color: var(--accent);
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  letter-spacing: 0.08em;
+  margin-bottom: 24px;
+  border: 1px solid rgba(229, 147, 36, 0.25);
 }
 
 .welcome-headline {
-  font: 700 clamp(32px, 5.5vw, 48px)/1.15 'Manrope', sans-serif;
-  letter-spacing: -1.5px;
+  font-family: var(--font-editorial);
+  font-size: clamp(34px, 5.5vw, 54px);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
   margin: 0 0 16px;
   color: var(--ink);
 }
 .welcome-headline em {
-  font-style: normal;
-  background: linear-gradient(135deg, var(--accent) 0%, #38bdf8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
 }
 
 .welcome-subhead {
-  font-size: 15px;
+  font-size: 15.5px;
   line-height: 1.65;
   color: var(--muted);
   margin: 0 auto 36px;
-  max-width: 500px;
+  max-width: 520px;
 }
 
 /* Category Tabs */
 .category-tabs {
   display: flex;
   justify-content: center;
-  gap: 6px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
 }
 .category-tab {
-  padding: 6px 14px;
+  padding: 7px 16px;
   border-radius: 99px;
   background: var(--soft);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   border: 1px solid var(--line);
   transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
+.category-tab svg { width: 14px; height: 14px; }
 .category-tab.active, .category-tab:hover {
   background: var(--card-bg);
   color: var(--ink);
@@ -562,18 +584,18 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .prompts-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
   text-align: left;
 }
 .prompt-card {
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  padding: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 100px;
+  min-height: 104px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
@@ -582,7 +604,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   border-color: var(--accent);
   background: var(--card-hover);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-md);
 }
 .prompt-header {
   display: flex;
@@ -593,39 +615,39 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .prompt-icon {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: 7px;
   background: var(--soft);
   color: var(--accent);
   display: grid;
   place-items: center;
-  font-size: 14px;
+  font-size: 13px;
 }
 .prompt-arrow {
   color: var(--muted);
-  font-size: 13px;
-  transition: transform 0.15s;
+  display: flex;
+  transition: transform 0.18s, color 0.18s;
 }
 .prompt-card:hover .prompt-arrow {
   transform: translate(2px, -2px);
   color: var(--accent);
 }
 .prompt-title {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--ink);
   margin-bottom: 4px;
 }
 .prompt-desc {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--muted);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 /* Chat View */
 .chat-view {
   display: none;
   flex-direction: column;
-  gap: 28px;
+  gap: 30px;
   padding-bottom: 30px;
 }
 .chat-mode .welcome-container { display: none; }
@@ -648,7 +670,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .avatar-mark {
   width: 32px;
   height: 32px;
-  border-radius: 10px;
+  border-radius: 9px;
   display: grid;
   place-items: center;
   font-size: 12px;
@@ -660,13 +682,13 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   color: #fff;
 }
 .message-row.assistant .avatar-mark {
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent) 0%, #b46b14 100%);
   color: #fff;
   box-shadow: 0 4px 12px var(--accent-glow);
 }
 
 .message-content {
-  max-width: min(85%, 680px);
+  max-width: min(88%, 720px);
   position: relative;
 }
 
@@ -678,12 +700,13 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   display: flex;
   align-items: center;
   gap: 6px;
+  letter-spacing: 0.05em;
 }
 .message-row.user .message-meta { justify-content: flex-end; }
 
 .message-bubble {
   font-size: 14.5px;
-  line-height: 1.7;
+  line-height: 1.72;
   overflow-wrap: anywhere;
 }
 .message-row.user .message-bubble {
@@ -713,14 +736,14 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.06em;
   margin-right: 4px;
 }
 .citation-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 4px 11px;
   background: var(--soft);
   border: 1px solid var(--line);
   border-radius: 99px;
@@ -736,27 +759,28 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 }
 
 /* Markdown Elements */
-.message-bubble p { margin: 0 0 12px; }
+.message-bubble p { margin: 0 0 14px; }
 .message-bubble p:last-child { margin-bottom: 0; }
 .message-bubble h1, .message-bubble h2, .message-bubble h3, .message-bubble h4 {
-  font-family: 'Manrope', sans-serif;
+  font-family: var(--font-ui);
   font-weight: 700;
   color: var(--ink);
-  margin: 20px 0 10px;
+  margin: 22px 0 10px;
   line-height: 1.35;
+  letter-spacing: -0.3px;
 }
-.message-bubble h1 { font-size: 22px; }
-.message-bubble h2 { font-size: 18px; }
-.message-bubble h3 { font-size: 15px; }
+.message-bubble h1 { font-size: 23px; font-family: var(--font-editorial); }
+.message-bubble h2 { font-size: 19px; }
+.message-bubble h3 { font-size: 16px; }
 .message-bubble ul, .message-bubble ol {
   padding-left: 22px;
-  margin: 10px 0;
+  margin: 12px 0;
 }
 .message-bubble li { margin: 6px 0; }
 .message-bubble blockquote {
   border-left: 3px solid var(--accent);
   margin: 14px 0;
-  padding: 6px 14px;
+  padding: 8px 16px;
   background: var(--soft);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   color: var(--ink-secondary);
@@ -771,7 +795,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   font-family: var(--font-mono);
   font-size: 12.5px;
   background: var(--soft);
-  padding: 2px 5px;
+  padding: 2px 6px;
   border-radius: 4px;
   color: var(--ink);
   border: 1px solid var(--line);
@@ -804,7 +828,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 
 /* Code Blocks */
 .code-block {
-  margin: 14px 0;
+  margin: 16px 0;
   background: var(--code-bg);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-md);
@@ -832,13 +856,13 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 8px;
+  padding: 4px 9px;
   border-radius: 5px;
   border: 1px solid var(--line);
   background: var(--soft);
   color: var(--ink-secondary);
-  font-size: 11px;
-  font-family: 'DM Sans', sans-serif;
+  font-size: 11.5px;
+  font-family: var(--font-ui);
   transition: all 0.15s;
 }
 .copy-code-btn:hover {
@@ -878,21 +902,23 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 10px;
-  opacity: 0.9;
+  margin-top: 12px;
+  opacity: 0.95;
 }
 .msg-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 8px;
+  padding: 4px 9px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--soft);
   color: var(--muted);
-  font-size: 11px;
+  font-size: 11.5px;
+  font-weight: 500;
   transition: all 0.15s;
 }
+.msg-btn svg { width: 13px; height: 13px; }
 .msg-btn:hover {
   background: var(--card-bg);
   color: var(--ink);
@@ -907,7 +933,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   gap: 7px;
 }
 .suggestion-chip {
-  padding: 6px 12px;
+  padding: 6px 13px;
   border: 1px solid var(--line);
   background: var(--card-bg);
   color: var(--ink-secondary);
@@ -926,11 +952,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   color: var(--ink);
   transform: translateY(-1px);
 }
-.suggestion-chip .sparkle { color: var(--accent); font-size: 11px; }
+.suggestion-chip .sparkle { color: var(--accent); display: flex; }
 
 /* Generated Images & Lightbox */
 .image-result-card {
-  margin: 12px 0 6px;
+  margin: 14px 0 6px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -944,14 +970,14 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   display: block;
   cursor: zoom-in;
   background: #000;
-  transition: transform 0.2s;
+  transition: opacity 0.2s;
 }
 .generated-image-preview:hover { opacity: 0.96; }
 .image-actions-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 8px 14px;
   background: var(--soft);
   border-top: 1px solid var(--line);
   font-size: 12px;
@@ -974,9 +1000,9 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .scroll-bottom-btn {
   position: fixed;
   bottom: 120px;
-  right: calc(50% - 370px);
-  width: 36px;
-  height: 36px;
+  right: calc(50% - 380px);
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: var(--card-bg);
   border: 1px solid var(--line);
@@ -1002,7 +1028,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .composer-wrap {
   position: sticky;
   bottom: 0;
-  background: linear-gradient(180deg, transparent 0%, var(--bg) 24%);
+  background: linear-gradient(180deg, transparent 0%, var(--bg) 28%);
   padding-top: 20px;
   z-index: 18;
 }
@@ -1039,7 +1065,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 }
 .style-tag {
   font-size: 11px;
-  padding: 3px 8px;
+  padding: 3px 9px;
   background: var(--soft);
   border: 1px solid var(--line);
   border-radius: 99px;
@@ -1058,7 +1084,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   border: 0;
   outline: 0;
   resize: none;
-  min-height: 38px;
+  min-height: 40px;
   max-height: 200px;
   background: transparent;
   color: var(--ink);
@@ -1133,6 +1159,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   gap: 6px;
   transition: all 0.15s;
 }
+.tool-btn svg { width: 14px; height: 14px; }
 .tool-btn:hover {
   background: var(--card-hover);
   color: var(--ink);
@@ -1164,20 +1191,19 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 }
 
 .send-action-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: var(--ink);
-  color: var(--bg);
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: #fff;
   display: grid;
   place-items: center;
-  font-size: 16px;
-  font-weight: 700;
   transition: all 0.2s;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px var(--accent-glow);
 }
+.send-action-btn svg { width: 16px; height: 16px; }
 .send-action-btn:hover {
-  opacity: 0.9;
+  background: var(--accent-hover);
   transform: scale(1.04);
 }
 .send-action-btn:disabled {
@@ -1188,6 +1214,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .send-action-btn.stop-btn {
   background: #ef4444;
   color: #fff;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
 }
 
 .disclaimer-text {
@@ -1203,7 +1230,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
   z-index: 50;
   place-items: center;
   padding: 20px;
@@ -1211,7 +1238,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .modal-overlay.open { display: grid; }
 
 .modal-window {
-  width: min(440px, 100%);
+  width: min(450px, 100%);
   background: var(--card-bg);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
@@ -1228,8 +1255,8 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   margin-bottom: 14px;
 }
 .modal-title {
-  font: 700 20px 'Manrope', sans-serif;
-  letter-spacing: -0.5px;
+  font: 700 20px var(--font-ui);
+  letter-spacing: -0.4px;
   color: var(--ink);
   margin: 0;
 }
@@ -1255,6 +1282,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   color: var(--ink);
   margin: 6px 0 12px;
   font-size: 13px;
+  outline: 0;
 }
 .modal-content input:focus, .modal-content textarea:focus {
   border-color: var(--accent);
@@ -1384,7 +1412,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(16, 185, 129, 0.12);
+  background: var(--accent-glow);
   border: 3px dashed var(--accent);
   backdrop-filter: blur(4px);
   z-index: 100;
@@ -1433,12 +1461,12 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
       <small>v2</small>
     </div>
     <button class="new-chat" id="newChat">
-      <span class="plus">＋</span>
+      <span class="plus-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>
       <span>New conversation</span>
       <span class="kbd">⌘K</span>
     </button>
     <div class="sidebar-search">
-      <span class="search-icon">🔍</span>
+      <span class="search-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
       <input type="search" id="historySearch" placeholder="Search chats…" aria-label="Search conversations">
     </div>
     
@@ -1446,16 +1474,16 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
       <label for="personaSelect">Assistant Tone</label>
       <select id="personaSelect" aria-label="Choose assistant persona">
         <option value="default">Bytes · Balanced & Thoughtful</option>
-        <option value="coder">Senior Software Engineer</option>
+        <option value="coder">Senior Staff Engineer</option>
         <option value="concise">Direct & Concise</option>
-        <option value="academic">Deep Academic Thinker</option>
-        <option value="creative">Creative & Storyteller</option>
+        <option value="academic">Academic & First-Principles</option>
+        <option value="creative">Creative & Expressive</option>
       </select>
     </div>
 
-    <div class="nav-label">CONVERSATIONS</div>
+    <div class="nav-label">Conversations</div>
     <div class="history" id="history">
-      <div style="padding:12px;color:var(--muted);font-size:11.5px;text-align:center;">Your chat history will appear here.</div>
+      <div style="padding:14px;color:var(--muted);font-size:12px;text-align:center;">Your chat history will appear here.</div>
     </div>
 
     <div class="sidebar-bottom">
@@ -1465,7 +1493,9 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
           <div class="profile-name" id="profileName">Bytes Workspace</div>
           <div class="profile-badge" id="profileSubtitle">Guest Mode</div>
         </div>
-        <button class="topbar-icon-btn" id="sidebarSettingsBtn" style="width:28px;height:28px;" title="Workspace settings">⚙</button>
+        <button class="topbar-icon-btn" id="sidebarSettingsBtn" style="width:28px;height:28px;" title="Workspace settings">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
       </div>
     </div>
   </aside>
@@ -1473,7 +1503,9 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
-        <button class="mobile-menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
+        <button class="mobile-menu-btn" id="menuBtn" aria-label="Toggle menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
         <span class="mobile-brand">bytes.</span>
         <div class="model-pill">
           <span class="model-indicator" id="modelIndicator"></span>
@@ -1483,24 +1515,42 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
         </div>
       </div>
       <div class="topbar-right">
-        <button class="topbar-icon-btn" id="themeToggleBtn" title="Toggle dark/light theme" aria-label="Toggle dark/light theme">🌙</button>
+        <button class="topbar-icon-btn" id="themeToggleBtn" title="Toggle dark/light theme" aria-label="Toggle dark/light theme">
+          <svg class="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
         <button class="topbar-btn" id="authBtn">Sign in</button>
-        <button class="topbar-icon-btn" id="shareBtn" title="Share conversation" aria-label="Share conversation">↗</button>
-        <button class="topbar-icon-btn" id="settingsTopBtn" title="Settings" aria-label="Settings">⚙</button>
+        <button class="topbar-icon-btn" id="shareBtn" title="Share conversation" aria-label="Share conversation">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+        </button>
+        <button class="topbar-icon-btn" id="settingsTopBtn" title="Settings" aria-label="Settings">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
       </div>
     </header>
 
     <section class="content" id="content">
       <div class="welcome-container" id="welcomeView">
-        <div class="welcome-badge">⚡ Next-Gen AI Workspace</div>
-        <h1 class="welcome-headline" id="greetingHeadline">Good ideas start<br>with <em>a little space.</em></h1>
-        <p class="welcome-subhead">A calm, high-performance environment to think, solve problems, write code, and explore ideas with AI.</p>
+        <div class="welcome-badge">Editorial AI Workspace</div>
+        <h1 class="welcome-headline" id="greetingHeadline">Good morning,<br><em>what are we exploring today?</em></h1>
+        <p class="welcome-subhead">A quiet, thoughtful environment to think, solve problems, write code, and explore ideas with AI.</p>
         
         <div class="category-tabs" id="categoryTabs">
-          <button class="category-tab active" data-cat="code">💻 Code</button>
-          <button class="category-tab" data-cat="write">✍️ Write</button>
-          <button class="category-tab" data-cat="plan">🧠 Plan</button>
-          <button class="category-tab" data-cat="learn">🔬 Learn</button>
+          <button class="category-tab active" data-cat="code">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+            <span>Code</span>
+          </button>
+          <button class="category-tab" data-cat="write">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+            <span>Write</span>
+          </button>
+          <button class="category-tab" data-cat="plan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+            <span>Plan</span>
+          </button>
+          <button class="category-tab" data-cat="learn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+            <span>Learn</span>
+          </button>
         </div>
 
         <div class="prompts-grid" id="promptsGrid">
@@ -1510,7 +1560,9 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 
       <div class="chat-view" id="chatView" aria-live="polite"></div>
 
-      <button class="scroll-bottom-btn" id="scrollBottomBtn" title="Scroll to bottom">↓</button>
+      <button class="scroll-bottom-btn" id="scrollBottomBtn" title="Scroll to bottom">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+      </button>
 
       <div class="composer-wrap">
         <form class="composer-box" id="composer">
@@ -1530,20 +1582,26 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
           <div class="composer-bottom">
             <div class="tools-left">
               <button type="button" class="tool-btn" id="attachBtn" title="Attach image, PDF or text files">
-                <span>📎</span> <span>Attach</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                <span>Attach</span>
               </button>
               <button type="button" class="tool-btn" id="webSearchBtn" aria-pressed="false" title="Search the live web for verified information">
-                <span>🌐</span> <span>Web</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                <span>Web</span>
               </button>
               <button type="button" class="tool-btn" id="imageModeBtn" aria-pressed="false" title="Generate or edit images with Gemini">
-                <span>🎨</span> <span>Image Studio</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                <span>Image Studio</span>
               </button>
               <button type="button" class="tool-btn" id="voiceBtn" title="Speech to text input">
-                <span>🎙️</span> <span>Voice</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                <span>Voice</span>
               </button>
             </div>
             <div class="tools-right">
-              <button class="send-action-btn" id="sendBtn" type="submit" aria-label="Send message">↑</button>
+              <button class="send-action-btn" id="sendBtn" type="submit" aria-label="Send message">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+              </button>
             </div>
           </div>
         </form>
@@ -1692,8 +1750,14 @@ function initTheme() {
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('bytes.theme', theme);
-  $('#themeToggleBtn').textContent = theme === 'dark' ? '☀️' : '🌙';
-  $('#themeToggleBtn').title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+  const btn = $('#themeToggleBtn');
+  if (theme === 'dark') {
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+    btn.title = 'Switch to light mode';
+  } else {
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+    btn.title = 'Switch to dark mode';
+  }
 }
 $('#themeToggleBtn').onclick = () => {
   const curr = document.documentElement.getAttribute('data-theme') || 'dark';
@@ -1749,7 +1813,10 @@ function renderPrompts(category) {
   items.forEach(item => {
     const card = document.createElement('div');
     card.className = 'prompt-card';
-    card.innerHTML = '<div class="prompt-header"><span class="prompt-icon">✦</span><span class="prompt-arrow">↗</span></div><div class="prompt-title">' +
+    card.innerHTML = '<div class="prompt-header">' +
+      '<span class="prompt-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span>' +
+      '<span class="prompt-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg></span>' +
+      '</div><div class="prompt-title">' +
       escapeHtml(item.title) + '</div><div class="prompt-desc">' + escapeHtml(item.desc) + '</div>';
     card.onclick = () => {
       input.value = item.prompt;
@@ -1772,7 +1839,7 @@ $$('.category-tab').forEach(tab => {
 function updateGreeting() {
   const h = new Date().getHours();
   const timeStr = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-  $('#greetingHeadline').innerHTML = timeStr + ',<br><em>what are we building today?</em>';
+  $('#greetingHeadline').innerHTML = timeStr + ',<br><em>what are we exploring today?</em>';
 }
 
 // Model Catalog Loading
@@ -1884,7 +1951,7 @@ function addHistory(conv) {
     const renameBtn = document.createElement('button');
     renameBtn.className = 'history-action-btn';
     renameBtn.title = 'Rename';
-    renameBtn.textContent = '✏️';
+    renameBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>';
     renameBtn.onclick = e => {
       e.stopPropagation();
       const newTitle = prompt('Rename conversation:', conv.title || '');
@@ -1898,7 +1965,7 @@ function addHistory(conv) {
     const delBtn = document.createElement('button');
     delBtn.className = 'history-action-btn';
     delBtn.title = 'Delete';
-    delBtn.textContent = '🗑️';
+    delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
     delBtn.onclick = e => {
       e.stopPropagation();
       if (confirm('Delete this conversation?')) {
@@ -1974,7 +2041,7 @@ function renderMarkdown(raw) {
   const codeBlocks = [];
 
   // Protect code blocks
-  source = source.replace(/```([\w+-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+  source = source.replace(/\`\`\`([\w+-]*)\n([\s\S]*?)\`\`\`/g, (_, lang, code) => {
     const id = codeBlocks.length;
     codeBlocks.push({ lang: lang || 'CODE', code: code.replace(/\n$/, '') });
     return '\n@@CODE_BLOCK_' + id + '@@\n';
@@ -1995,7 +2062,7 @@ function renderMarkdown(raw) {
   out = out.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
            .replace(/\*(.+?)\*/g, '<em>$1</em>')
            .replace(/~~(.+?)~~/g, '<del>$1</del>')
-           .replace(/`([^`]+)`/g, '<code>$1</code>');
+           .replace(/\`([^\`]+)\`/g, '<code>$1</code>');
 
   const lines = out.split('\n');
   const result = [];
@@ -2046,7 +2113,7 @@ function renderMarkdown(raw) {
         '<div class="code-block">' +
           '<div class="code-header">' +
             '<span class="lang-badge">' + escapeHtml(blk.lang) + '</span>' +
-            '<button type="button" class="copy-code-btn" data-code="' + escapeHtml(blk.code) + '"><span>Copy code</span></button>' +
+            '<button type="button" class="copy-code-btn" data-code="' + escapeHtml(blk.code) + '"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>Copy code</span></button>' +
           '</div>' +
           '<pre><code>' + escapeHtml(blk.code) + '</code></pre>' +
         '</div>'
@@ -2164,7 +2231,7 @@ function makeMessage(role, text, options = {}) {
 
   const meta = document.createElement('div');
   meta.className = 'message-meta';
-  meta.textContent = role === 'user' ? 'YOU' : 'BYTES AI';
+  meta.textContent = role === 'user' ? 'You' : 'Bytes AI';
   contentDiv.appendChild(meta);
 
   const bubble = document.createElement('div');
@@ -2182,7 +2249,7 @@ function makeMessage(role, text, options = {}) {
         p.href = c.url;
         p.target = '_blank';
         p.rel = 'noopener noreferrer';
-        p.innerHTML = '🌐 ' + escapeHtml(c.domain);
+        p.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line></svg>' + escapeHtml(c.domain);
         cTray.appendChild(p);
       });
       bubble.appendChild(cTray);
@@ -2227,7 +2294,7 @@ function makeMessage(role, text, options = {}) {
 
     const bar = document.createElement('div');
     bar.className = 'image-actions-bar';
-    bar.innerHTML = '<span>Generated with Gemini Nano</span>';
+    bar.innerHTML = '<span>Generated with Gemini Studio</span>';
     const dl = document.createElement('a');
     dl.className = 'image-action-btn';
     dl.href = img.src;
@@ -2245,17 +2312,17 @@ function makeMessage(role, text, options = {}) {
 
     const copyBtn = document.createElement('button');
     copyBtn.className = 'msg-btn';
-    copyBtn.innerHTML = '📋 Copy';
+    copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
     copyBtn.onclick = () => copyText(text);
 
     const speakBtn = document.createElement('button');
     speakBtn.className = 'msg-btn';
-    speakBtn.innerHTML = '🔊 Speak';
+    speakBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> <span>Speak</span>';
     speakBtn.onclick = () => speakText(text, speakBtn);
 
     const regenBtn = document.createElement('button');
     regenBtn.className = 'msg-btn';
-    regenBtn.innerHTML = '🔄 Regenerate';
+    regenBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> <span>Regenerate</span>';
     regenBtn.onclick = () => regenerate();
 
     actionsBar.append(copyBtn, speakBtn, regenBtn);
@@ -2268,7 +2335,7 @@ function makeMessage(role, text, options = {}) {
       suggestions.forEach(s => {
         const chip = document.createElement('button');
         chip.className = 'suggestion-chip';
-        chip.innerHTML = '<span class="sparkle">✦</span> ' + escapeHtml(s);
+        chip.innerHTML = '<span class="sparkle"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span> ' + escapeHtml(s);
         chip.onclick = () => {
           input.value = s;
           sendMessage(s);
@@ -2400,15 +2467,15 @@ async function sendMessage(text) {
 
   busy = true;
   currentAbortController = new AbortController();
-  $('#sendBtn').innerHTML = '■';
+  $('#sendBtn').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"></rect></svg>';
   $('#sendBtn').classList.add('stop-btn');
   $('#sendBtn').title = 'Stop generating';
   $('#modelIndicator').classList.add('thinking');
 
   const typingRow = document.createElement('div');
   typingRow.className = 'message-row assistant';
-  typingRow.innerHTML = '<div class="avatar-mark">b.</div><div class="message-content"><div class="message-meta">BYTES AI</div><div class="message-bubble"><span style="color:var(--muted);font-size:13px;">' +
-    (imageMode ? 'Generating image with Gemini Studio…' : webSearchEnabled ? 'Searching the live web for verified facts…' : 'Thinking…') +
+  typingRow.innerHTML = '<div class="avatar-mark">b.</div><div class="message-content"><div class="message-meta">Bytes AI</div><div class="message-bubble"><span style="color:var(--muted);font-size:13px;">' +
+    (imageMode ? 'Generating artwork in Gemini Studio…' : webSearchEnabled ? 'Searching the live web for verified facts…' : 'Thinking…') +
     '</span><span class="streaming-cursor"></span></div></div>';
   chatView.appendChild(typingRow);
 
@@ -2485,7 +2552,7 @@ async function sendMessage(text) {
   } finally {
     busy = false;
     currentAbortController = null;
-    $('#sendBtn').innerHTML = '↑';
+    $('#sendBtn').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>';
     $('#sendBtn').classList.remove('stop-btn');
     $('#sendBtn').title = 'Send message';
     $('#modelIndicator').classList.remove('thinking');
@@ -2647,22 +2714,22 @@ function speakText(text, btn) {
   if (!('speechSynthesis' in window)) { toast('Text-to-speech not supported.'); return; }
   if (window.speechSynthesis.speaking && speakingBtn === btn) {
     window.speechSynthesis.cancel();
-    btn.innerHTML = '🔊 Speak';
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> <span>Speak</span>';
     speakingBtn = null;
     return;
   }
   window.speechSynthesis.cancel();
-  if (speakingBtn) speakingBtn.innerHTML = '🔊 Speak';
+  if (speakingBtn) speakingBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> <span>Speak</span>';
 
-  const clean = text.replace(/```[\s\S]*?```/g, 'Code block omitted.').replace(/[#*_`>~|]/g, '');
+  const clean = text.replace(/\`\`\`[\s\S]*?\`\`\`/g, 'Code block omitted.').replace(/[#*_\`>~|]/g, '');
   const u = new SpeechSynthesisUtterance(clean);
   u.lang = navigator.language || 'en-US';
   speakingBtn = btn;
-  btn.innerHTML = '⏹ Stop';
+  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"></rect></svg> <span>Stop</span>';
   const done = () => {
     if (speakingBtn === btn) {
       speakingBtn = null;
-      btn.innerHTML = '🔊 Speak';
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> <span>Speak</span>';
     }
   };
   u.onend = done;
