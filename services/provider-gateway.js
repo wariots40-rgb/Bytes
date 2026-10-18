@@ -100,6 +100,10 @@ class GeminiAdapter {
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       console.error("Gemini API error:", response.status, data?.error?.message || "Unknown error");
+      if ((response.status === 503 || response.status === 429) && targetModel !== "gemini-flash-latest") {
+        console.warn("Retrying with gemini-flash-latest after Google demand spike (" + response.status + ")...");
+        return this.chat({ model: "gemini-flash-latest", messages, systemText, files, stream }, callbacks);
+      }
       throw new ProviderError(response.status === 429
         ? "Gemini is receiving too many requests right now. Please try again shortly."
         : "Gemini couldn't complete that request. Check your API key, model access, and quota settings.",
@@ -438,7 +442,15 @@ class ProviderGateway {
       }
     }
     const targetModel = (webSearchFallback && provider === "apinex") ? this.gemini.defaultModel : model;
-    return this.gemini.chat({ model: targetModel, messages, systemText, files, stream }, callbacks);
+    try {
+      return await this.gemini.chat({ model: targetModel, messages, systemText, files, stream }, callbacks);
+    } catch (err) {
+      if (this.apinex.isConfigured() && (err.statusCode === 503 || err.statusCode === 502 || err.statusCode === 429)) {
+        console.warn("Gemini request failed (" + err.message + "); falling back to APInex platform adapter.");
+        return this.apinex.chat({ model: this.apinex.defaultModel, messages, systemText, files, stream }, callbacks);
+      }
+      throw err;
+    }
   }
 
   async generateImage({ prompt, files }) {
