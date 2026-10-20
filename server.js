@@ -14,7 +14,7 @@ const SUPABASE_PUBLIC_KEY = String(process.env.SUPABASE_ANON_KEY || process.env.
 
 const providerGateway = createProviderGateway({
   geminiApiKey: process.env.GEMINI_API_KEY,
-  geminiModel: process.env.GEMINI_MODEL || "gemini-3.8-flash",
+  geminiModel: process.env.GEMINI_MODEL || "gemini-3.5-flash",
   geminiImageModel: process.env.GEMINI_IMAGE_MODEL || "gemini-nano-banana-2.1",
   apinexApiKey: process.env.APINEX_API_KEY,
   apinexBaseUrl: process.env.APINEX_BASE_URL || "https://api.apinex.bond/v1",

@@ -1855,8 +1855,8 @@ async function loadModelCatalog() {
   } catch (err) {
     modelCatalog = {
       providers: [
-        { id: 'gemini', label: 'Google Gemini', models: [{ id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash (Default)' }, { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' }] },
-        { id: 'apinex', label: 'APInex AI', models: [{ id: 'free/gemini-3.8-flash', label: 'APInex Free Flash' }] }
+        { id: 'gemini', label: 'Google Gemini', models: [{ id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (Default)' }, { id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash (Deep Reasoning)' }] },
+        { id: 'apinex', label: 'APInex AI · Free Tier', models: [{ id: 'free/gemini-3.8-flash', label: 'APInex Free Flash · Free Tier' }] }
       ],
       configured: {},
       errors: {}

@@ -28,7 +28,7 @@ function addGeminiFileParts(parts, files) {
 class GeminiAdapter {
   constructor(config = {}) {
     this.apiKey = config.apiKey || "";
-    this.defaultModel = config.defaultModel || "gemini-3.8-flash";
+    this.defaultModel = config.defaultModel || "gemini-3.5-flash";
     this.imageModel = config.imageModel || "gemini-nano-banana-2.1";
     this.fetchFn = config.fetchFn || global.fetch;
   }
@@ -90,19 +90,23 @@ class GeminiAdapter {
           contents,
           generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
         }),
-        signal: AbortSignal.timeout(60000)
+        signal: AbortSignal.timeout(targetModel === "gemini-3.8-flash" ? 12000 : 35000)
       });
     } catch (error) {
       const timedOut = error.name === "TimeoutError" || error.name === "AbortError";
+      if (timedOut && targetModel === "gemini-3.8-flash") {
+        console.warn("gemini-3.8-flash response timed out; falling back to resilient gemini-3.5-flash.");
+        return this.chat({ model: "gemini-3.5-flash", messages, systemText, files, stream }, callbacks);
+      }
       throw new ProviderError(timedOut ? "The response took too long. Please try again." : "Couldn't reach Gemini. Check the server connection and try again.", timedOut ? 504 : 502);
     }
 
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       console.error("Gemini API error:", response.status, data?.error?.message || "Unknown error");
-      if ((response.status === 503 || response.status === 429) && targetModel !== "gemini-flash-latest") {
-        console.warn("Retrying with gemini-flash-latest after Google demand spike (" + response.status + ")...");
-        return this.chat({ model: "gemini-flash-latest", messages, systemText, files, stream }, callbacks);
+      if ((response.status === 503 || response.status === 429) && targetModel !== "gemini-3.5-flash") {
+        console.warn("Retrying with gemini-3.5-flash after Google demand spike (" + response.status + ")...");
+        return this.chat({ model: "gemini-3.5-flash", messages, systemText, files, stream }, callbacks);
       }
       throw new ProviderError(response.status === 429
         ? "Gemini is receiving too many requests right now. Please try again shortly."
@@ -328,11 +332,12 @@ class ApinexAdapter {
 
     if (!upstream.ok) {
       const data = await upstream.json().catch(() => ({}));
-      console.error("APInex API error:", upstream.status, data?.error?.message || data?.message || "Unknown error");
-      throw new ProviderError(upstream.status === 429
+      const rawMsg = data?.error?.message || data?.message;
+      console.error("APInex API error:", upstream.status, rawMsg || "Unknown error");
+      const userMsg = upstream.status === 429
         ? "APInex is receiving too many requests. Please try again shortly."
-        : "APInex couldn't complete that request. Check your APInex key, model ID, and token balance.",
-        upstream.status === 429 ? 429 : 502);
+        : rawMsg || "APInex couldn't complete that request. Check your APInex key, model ID, and token balance.";
+      throw new ProviderError(userMsg, upstream.status === 429 ? 429 : (upstream.status || 502));
     }
 
     if (isStream) {
