@@ -45,20 +45,43 @@ class GeminiAdapter {
     });
     if (!response.ok) throw new Error("Gemini model list returned HTTP " + response.status);
     const data = await response.json();
-    return (Array.isArray(data.models) ? data.models : [])
+    const rawList = Array.isArray(data.models) ? data.models : [];
+
+    // Curate a focused selection of the best Gemini models to keep the UI clean
+    const allowed = new Map([
+      ["gemini-3.5-flash", "Gemini 3.5 Flash · Fast & Balanced"],
+      ["gemini-3.8-flash", "Gemini 3.8 Flash · Deep Reasoning"],
+      ["gemini-flash-lite-latest", "Gemini Flash Lite · Instant Speed"],
+      ["gemini-3.1-pro-preview", "Gemini 3.1 Pro · Complex Tasks"],
+      ["gemini-pro-latest", "Gemini Pro · High Capability"]
+    ]);
+
+    const models = rawList
       .filter(model => Array.isArray(model.supportedGenerationMethods) &&
         model.supportedGenerationMethods.includes("generateContent") &&
         typeof model.name === "string")
       .map(model => {
         const id = model.name.replace(/^models\//, "");
-        return { id, label: model.displayName || id, provider: "gemini" };
+        return { id, label: allowed.get(id) || model.displayName || id, provider: "gemini" };
       })
-      .filter(model => /^[a-zA-Z0-9._-]{1,180}$/.test(model.id))
-      .sort((a, b) => {
-        const score = m => /flash/i.test(m.id) ? 0 : /pro/i.test(m.id) ? 1 : 2;
-        return score(a) - score(b) || a.label.localeCompare(b.label);
-      })
-      .slice(0, 100);
+      .filter(model => allowed.has(model.id) || model.id === this.defaultModel);
+
+    if (!models.some(m => m.id === this.defaultModel)) {
+      models.unshift({
+        id: this.defaultModel,
+        label: allowed.get(this.defaultModel) || this.defaultModel + " · Default",
+        provider: "gemini"
+      });
+    }
+
+    const order = Array.from(allowed.keys());
+    models.sort((a, b) => {
+      const ia = order.indexOf(a.id);
+      const ib = order.indexOf(b.id);
+      return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+    });
+
+    return models.slice(0, 4);
   }
 
   async chat({ model, messages, systemText, files, stream }, callbacks = {}) {
@@ -260,7 +283,19 @@ class ApinexAdapter {
       return isFree ? `${baseLabel} · Free Tier` : `${baseLabel} · Paid/Credits`;
     };
 
-    const models = rawList
+    const priorityModels = new Set([
+      "free/gemini-3.8-flash",
+      "free/deepseek-v4-flash-0731",
+      "free/claude-sonnet-4.6",
+      "gpt-4o",
+      "claude-3-5-sonnet",
+      "deepseek-chat"
+    ]);
+
+    const rawFiltered = rawList.filter(m => priorityModels.has(m.id) || m.id === this.defaultModel);
+    const pool = rawFiltered.length > 0 ? rawFiltered : rawList.slice(0, 10);
+
+    const models = pool
       .map(model => ({
         id: model.id,
         label: formatLabel(model.id, model.name),
@@ -273,7 +308,7 @@ class ApinexAdapter {
         if (!a.isFree && b.isFree) return 1;
         return a.label.localeCompare(b.label);
       })
-      .slice(0, 150);
+      .slice(0, 6);
 
     if (!models.some(m => m.id === this.defaultModel)) {
       models.unshift({

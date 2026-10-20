@@ -115,11 +115,36 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   z-index: 24;
 }
 
+.sidebar-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 14px;
+}
+
+.sidebar-close-btn {
+  display: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--soft);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sidebar-close-btn:hover {
+  color: var(--ink);
+  background: var(--card-hover);
+  border-color: var(--line-strong);
+}
+
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 8px 18px;
+  padding: 0;
   font: 800 22px var(--font-ui);
   letter-spacing: -0.6px;
   color: var(--ink);
@@ -1434,20 +1459,153 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 
 /* Responsive adjustments */
 @media (max-width: 820px) {
-  :root { --sidebar: 270px; }
+  :root { --sidebar: 280px; }
   .sidebar {
     transform: translateX(-100%);
-    box-shadow: 10px 0 40px rgba(0,0,0,0.3);
+    box-shadow: 12px 0 48px rgba(0,0,0,0.45);
+    padding-top: max(18px, env(safe-area-inset-top, 18px));
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
   }
   .sidebar.open { transform: translateX(0); }
   .sidebar-backdrop.open { display: block; }
-  .main { margin-left: 0; width: 100%; }
+  .sidebar-close-btn { display: grid; }
+  .main { margin-left: 0; width: 100%; min-width: 0; }
   .mobile-menu-btn { display: grid; }
   .mobile-brand { display: block; }
-  .topbar { padding: 0 16px; }
-  .content { width: calc(100% - 32px); padding: 32px 0 16px; }
+  .topbar {
+    padding: 0 16px;
+    height: 58px;
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  .content { width: calc(100% - 32px); padding: 24px 0 16px; }
   .prompts-grid { grid-template-columns: 1fr; }
-  .scroll-bottom-btn { right: 20px; }
+  .scroll-bottom-btn { right: 16px; }
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding: 0 12px;
+    height: 54px;
+  }
+  .topbar-left { gap: 8px; }
+  .mobile-brand { font-size: 16px; }
+  .model-pill {
+    padding: 4px 8px;
+    gap: 6px;
+    font-size: 11.5px;
+  }
+  .model-pill select {
+    max-width: 130px;
+    font-size: 11.5px;
+  }
+  .topbar-right { gap: 4px; }
+  .topbar-btn {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 11.5px;
+  }
+  .topbar-icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .welcome-container {
+    padding: 8px 0 20px;
+  }
+  .welcome-headline {
+    font-size: clamp(26px, 7vw, 36px);
+    margin-bottom: 12px;
+  }
+  .welcome-subhead {
+    font-size: 13.5px;
+    margin-bottom: 22px;
+  }
+  .category-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 6px;
+    margin-bottom: 18px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .category-tabs::-webkit-scrollbar { display: none; }
+  .category-tab {
+    padding: 6px 13px;
+    font-size: 11.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .prompt-card {
+    padding: 14px;
+    min-height: 84px;
+  }
+  .prompt-title { font-size: 13px; }
+  .prompt-desc { font-size: 11.5px; }
+
+  /* Chat View on Mobile */
+  .chat-view { gap: 20px; }
+  .message-content { max-width: 92%; }
+  .user-bubble {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+  .assistant-bubble {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .assistant-bubble pre {
+    margin: 10px 0;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  /* Composer Dock on Mobile */
+  .composer-wrap {
+    padding-top: 12px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+  }
+  .composer-box {
+    padding: 10px 12px 8px;
+    border-radius: var(--radius-md);
+  }
+  .composer-box textarea {
+    font-size: 16px; /* Prevents auto-zoom on iOS */
+    min-height: 38px;
+  }
+  .composer-bottom {
+    margin-top: 6px;
+  }
+  .tools-left {
+    gap: 4px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .tools-left::-webkit-scrollbar { display: none; }
+  .tool-btn {
+    height: 30px;
+    padding: 0 8px;
+    font-size: 11px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .send-action-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+  }
+  .disclaimer-text {
+    font-size: 10px;
+    margin-top: 6px;
+  }
+}
+
+@media (max-width: 400px) {
+  .mobile-brand { display: none; }
+  .model-pill select { max-width: 110px; }
+  #shareBtn { display: none; }
 }
 </style>
 </head>
@@ -1455,10 +1613,15 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 <div class="app">
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
   <aside class="sidebar" id="sidebar">
-    <div class="brand">
-      <span class="brand-mark">b.</span>
-      <span>bytes</span>
-      <small>v2</small>
+    <div class="sidebar-header-row">
+      <div class="brand">
+        <span class="brand-mark">b.</span>
+        <span>bytes</span>
+        <small>v2</small>
+      </div>
+      <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close menu">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
     </div>
     <button class="new-chat" id="newChat">
       <span class="plus-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>
@@ -1855,8 +2018,24 @@ async function loadModelCatalog() {
   } catch (err) {
     modelCatalog = {
       providers: [
-        { id: 'gemini', label: 'Google Gemini', models: [{ id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (Default)' }, { id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash (Deep Reasoning)' }] },
-        { id: 'apinex', label: 'APInex AI · Free Tier', models: [{ id: 'free/gemini-3.8-flash', label: 'APInex Free Flash · Free Tier' }] }
+        {
+          id: 'gemini',
+          label: 'Google Gemini',
+          models: [
+            { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash · Fast & Balanced' },
+            { id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash · Deep Reasoning' },
+            { id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite · Instant Speed' }
+          ]
+        },
+        {
+          id: 'apinex',
+          label: 'APInex AI · Free Tier',
+          models: [
+            { id: 'free/gemini-3.8-flash', label: 'Gemini 3.8 Flash · Free Tier' },
+            { id: 'free/deepseek-v4-flash-0731', label: 'DeepSeek V4 Flash · Free Tier' },
+            { id: 'free/claude-sonnet-4.6', label: 'Claude Sonnet 4.6 · Free Tier' }
+          ]
+        }
       ],
       configured: {},
       errors: {}
@@ -1869,10 +2048,13 @@ async function loadModelCatalog() {
   auto.textContent = 'Auto · Best Available';
   select.appendChild(auto);
 
+  // Curate to show a clean, high-value selection without cluttering the UI
   for (const prov of modelCatalog.providers || []) {
+    const models = (prov.models || []).slice(0, 4);
+    if (!models.length) continue;
     const group = document.createElement('optgroup');
     group.label = prov.label || prov.id;
-    for (const m of prov.models || []) {
+    for (const m of models) {
       const opt = document.createElement('option');
       opt.value = prov.id + '|' + m.id;
       opt.textContent = m.label || m.id;
@@ -2782,6 +2964,7 @@ $('#menuBtn').onclick = () => {
   $('#sidebar').classList.add('open');
   $('#sidebarBackdrop').classList.add('open');
 };
+$('#sidebarCloseBtn')?.addEventListener('click', closeSidebar);
 $('#sidebarBackdrop').onclick = closeSidebar;
 
 // Settings & Memory Modal
