@@ -4,6 +4,7 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const { searchProviderRunner } = require("./search-resilience");
 const { createProviderGateway, ProviderError } = require("./services/provider-gateway");
+const { checkFiles } = require("./services/file-intake");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -19,15 +20,6 @@ const providerGateway = createProviderGateway({
   apinexBaseUrl: process.env.APINEX_BASE_URL || "https://api.apinex.bond/v1",
   apinexModel: process.env.APINEX_MODEL || "free/gemini-3.8-flash"
 });
-
-const MAX_FILES = 4;
-const MAX_INLINE_BASE64 = 9_000_000;
-const ALLOWED_MEDIA = new Set([
-  "image/png", "image/jpeg", "image/webp", "image/heic", "image/heif", "application/pdf"
-]);
-const ALLOWED_TEXT = new Set([
-  "text/plain", "text/markdown", "text/csv", "application/json"
-]);
 
 app.disable("x-powered-by");
 // Railway terminates TLS at its edge proxy; trust only that first proxy hop for client IPs.
@@ -138,48 +130,7 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-function checkFiles(raw, imageOnly = false) {
-  if (raw == null) return { files: [], error: null };
-  if (!Array.isArray(raw) || raw.length > MAX_FILES) {
-    return { files: [], error: "Attach up to 4 files per message." };
-  }
-  const files = [];
-  let totalBase64 = 0;
-  let totalText = 0;
-  for (const f of raw) {
-    if (!f || typeof f.name !== "string" || typeof f.type !== "string" || f.name.length > 160) {
-      return { files: [], error: "One of the attachments is invalid." };
-    }
-    const type = f.type.toLowerCase();
-    if (imageOnly && !type.startsWith("image/")) {
-      return { files: [], error: "Image generation accepts image attachments only." };
-    }
-    if (ALLOWED_MEDIA.has(type)) {
-      if (typeof f.data !== "string" || !f.data.length || !/^[A-Za-z0-9+/]+={0,2}$/.test(f.data)) {
-        return { files: [], error: "A media attachment could not be read. Remove it and try again." };
-      }
-      totalBase64 += f.data.length;
-      if (f.data.length > 5_600_000 || totalBase64 > MAX_INLINE_BASE64) {
-        return { files: [], error: "Attachments are too large. Keep each file under 4 MB and the total under about 6 MB." };
-      }
-      files.push({ name: f.name, type, data: f.data });
-      continue;
-    }
-    if (!imageOnly && ALLOWED_TEXT.has(type)) {
-      if (typeof f.text !== "string" || f.text.length > 250_000) {
-        return { files: [], error: "Text files must be under 250,000 characters." };
-      }
-      totalText += f.text.length;
-      if (totalText > 400_000) return { files: [], error: "Combined text attachments are too large." };
-      files.push({ name: f.name, type, text: f.text });
-      continue;
-    }
-    return { files: [], error: imageOnly
-      ? "Use a PNG, JPG, or WebP image to create or edit an image."
-      : "This file type is not supported. Use an image, PDF, TXT, Markdown, CSV, or JSON file." };
-  }
-  return { files, error: null };
-}
+
 
 app.get("/api/models", requireSupabaseUser, modelsLimiter, async (_req, res) => {
   res.setHeader("Cache-Control", "no-store");

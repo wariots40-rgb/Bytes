@@ -107,3 +107,81 @@ test("ProviderGateway: maps 429 quota exhaustion to structured ProviderError", a
     }
   );
 });
+
+test("ApinexAdapter: formats models with free vs paid tier labeling and sorts free first", async () => {
+  const mockFetch = async (url) => {
+    if (url.endsWith("/models")) {
+      return new Response(JSON.stringify({
+        data: [
+          { id: "gpt-4o", name: "GPT-4o" },
+          { id: "free/gemini-3.8-flash", name: "Gemini 3.8 Flash Free" }
+        ]
+      }), { status: 200, headers: { "content-type": "application/json" } });
+    }
+    return new Response("Not found", { status: 404 });
+  };
+
+  const adapter = new ApinexAdapter({ apiKey: "test-key", fetchFn: mockFetch });
+  const models = await adapter.fetchModels();
+
+  assert.equal(models.length, 2);
+  assert.equal(models[0].isFree, true);
+  assert.match(models[0].label, /Free Tier/);
+  assert.equal(models[1].isFree, false);
+  assert.match(models[1].label, /Paid\/Credits/);
+});
+
+test("ProviderGateway: getCatalog splits APInex into Free Tier and Paid groups", async () => {
+  const mockFetch = async (url) => {
+    if (url.includes("/models")) {
+      return new Response(JSON.stringify({
+        data: [
+          { id: "free/gemini-3.8-flash", name: "Gemini 3.8 Flash" },
+          { id: "claude-3-5-sonnet", name: "Claude 3.5 Sonnet" }
+        ]
+      }), { status: 200, headers: { "content-type": "application/json" } });
+    }
+    return new Response("Not found", { status: 404 });
+  };
+
+  const gateway = createProviderGateway({ apinexApiKey: "test-key", fetchFn: mockFetch });
+  const catalog = await gateway.getCatalog();
+
+  const apinexGroups = catalog.providers.filter(p => p.id === "apinex");
+  assert.equal(apinexGroups.length, 2);
+  assert.equal(apinexGroups[0].label, "APInex · Free Tier");
+  assert.equal(apinexGroups[1].label, "APInex · Paid / Credits");
+});
+
+test("ProviderGateway: falls back to free APInex model if paid APInex model returns error", async () => {
+  const requests = [];
+  const mockFetch = async (url, options) => {
+    const body = JSON.parse(options.body);
+    requests.push(body.model);
+    if (body.model === "gpt-4o") {
+      // Simulate credit exhaustion / payment error
+      return new Response(JSON.stringify({ error: { message: "Insufficient balance" } }), { status: 502 });
+    }
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Free fallback answer" } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const gateway = createProviderGateway({
+    apinexApiKey: "test-key",
+    apinexModel: "free/gemini-3.8-flash",
+    fetchFn: mockFetch
+  });
+
+  const result = await gateway.streamChat({
+    provider: "apinex",
+    model: "gpt-4o",
+    messages: [{ role: "user", text: "Hello" }],
+    systemText: "Be concise."
+  });
+
+  assert.equal(requests.length, 2);
+  assert.equal(requests[0], "gpt-4o");
+  assert.equal(requests[1], "free/gemini-3.8-flash");
+  assert.equal(result.reply, "Free fallback answer");
+});

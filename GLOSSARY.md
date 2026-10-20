@@ -22,5 +22,10 @@ A normalized description of an AI model available for routing.
 ### SearchProviderRunner
 The resilient circuit-breaker and latency-tracking wrapper that isolates search engines (FreeSerp, SearXNG, FreeNewsAPI, Google News RSS) from cascading failures.
 
+### FileIntakeValidator
+An isolated input validation module that inspects, sanitizes, and bounds multimodal attachments (images, PDFs, text, markdown, CSV, JSON).
+* **Seam**: `validate(raw, options)`
+* **Depth**: Enforces file-count caps, base64 data encoding integrity, individual and aggregate memory/character budgets, and media-type restrictions for chat vs. image generation.
+
 ### MemoryNote
 User-controlled persistent context stored client-side in local storage (or synchronized profile) and injected as prompt guidance across conversations.

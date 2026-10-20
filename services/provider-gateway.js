@@ -242,15 +242,42 @@ class ApinexAdapter {
     });
     if (!response.ok) throw new Error("APInex model list returned HTTP " + response.status);
     const data = await response.json();
-    const models = (Array.isArray(data?.data) ? data.data : Array.isArray(data?.models) ? data.models : [])
+    const rawList = (Array.isArray(data?.data) ? data.data : Array.isArray(data?.models) ? data.models : [])
       .map(model => typeof model === "string" ? { id: model } : model)
-      .filter(model => typeof model.id === "string" && model.id.length > 0 && model.id.length < 180)
-      .map(model => ({ id: model.id, label: model.name || model.id, provider: "apinex" }))
+      .filter(model => typeof model?.id === "string" && model.id.length > 0 && model.id.length < 180);
+
+    const formatLabel = (id, rawName) => {
+      const isFree = id.startsWith("free/");
+      const cleanId = isFree ? id.slice(5) : id;
+      const baseLabel = rawName && rawName !== id ? rawName : cleanId
+        .split("-")
+        .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ");
+      return isFree ? `${baseLabel} · Free Tier` : `${baseLabel} · Paid/Credits`;
+    };
+
+    const models = rawList
+      .map(model => ({
+        id: model.id,
+        label: formatLabel(model.id, model.name),
+        provider: "apinex",
+        isFree: model.id.startsWith("free/")
+      }))
       .filter((model, index, all) => all.findIndex(other => other.id === model.id) === index)
+      .sort((a, b) => {
+        if (a.isFree && !b.isFree) return -1;
+        if (!a.isFree && b.isFree) return 1;
+        return a.label.localeCompare(b.label);
+      })
       .slice(0, 150);
 
     if (!models.some(m => m.id === this.defaultModel)) {
-      models.unshift({ id: this.defaultModel, label: this.defaultModel, provider: "apinex" });
+      models.unshift({
+        id: this.defaultModel,
+        label: formatLabel(this.defaultModel),
+        provider: "apinex",
+        isFree: this.defaultModel.startsWith("free/")
+      });
     }
     return models;
   }
@@ -412,9 +439,28 @@ class ProviderGateway {
     if (this.apinex.isConfigured()) {
       try {
         const models = await this.apinex.fetchModels();
-        if (models.length) providers.push({ id: "apinex", label: "APInex", models });
+        if (models.length) {
+          const freeModels = models.filter(m => m.isFree);
+          const paidModels = models.filter(m => !m.isFree);
+          if (freeModels.length && paidModels.length) {
+            providers.push({ id: "apinex", label: "APInex · Free Tier", models: freeModels });
+            providers.push({ id: "apinex", label: "APInex · Paid / Credits", models: paidModels });
+          } else {
+            providers.push({ id: "apinex", label: "APInex", models });
+          }
+        }
       } catch (err) {
         errors.apinex = err.message;
+        providers.push({
+          id: "apinex",
+          label: "APInex · Free Tier (configured default)",
+          models: [{
+            id: this.apinex.defaultModel,
+            label: this.apinex.defaultModel + " · Free Tier",
+            provider: "apinex",
+            isFree: true
+          }]
+        });
       }
     }
 
@@ -434,6 +480,14 @@ class ProviderGateway {
       try {
         return await this.apinex.chat({ model, messages, systemText, files, stream }, callbacks);
       } catch (err) {
+        if (model && model !== this.apinex.defaultModel && err.statusCode !== 400) {
+          try {
+            console.warn(`APInex paid model ${model} failed (${err.message}); falling back to free APInex model (${this.apinex.defaultModel}).`);
+            return await this.apinex.chat({ model: this.apinex.defaultModel, messages, systemText, files, stream }, callbacks);
+          } catch (retryErr) {
+            console.warn(`APInex free fallback model also failed (${retryErr.message}); attempting Gemini fallback.`);
+          }
+        }
         if (this.gemini.isConfigured() && err.statusCode !== 400) {
           console.warn("APInex request failed (" + err.message + "); falling back to Gemini platform adapter.");
           return this.gemini.chat({ model: this.gemini.defaultModel, messages, systemText, files, stream }, callbacks);
