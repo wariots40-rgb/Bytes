@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { createProviderGateway, ProviderError, GeminiAdapter, ApinexAdapter } = require("../services/provider-gateway");
+const { createProviderGateway, ProviderError, GeminiAdapter, ApinexAdapter, MetaModelAdapter, VIRTUAL_MODELS } = require("../services/provider-gateway");
 
 test("ProviderGateway: resolution and provider configuration checks", () => {
   const emptyGateway = createProviderGateway({});
@@ -184,4 +184,121 @@ test("ProviderGateway: falls back to free APInex model if paid APInex model retu
   assert.equal(requests[0], "gpt-4o");
   assert.equal(requests[1], "free/gemini-3.8-flash");
   assert.equal(result.reply, "Free fallback answer");
+});
+
+test("MetaModelAdapter: round-robins across multiple API keys", () => {
+  const adapter = new MetaModelAdapter({ apiKeys: ["key-A", "key-B", "key-C"] });
+  assert.equal(adapter.isConfigured(), true);
+  assert.equal(adapter.getNextKey(), "key-A");
+  assert.equal(adapter.getNextKey(), "key-B");
+  assert.equal(adapter.getNextKey(), "key-C");
+  assert.equal(adapter.getNextKey(), "key-A");
+  assert.equal(adapter.getNextKey(), "key-B");
+});
+
+test("MetaModelAdapter: automatically fails over to the next key on 429 rate limit", async () => {
+  const authHeaders = [];
+  const mockFetch = async (url, options) => {
+    authHeaders.push(options.headers["Authorization"]);
+    if (authHeaders.length === 1) {
+      return new Response(JSON.stringify({ error: { message: "Rate limit exceeded" } }), { status: 429 });
+    }
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Failover succeeded with second key" } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["key-1", "key-2", "key-3"],
+    fetchFn: mockFetch
+  });
+
+  const result = await adapter.chat({
+    model: "openai/gpt-4o",
+    messages: [{ role: "user", text: "Hello there" }]
+  });
+
+  assert.equal(authHeaders.length, 2);
+  assert.equal(authHeaders[0], "Bearer key-1");
+  assert.equal(authHeaders[1], "Bearer key-2");
+  assert.equal(result.reply, "Failover succeeded with second key");
+});
+
+test("MetaModelAdapter: injects custom model persona and maps virtual models", async () => {
+  let capturedBody = null;
+  const mockFetch = async (url, options) => {
+    capturedBody = JSON.parse(options.body);
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Claude-style response" } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["key-1"],
+    fetchFn: mockFetch
+  });
+
+  await adapter.chat({
+    model: "anthropic/claude-3-5-sonnet",
+    messages: [{ role: "user", text: "Explain quantum computing" }],
+    systemText: "Be concise."
+  });
+
+  assert.ok(capturedBody);
+  assert.equal(capturedBody.model, "llama-3.3-70b-instruct");
+  const systemMsg = capturedBody.messages.find(m => m.role === "system");
+  assert.ok(systemMsg);
+  assert.match(systemMsg.content, /You are Claude 3\.5 Sonnet/);
+  assert.match(systemMsg.content, /Be concise\./);
+});
+
+test("ProviderGateway: getCatalog exposes 10 models across OpenAI, Claude, Gemini, and Studio with zero Meta branding", async () => {
+  const gateway = createProviderGateway({
+    metaApiKeys: ["key-1", "key-2", "key-3", "key-4", "key-5", "key-6", "key-7", "key-8", "key-9", "key-10"]
+  });
+
+  const catalog = await gateway.getCatalog();
+  const providerIds = catalog.providers.map(p => p.id);
+  assert.deepEqual(providerIds, ["openai", "claude", "gemini", "studio"]);
+
+  // Total model count must equal 10
+  const totalModels = catalog.providers.reduce((sum, p) => sum + p.models.length, 0);
+  assert.equal(totalModels, 10);
+
+  // Ensure no Meta branding in groups or model labels
+  for (const group of catalog.providers) {
+    assert.doesNotMatch(group.label, /meta/i);
+    for (const m of group.models) {
+      assert.doesNotMatch(m.label, /meta/i);
+      assert.doesNotMatch(m.label, /llama/i);
+    }
+  }
+});
+
+test("MetaModelAdapter: image generation routes to muse-image-1.0 using key pool", async () => {
+  let capturedBody = null;
+  let capturedAuth = null;
+  const mockFetch = async (url, options) => {
+    capturedBody = JSON.parse(options.body);
+    capturedAuth = options.headers["Authorization"];
+    return new Response(JSON.stringify({
+      data: [{ b64_json: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["studio-key-1", "studio-key-2"],
+    fetchFn: mockFetch
+  });
+
+  const result = await adapter.generateImage({
+    prompt: "Cyberpunk neon street at midnight",
+    model: "studio/bytes-canvas-realistic"
+  });
+
+  assert.equal(capturedAuth, "Bearer studio-key-1");
+  assert.equal(capturedBody.model, "muse-image-1.0");
+  assert.match(capturedBody.prompt, /Photorealistic/);
+  assert.ok(result.imageData);
+  assert.equal(result.mimeType, "image/png");
 });

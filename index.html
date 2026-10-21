@@ -69,6 +69,10 @@
   --auto-color: #f59e0b;
   --auto-bg: rgba(245, 158, 11, 0.14);
   --auto-border: rgba(245, 158, 11, 0.3);
+
+  --studio-color: #ec4899;
+  --studio-bg: rgba(236, 72, 153, 0.14);
+  --studio-border: rgba(236, 72, 153, 0.3);
 }
 
 [data-theme="light"] {
@@ -767,6 +771,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .tag-fast { background: rgba(14, 165, 233, 0.15); color: #0ea5e9; border: 1px solid rgba(14, 165, 233, 0.3); }
 .tag-omni { background: var(--openai-bg); color: var(--openai-color); border: 1px solid var(--openai-border); }
 .tag-claude { background: var(--claude-bg); color: var(--claude-color); border: 1px solid var(--claude-border); }
+.tag-studio { background: var(--studio-bg); color: var(--studio-color); border: 1px solid var(--studio-border); }
 
 .model-check-icon {
   color: var(--accent);
@@ -788,6 +793,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .theme-llama { background: rgba(4, 104, 255, 0.14); color: #0468ff; border-color: rgba(4, 104, 255, 0.3); }
 .theme-mistral { background: var(--mistral-bg); color: var(--mistral-color); border-color: var(--mistral-border); }
 .theme-auto { background: var(--auto-bg); color: var(--auto-color); border-color: var(--auto-border); }
+.theme-studio { background: var(--studio-bg); color: var(--studio-color); border-color: var(--studio-border); }
 
 /* Topbar Right Actions */
 .topbar-right {
@@ -2591,6 +2597,8 @@ const AI_ICONS = {
 
   mistral: '<svg viewBox="0 0 256 233" fill="currentColor" class="ai-brand-svg"><path d="M186.182 0h46.545v46.545h-46.545z" fill="#f2a73b"/><path fill="#f7d046" d="M209.455 0H256v46.545h-46.545z"/><path d="M0 0h46.545v46.545H0zM0 46.545h46.545V93.09H0zM0 93.091h46.545v46.545H0zM0 139.636h46.545v46.545H0zM0 186.182h46.545V233H0z" fill="#eb5829"/><path d="M46.545 186.182h46.545V233H46.545zM93.091 186.182h46.545V233H93.091zM139.636 186.182h46.545V233h-46.545zM186.182 186.182h46.545V233h-46.545z" fill="#ea3326"/><path d="M139.636 139.636h46.545v46.545h-46.545z" fill="#ee792f"/><path d="M186.182 139.636h46.545v46.545h-46.545z" fill="#eb5829"/><path d="M186.182 93.091h46.545v46.545h-46.545z" fill="#f2a73b"/><path d="M186.182 46.545h46.545V93.09h-46.545z" fill="#f7d046"/><path d="M139.636 46.545h46.545V93.09h-46.545z" fill="#ee792f"/><path d="M93.091 46.545h46.545V93.09H93.091z" fill="#eb5829"/><path d="M46.545 46.545h46.545V93.09H46.545z" fill="#ea3326"/></svg>',
 
+  studio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ai-brand-svg"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>',
+
   auto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="ai-brand-svg"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
 };
 
@@ -2605,53 +2613,85 @@ function getModelMeta(rawId) {
       shortName: 'Auto',
       badge: 'SMART',
       tagClass: 'tag-smart',
-      desc: 'Automatic routing across Gemini & APInex',
+      desc: 'Automatic routing across OpenAI, Claude & Gemini',
       themeClass: 'theme-auto',
       iconSvg: AI_ICONS.auto
     };
   }
+  if (str.includes('studio') || str.includes('canvas')) {
+    const isCreative = str.includes('creative');
+    const name = isCreative ? 'Bytes Canvas · Creative Art' : 'Bytes Studio · Photorealistic';
+    return {
+      family: 'studio',
+      brand: 'Visual Studio',
+      displayName: name,
+      shortName: isCreative ? 'Canvas Art' : 'Studio Realistic',
+      badge: isCreative ? 'CREATIVE ART' : 'PHOTOREALISTIC',
+      tagClass: 'tag-studio',
+      desc: isCreative ? 'Stylized concept art & creative illustration' : 'High-fidelity photorealistic visual generation',
+      themeClass: 'theme-studio',
+      iconSvg: AI_ICONS.studio
+    };
+  }
   if (str.includes('claude')) {
-    const isSonnet = str.includes('sonnet');
-    const name = isSonnet ? (str.includes('4.6') ? 'Claude Sonnet 4.6' : 'Claude 3.5 Sonnet') : 'Anthropic Claude';
+    let name = 'Claude 3.5 Sonnet';
+    let badge = 'ENGINEERING';
+    if (str.includes('haiku')) {
+      name = 'Claude 3.5 Haiku';
+      badge = 'FAST';
+    } else if (str.includes('opus')) {
+      name = 'Claude 3 Opus';
+      badge = 'DEEP THINK';
+    } else if (str.includes('4.6')) {
+      name = 'Claude Sonnet 4.6';
+    }
     return {
       family: 'claude',
       brand: 'Anthropic',
       displayName: name,
       shortName: name,
-      badge: str.includes('free') ? 'FREE TIER' : 'REASONING',
+      badge: str.includes('free') ? 'FREE TIER' : badge,
       tagClass: str.includes('free') ? 'tag-free' : 'tag-claude',
       desc: 'Anthropic · Nuanced prose & code architecture',
       themeClass: 'theme-claude',
       iconSvg: AI_ICONS.claude
     };
   }
-  if (str.includes('deepseek')) {
-    const isV4 = str.includes('v4');
-    const name = isV4 ? 'DeepSeek V4 Flash' : 'DeepSeek Chat';
-    return {
-      family: 'deepseek',
-      brand: 'DeepSeek',
-      displayName: name,
-      shortName: name,
-      badge: str.includes('free') ? 'FREE TIER' : 'CODE & MATH',
-      tagClass: str.includes('free') ? 'tag-free' : 'tag-fast',
-      desc: 'DeepSeek · High-performance math & code synthesis',
-      themeClass: 'theme-deepseek',
-      iconSvg: AI_ICONS.deepseek
-    };
-  }
   if (str.includes('gpt') || str.includes('openai') || str.includes('o1') || str.includes('o3')) {
-    const name = str.includes('4o') ? 'GPT-4o' : str.includes('o1') ? 'OpenAI o1' : 'GPT-4o Mini';
+    let name = 'GPT-4o';
+    let badge = 'OMNI';
+    if (str.includes('mini')) {
+      name = 'GPT-4o Mini';
+      badge = 'FAST';
+    } else if (str.includes('o1')) {
+      name = 'OpenAI o1';
+      badge = 'REASONING';
+    }
     return {
       family: 'openai',
       brand: 'OpenAI',
       displayName: name,
       shortName: name,
-      badge: 'OMNI',
+      badge: badge,
       tagClass: 'tag-omni',
       desc: 'OpenAI · Multimodal flagship intelligence',
       themeClass: 'theme-openai',
       iconSvg: AI_ICONS.openai
+    };
+  }
+  if (str.includes('deepseek')) {
+    const isV4 = str.includes('v4');
+    const name = isV4 ? 'DeepSeek V4 Flash' : 'DeepSeek V3';
+    return {
+      family: 'deepseek',
+      brand: 'DeepSeek',
+      displayName: name,
+      shortName: name,
+      badge: str.includes('free') ? 'FREE TIER' : 'MATH & CODE',
+      tagClass: str.includes('free') ? 'tag-free' : 'tag-fast',
+      desc: 'DeepSeek · High-performance math & code synthesis',
+      themeClass: 'theme-deepseek',
+      iconSvg: AI_ICONS.deepseek
     };
   }
   if (str.includes('llama')) {
@@ -2681,14 +2721,14 @@ function getModelMeta(rawId) {
     };
   }
   // Default to Google Gemini for Gemini models
-  const is38 = str.includes('3.8');
+  const isPro = str.includes('pro');
   const isLite = str.includes('lite');
-  const name = is38 ? 'Gemini 3.8 Flash' : isLite ? 'Gemini Flash Lite' : 'Gemini 3.5 Flash';
-  const badge = is38 ? 'REASONING' : isLite ? 'INSTANT' : 'BALANCED';
-  const tagClass = str.includes('free') ? 'tag-free' : (is38 ? 'tag-reasoning' : (isLite ? 'tag-fast' : 'tag-smart'));
+  const name = isPro ? 'Gemini 2.5 Pro' : isLite ? 'Gemini Flash Lite' : 'Gemini 2.5 Flash';
+  const badge = isPro ? 'RESEARCH' : isLite ? 'INSTANT' : 'BALANCED';
+  const tagClass = str.includes('free') ? 'tag-free' : (isPro ? 'tag-reasoning' : (isLite ? 'tag-fast' : 'tag-smart'));
   return {
     family: 'gemini',
-    brand: 'Google AI',
+    brand: 'Google Gemini',
     displayName: name,
     shortName: name,
     badge: (str.includes('free') ? 'FREE · ' : '') + badge,
@@ -3039,21 +3079,37 @@ async function loadModelCatalog() {
     modelCatalog = {
       providers: [
         {
-          id: 'gemini',
-          label: 'Google Gemini',
+          id: 'openai',
+          label: 'OpenAI',
           models: [
-            { id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash · Deep Reasoning' },
-            { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash · Fast & Balanced' },
-            { id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite · Instant Speed' }
+            { id: 'openai/gpt-4o', label: 'GPT-4o · Omni Flagship' },
+            { id: 'openai/gpt-4o-mini', label: 'GPT-4o Mini · Fast & Agile' },
+            { id: 'openai/o1', label: 'OpenAI o1 · Deep Reasoning' }
           ]
         },
         {
-          id: 'apinex',
-          label: 'APInex AI · Free Tier',
+          id: 'claude',
+          label: 'Anthropic Claude',
           models: [
-            { id: 'free/gemini-3.8-flash', label: 'Gemini 3.8 Flash · Free Tier' },
-            { id: 'free/deepseek-v4-flash-0731', label: 'DeepSeek V4 Flash · Free Tier' },
-            { id: 'free/claude-sonnet-4.6', label: 'Claude Sonnet 4.6 · Free Tier' }
+            { id: 'anthropic/claude-3-5-sonnet', label: 'Claude 3.5 Sonnet · Premier Engineering' },
+            { id: 'anthropic/claude-3-5-haiku', label: 'Claude 3.5 Haiku · Instant Speed' },
+            { id: 'anthropic/claude-3-opus', label: 'Claude 3 Opus · Deep Analysis' }
+          ]
+        },
+        {
+          id: 'gemini',
+          label: 'Google Gemini',
+          models: [
+            { id: 'gemini/gemini-2.5-flash', label: 'Gemini 2.5 Flash · Balanced & Fast' },
+            { id: 'gemini/gemini-2.5-pro', label: 'Gemini 2.5 Pro · Research & Logic' }
+          ]
+        },
+        {
+          id: 'studio',
+          label: 'Visual Studio',
+          models: [
+            { id: 'studio/bytes-canvas-realistic', label: 'Bytes Studio · Photorealistic Image', isImage: true },
+            { id: 'studio/bytes-canvas-creative', label: 'Bytes Canvas · Stylized Art & Concept', isImage: true }
           ]
         }
       ],
@@ -3747,7 +3803,8 @@ async function sendMessage(text) {
   $('#sendBtn').title = 'Stop generating';
   $('#modelIndicator').classList.add('thinking');
 
-  const currentModelMeta = getModelMeta(imageMode ? 'gemini-nano-banana-2.1' : selectedModel);
+  const targetImageModel = selectedModel.startsWith('studio/') ? selectedModel : 'studio/bytes-canvas-realistic';
+  const currentModelMeta = getModelMeta(imageMode ? targetImageModel : selectedModel);
 
   const typingRow = document.createElement('div');
   typingRow.className = 'message-row assistant';
@@ -3758,7 +3815,7 @@ async function sendMessage(text) {
         '<span class="meta-brand-badge ' + currentModelMeta.themeClass + '">' + currentModelMeta.iconSvg + '<span>' + escapeHtml(currentModelMeta.displayName) + '</span></span>' +
       '</div>' +
       '<div class="message-bubble"><span style="color:var(--muted);font-size:13px;">' +
-        (imageMode ? 'Generating artwork in Gemini Studio…' : webSearchEnabled ? 'Searching the live web for verified facts…' : 'Thinking with ' + escapeHtml(currentModelMeta.displayName) + '…') +
+        (imageMode ? 'Creating artwork in ' + escapeHtml(currentModelMeta.displayName) + '…' : webSearchEnabled ? 'Searching the live web for verified facts…' : 'Thinking with ' + escapeHtml(currentModelMeta.displayName) + '…') +
       '</span><span class="streaming-cursor"></span></div>' +
     '</div>';
   chatView.appendChild(typingRow);
@@ -3773,6 +3830,7 @@ async function sendMessage(text) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: text,
+          model: targetImageModel,
           attachments: sentFiles.filter(f => f.data).map(f => ({ name: f.name, type: f.type, data: f.data }))
         }),
         signal: currentAbortController.signal
@@ -3781,8 +3839,9 @@ async function sendMessage(text) {
       if (!response.ok) throw new Error(data.error || 'Image generation failed.');
 
       typingRow.remove();
-      makeMessage('assistant', data.reply || 'Here is your generated image.', { imageData: data.imageData, mimeType: data.mimeType, model: 'gemini-nano-banana-2.1' });
-      conv.messages.push({ role: 'assistant', text: data.reply || 'Image generated.', generatedImage: true, model: 'gemini-nano-banana-2.1' });
+      const imageModelUsed = data.model || targetImageModel;
+      makeMessage('assistant', data.reply || 'Here is your generated image.', { imageData: data.imageData, mimeType: data.mimeType, model: imageModelUsed });
+      conv.messages.push({ role: 'assistant', text: data.reply || 'Image generated.', generatedImage: true, model: imageModelUsed });
     } else {
       const personaPrompt = PERSONA_PROMPTS[selectedPersona] || PERSONA_PROMPTS.default;
       const combinedMemory = (memoryText ? memoryText + '\n\n' : '') + '[Assistant Persona Directive]: ' + personaPrompt;
@@ -3969,7 +4028,7 @@ function toggleImageMode(force) {
   btn.classList.toggle('image-active', imageMode);
   btn.setAttribute('aria-pressed', String(imageMode));
   $('#composer').classList.toggle('image-mode-active', imageMode);
-  input.placeholder = imageMode ? 'Describe the image you want Gemini to generate or edit…' : 'Ask anything, or start with a thought…';
+  input.placeholder = imageMode ? 'Describe the image you want Bytes Studio to create…' : 'Ask anything, or start with a thought…';
   toast(imageMode ? '🎨 Image Studio Active' : 'Chat mode restored');
 }
 $('#imageModeBtn').onclick = () => toggleImageMode();
@@ -4158,9 +4217,10 @@ async function openSettingsModal() {
         }
         if (provEl) {
           const provs = [];
+          if (data.providers?.meta) provs.push('Multi-Key Gateway (' + (data.providers.metaKeyCount || 10) + ' keys)');
           if (data.providers?.gemini) provs.push('Gemini');
           if (data.providers?.apinex) provs.push('APInex');
-          provEl.textContent = provs.length ? provs.join(' + ') : 'Auto';
+          provEl.textContent = provs.length ? provs.join(' + ') : 'Active';
         }
       }
     } catch (_) {

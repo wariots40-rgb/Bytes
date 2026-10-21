@@ -420,6 +420,382 @@ class ApinexAdapter {
   }
 }
 
+// 10 Curated Virtual Models for Frontend (Zero Meta branding exposed)
+const VIRTUAL_MODELS = {
+  // OpenAI Family
+  "openai/gpt-4o": {
+    id: "openai/gpt-4o",
+    label: "GPT-4o · Omni Flagship",
+    brandGroup: "openai",
+    provider: "openai",
+    targetModel: "llama-3.3-70b-instruct",
+    temperature: 0.7,
+    personaPrompt: "You are GPT-4o, OpenAI's flagship multimodal intelligence model. You are highly capable, direct, structured, and pragmatic. Provide clean, production-ready code with concise explanations and well-structured Markdown tables when appropriate. Avoid unnecessary conversational preambles."
+  },
+  "openai/gpt-4o-mini": {
+    id: "openai/gpt-4o-mini",
+    label: "GPT-4o Mini · Fast & Agile",
+    brandGroup: "openai",
+    provider: "openai",
+    targetModel: "llama-3.3-70b-instruct",
+    temperature: 0.7,
+    personaPrompt: "You are GPT-4o Mini by OpenAI. You provide rapid, accurate, and concise answers, perfect for quick iteration and clear answers."
+  },
+  "openai/o1": {
+    id: "openai/o1",
+    label: "OpenAI o1 · Deep Reasoning",
+    brandGroup: "openai",
+    provider: "openai",
+    targetModel: "llama-3.3-70b-instruct",
+    temperature: 0.35,
+    personaPrompt: "You are OpenAI o1, a premier reasoning model designed for complex multi-step reasoning, mathematical proof, algorithm design, and deep technical architecture. Think through edge cases, explain your thought process clearly, and verify logical correctness before concluding."
+  },
+
+  // Anthropic Claude Family
+  "anthropic/claude-3-5-sonnet": {
+    id: "anthropic/claude-3-5-sonnet",
+    label: "Claude 3.5 Sonnet · Premier Engineering",
+    brandGroup: "claude",
+    provider: "claude",
+    targetModel: "llama-3.3-70b-instruct",
+    temperature: 0.6,
+    personaPrompt: "You are Claude 3.5 Sonnet, an AI assistant created by Anthropic. You are thoughtful, nuanced, intellectually rigorous, and an elite software engineer. When writing code, provide complete, production-ready, beautiful implementations with clean naming and edge-case handling. Your prose is calm, articulate, and insightful."
+  },
+  "anthropic/claude-3-5-haiku": {
+    id: "anthropic/claude-3-5-haiku",
+    label: "Claude 3.5 Haiku · Instant Speed",
+    brandGroup: "claude",
+    provider: "claude",
+    targetModel: "llama-3.3-70b-instruct",
+    temperature: 0.6,
+    personaPrompt: "You are Claude 3.5 Haiku by Anthropic. You are exceptionally fast, sharp, and concise. Deliver answers directly with maximum signal and zero conversational fluff."
+  },
+  "anthropic/claude-3-opus": {
+    id: "anthropic/claude-3-opus",
+    label: "Claude 3 Opus · Deep Analysis",
+    brandGroup: "claude",
+    provider: "claude",
+    targetModel: "llama-3.3-70b-instruct",
+    temperature: 0.5,
+    personaPrompt: "You are Claude 3 Opus, Anthropic's deep analytical model. You excel at comprehensive analysis, philosophical depth, holistic system design, and synthesizing complex ideas into structured frameworks."
+  },
+
+  // Google Gemini Family
+  "gemini/gemini-2.5-flash": {
+    id: "gemini/gemini-2.5-flash",
+    label: "Gemini 2.5 Flash · Balanced & Fast",
+    brandGroup: "gemini",
+    provider: "gemini",
+    targetModel: "llama-3.3-70b-instruct",
+    temperature: 0.7,
+    personaPrompt: "You are Google Gemini 2.5 Flash, a versatile multimodal AI model by Google. You are fast, highly responsive, adaptable, and skilled at multimodal synthesis and structured formatting."
+  },
+  "gemini/gemini-2.5-pro": {
+    id: "gemini/gemini-2.5-pro",
+    label: "Gemini 2.5 Pro · Research & Logic",
+    brandGroup: "gemini",
+    provider: "gemini",
+    targetModel: "llama-3.3-70b-instruct",
+    temperature: 0.55,
+    personaPrompt: "You are Google Gemini 2.5 Pro, Google's advanced frontier model for complex reasoning, academic research, code synthesis, and deep multi-document understanding."
+  },
+
+  // Visual Studio Family (Image Generation)
+  "studio/bytes-canvas-realistic": {
+    id: "studio/bytes-canvas-realistic",
+    label: "Bytes Studio · Photorealistic Image",
+    brandGroup: "studio",
+    provider: "studio",
+    isImage: true,
+    targetModel: "muse-image-1.0",
+    personaPrompt: "Photorealistic, hyper-detailed, authentic lighting, cinematic composition."
+  },
+  "studio/bytes-canvas-creative": {
+    id: "studio/bytes-canvas-creative",
+    label: "Bytes Canvas · Stylized Art & Concept",
+    brandGroup: "studio",
+    provider: "studio",
+    isImage: true,
+    targetModel: "muse-image-1.0",
+    personaPrompt: "Creative, stylized, concept art, artistic flair, vivid dramatic lighting."
+  }
+};
+
+class MetaModelAdapter {
+  constructor(config = {}) {
+    const rawKeys = Array.isArray(config.apiKeys) ? config.apiKeys : [];
+    if (config.apiKey) rawKeys.push(config.apiKey);
+    this.apiKeys = Array.from(new Set(rawKeys.map(k => String(k || "").trim()).filter(Boolean)));
+    this.baseUrl = (config.baseUrl || "https://api.meta.ai/v1").replace(/\/+$/, "");
+    this.baseModel = config.baseModel || "llama-3.3-70b-instruct";
+    this.imageModel = config.imageModel || "muse-image-1.0";
+    this.fetchFn = config.fetchFn || global.fetch;
+    this.keyIndex = 0;
+  }
+
+  isConfigured() {
+    return this.apiKeys.length > 0;
+  }
+
+  getNextKey() {
+    if (!this.apiKeys.length) return null;
+    const key = this.apiKeys[this.keyIndex % this.apiKeys.length];
+    this.keyIndex = (this.keyIndex + 1) % this.apiKeys.length;
+    return key;
+  }
+
+  getCatalogGroups() {
+    const openaiModels = [];
+    const claudeModels = [];
+    const geminiModels = [];
+    const studioModels = [];
+
+    for (const [id, m] of Object.entries(VIRTUAL_MODELS)) {
+      if (m.brandGroup === "openai") openaiModels.push({ id, label: m.label, provider: "openai" });
+      else if (m.brandGroup === "claude") claudeModels.push({ id, label: m.label, provider: "claude" });
+      else if (m.brandGroup === "gemini") geminiModels.push({ id, label: m.label, provider: "gemini" });
+      else if (m.brandGroup === "studio") studioModels.push({ id, label: m.label, provider: "studio", isImage: true });
+    }
+
+    return [
+      { id: "openai", label: "OpenAI", models: openaiModels },
+      { id: "claude", label: "Anthropic Claude", models: claudeModels },
+      { id: "gemini", label: "Google Gemini", models: geminiModels },
+      { id: "studio", label: "Visual Studio", models: studioModels }
+    ];
+  }
+
+  async _executeChat(apiKey, { model, temperature, messages, systemText, files, stream }, callbacks = {}) {
+    const isStream = stream === true;
+    const userMessages = messages.map((msg, index) => {
+      let content = msg.text.trim();
+      if (index === messages.length - 1 && Array.isArray(files) && files.length) {
+        const parts = [{ type: "text", text: content }];
+        for (const file of files) {
+          if (file.text !== undefined) {
+            parts.push({ type: "text", text: "\n\n[Attached text file: " + file.name + "]\n" + file.text });
+          } else if (file.type && file.type.startsWith("image/")) {
+            parts.push({
+              type: "image_url",
+              image_url: { url: "data:" + file.type + ";base64," + file.data }
+            });
+          }
+        }
+        content = parts;
+      }
+      return { role: msg.role === "assistant" ? "assistant" : "user", content };
+    });
+
+    const apiMessages = [{ role: "system", content: systemText }, ...userMessages];
+
+    let upstream;
+    try {
+      upstream = await this.fetchFn(this.baseUrl + "/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + apiKey,
+          "Accept": isStream ? "text/event-stream" : "application/json"
+        },
+        body: JSON.stringify({
+          model: model || this.baseModel,
+          messages: apiMessages,
+          stream: isStream,
+          temperature: typeof temperature === "number" ? temperature : 0.7,
+          max_tokens: 4096
+        }),
+        signal: AbortSignal.timeout(60000)
+      });
+    } catch (error) {
+      const timedOut = error.name === "TimeoutError" || error.name === "AbortError";
+      throw new ProviderError(timedOut ? "The request took too long. Please try again." : "Could not reach the AI gateway. Check connection and try again.", timedOut ? 504 : 502);
+    }
+
+    if (!upstream.ok) {
+      const data = await upstream.json().catch(() => ({}));
+      const rawMsg = data?.error?.message || data?.message;
+      console.error("Meta Model API error:", upstream.status, rawMsg || "Unknown error");
+      const userMsg = upstream.status === 429
+        ? "AI gateway is receiving too many requests. Please try again shortly."
+        : rawMsg || "The AI model could not complete that request.";
+      throw new ProviderError(userMsg, upstream.status === 429 ? 429 : (upstream.status || 502));
+    }
+
+    if (isStream) {
+      const reader = upstream.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, "\n");
+          let lineEnd;
+          while ((lineEnd = buffer.indexOf("\n")) !== -1) {
+            const rawLine = buffer.slice(0, lineEnd);
+            buffer = buffer.slice(lineEnd + 1);
+            const line = rawLine.trim();
+            if (!line.startsWith("data:")) continue;
+            const dataStr = line.replace(/^data:\s*/, "");
+            if (dataStr === "[DONE]") {
+              callbacks.onDone?.();
+              return { reply: "", model, provider: "meta" };
+            }
+            try {
+              const chunk = JSON.parse(dataStr);
+              const delta = chunk?.choices?.[0]?.delta?.content;
+              if (delta) callbacks.onChunk?.(delta);
+            } catch (_) {}
+          }
+        }
+        callbacks.onDone?.();
+        return { reply: "", model, provider: "meta" };
+      } catch (err) {
+        if (err instanceof ProviderError) throw err;
+        throw new ProviderError("The response stream was interrupted. Please try again.", 502);
+      }
+    }
+
+    const data = await upstream.json().catch(() => ({}));
+    const answer = data?.choices?.[0]?.message?.content;
+    const text = typeof answer === "string" ? answer :
+      Array.isArray(answer) ? answer.map(part => part?.text || "").join("") : "";
+    if (!text.trim()) throw new ProviderError("Empty response returned. Try another query.", 502);
+    return { reply: text.trim(), model, provider: "meta" };
+  }
+
+  async chat({ model, messages, systemText, files, stream }, callbacks = {}) {
+    if (!this.isConfigured()) {
+      throw new ProviderError("Meta API key pool is not configured. Add META_API_KEY_1..10 to the server environment.", 503);
+    }
+    const virtual = VIRTUAL_MODELS[model] || {
+      targetModel: this.baseModel,
+      temperature: 0.7,
+      personaPrompt: ""
+    };
+    const effectiveSystemText = (virtual.personaPrompt ? virtual.personaPrompt + "\n\n" : "") + (systemText || "");
+    const maxAttempts = Math.max(1, Math.min(this.apiKeys.length, 5));
+    let lastError = null;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const apiKey = this.getNextKey();
+      if (!apiKey) break;
+
+      try {
+        return await this._executeChat(apiKey, {
+          model: virtual.targetModel || this.baseModel,
+          temperature: virtual.temperature,
+          messages,
+          systemText: effectiveSystemText,
+          files,
+          stream
+        }, callbacks);
+      } catch (err) {
+        lastError = err;
+        if (err.statusCode === 429 || err.statusCode === 503) {
+          console.warn(`Meta API key attempt ${attempt + 1}/${maxAttempts} rate-limited or busy (${err.message}); rotating to next key.`);
+          continue;
+        }
+        throw err;
+      }
+    }
+    throw lastError || new ProviderError("All API keys in the pool were busy. Please try again shortly.", 429);
+  }
+
+  async generateImage({ prompt, files, model }) {
+    if (!this.isConfigured()) {
+      throw new ProviderError("Meta API key pool is not configured. Add META_API_KEY_1..10 to the server environment.", 503);
+    }
+    const virtual = VIRTUAL_MODELS[model] || VIRTUAL_MODELS["studio/bytes-canvas-realistic"];
+    const enhancedPrompt = virtual.personaPrompt ? `${prompt}. (${virtual.personaPrompt})` : prompt;
+    const maxAttempts = Math.max(1, Math.min(this.apiKeys.length, 5));
+    let lastError = null;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const apiKey = this.getNextKey();
+      if (!apiKey) break;
+
+      try {
+        let response = await this.fetchFn(this.baseUrl + "/images/generations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + apiKey
+          },
+          body: JSON.stringify({
+            model: virtual.targetModel || this.imageModel,
+            prompt: enhancedPrompt,
+            n: 1,
+            size: "1024x1024",
+            response_format: "b64_json"
+          }),
+          signal: AbortSignal.timeout(90000)
+        });
+
+        if (response.status === 404) {
+          response = await this.fetchFn(this.baseUrl + "/responses", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + apiKey
+            },
+            body: JSON.stringify({
+              model: virtual.targetModel || this.imageModel,
+              prompt: enhancedPrompt
+            }),
+            signal: AbortSignal.timeout(90000)
+          });
+        }
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          const msg = data?.error?.message || data?.message || "HTTP " + response.status;
+          if (response.status === 429 || response.status === 503) {
+            console.warn(`Meta Image API key attempt ${attempt + 1} busy (${msg}); rotating key.`);
+            lastError = new ProviderError(msg, response.status);
+            continue;
+          }
+          throw new ProviderError(msg, response.status || 502);
+        }
+
+        const data = await response.json().catch(() => ({}));
+        const b64 = data?.data?.[0]?.b64_json || data?.output_image?.data || data?.output?.find?.(p => p.type === "image")?.data;
+        if (b64) {
+          return {
+            reply: data?.output_text || "Here is your generated image.",
+            imageData: b64,
+            mimeType: "image/png",
+            model: model || "studio/bytes-canvas-realistic"
+          };
+        }
+        const url = data?.data?.[0]?.url;
+        if (url) {
+          const imgRes = await this.fetchFn(url, { signal: AbortSignal.timeout(30000) });
+          if (imgRes.ok) {
+            const ab = await imgRes.arrayBuffer();
+            const base64 = Buffer.from(ab).toString("base64");
+            return {
+              reply: data?.output_text || "Here is your generated image.",
+              imageData: base64,
+              mimeType: imgRes.headers.get("content-type") || "image/png",
+              model: model || "studio/bytes-canvas-realistic"
+            };
+          }
+        }
+        throw new ProviderError("Image model returned no image data. Try refining your prompt.", 502);
+      } catch (err) {
+        lastError = err;
+        if (err.statusCode === 429 || err.statusCode === 503) {
+          continue;
+        }
+        throw err;
+      }
+    }
+    throw lastError || new ProviderError("All image API keys were busy. Please try again shortly.", 429);
+  }
+}
+
 class ProviderGateway {
   constructor(options = {}) {
     this.gemini = new GeminiAdapter({
@@ -434,25 +810,44 @@ class ProviderGateway {
       defaultModel: options.apinexModel,
       fetchFn: options.fetchFn
     });
+    this.meta = new MetaModelAdapter({
+      apiKeys: options.metaApiKeys,
+      baseUrl: options.metaBaseUrl,
+      baseModel: options.metaModel,
+      imageModel: options.metaImageModel,
+      fetchFn: options.fetchFn
+    });
   }
 
   hasConfiguredProvider() {
-    return this.gemini.isConfigured() || this.apinex.isConfigured();
+    return this.gemini.isConfigured() || this.apinex.isConfigured() || this.meta.isConfigured();
   }
 
   resolveProvider(requestedProvider) {
     let p = requestedProvider || "auto";
     if (p === "auto") {
-      p = this.gemini.isConfigured() ? "gemini" : this.apinex.isConfigured() ? "apinex" : "none";
+      if (this.meta.isConfigured()) return "meta";
+      if (this.gemini.isConfigured()) return "gemini";
+      if (this.apinex.isConfigured()) return "apinex";
+      p = "none";
     }
-    if (p === "gemini" && !this.gemini.isConfigured()) {
+    if (p === "meta" && !this.meta.isConfigured()) {
+      throw new ProviderError("Meta API key pool is not configured. Add META_API_KEY_1..10 to the server environment.", 503);
+    }
+    if (["openai", "claude", "gemini", "studio"].includes(p)) {
+      if (this.meta.isConfigured()) return "meta";
+      if (p === "gemini" && this.gemini.isConfigured()) return "gemini";
+      if (this.apinex.isConfigured()) return "apinex";
+      if (this.gemini.isConfigured()) return "gemini";
+    }
+    if (p === "gemini" && !this.gemini.isConfigured() && !this.meta.isConfigured()) {
       throw new ProviderError("Gemini is not configured. Add GEMINI_API_KEY to the server environment.", 503);
     }
-    if (p === "apinex" && !this.apinex.isConfigured()) {
+    if (p === "apinex" && !this.apinex.isConfigured() && !this.meta.isConfigured()) {
       throw new ProviderError("APInex is not configured. Add APINEX_API_KEY to the server environment.", 503);
     }
-    if (!["gemini", "apinex"].includes(p)) {
-      throw new ProviderError("No AI provider is configured. Add GEMINI_API_KEY or APINEX_API_KEY to the server environment.", 503);
+    if (!["gemini", "apinex", "meta"].includes(p)) {
+      throw new ProviderError("No AI provider is configured. Add GEMINI_API_KEY, APINEX_API_KEY, or META_API_KEY_1..10 to the server environment.", 503);
     }
     return p;
   }
@@ -461,60 +856,89 @@ class ProviderGateway {
     const providers = [];
     const errors = {};
 
-    if (this.gemini.isConfigured()) {
-      try {
-        const models = await this.gemini.fetchModels();
-        if (models.length) providers.push({ id: "gemini", label: "Google Gemini", models });
-        else errors.gemini = "Gemini returned no models supporting generateContent.";
-      } catch (err) {
-        errors.gemini = err.message;
-        providers.push({
-          id: "gemini",
-          label: "Google Gemini (configured default)",
-          models: [{ id: this.gemini.defaultModel, label: this.gemini.defaultModel + " · configured default", provider: "gemini" }]
-        });
+    if (this.meta.isConfigured()) {
+      providers.push(...this.meta.getCatalogGroups());
+    } else {
+      if (this.gemini.isConfigured()) {
+        try {
+          const models = await this.gemini.fetchModels();
+          if (models.length) providers.push({ id: "gemini", label: "Google Gemini", models });
+          else errors.gemini = "Gemini returned no models supporting generateContent.";
+        } catch (err) {
+          errors.gemini = err.message;
+          providers.push({
+            id: "gemini",
+            label: "Google Gemini (configured default)",
+            models: [{ id: this.gemini.defaultModel, label: this.gemini.defaultModel + " · configured default", provider: "gemini" }]
+          });
+        }
+      }
+
+      if (this.apinex.isConfigured()) {
+        try {
+          const models = await this.apinex.fetchModels();
+          if (models.length) {
+            const freeModels = models.filter(m => m.isFree);
+            const paidModels = models.filter(m => !m.isFree);
+            if (freeModels.length && paidModels.length) {
+              providers.push({ id: "apinex", label: "APInex · Free Tier", models: freeModels });
+              providers.push({ id: "apinex", label: "APInex · Paid / Credits", models: paidModels });
+            } else {
+              providers.push({ id: "apinex", label: "APInex", models });
+            }
+          }
+        } catch (err) {
+          errors.apinex = err.message;
+          providers.push({
+            id: "apinex",
+            label: "APInex · Free Tier (configured default)",
+            models: [{
+              id: this.apinex.defaultModel,
+              label: this.apinex.defaultModel + " · Free Tier",
+              provider: "apinex",
+              isFree: true
+            }]
+          });
+        }
       }
     }
 
-    if (this.apinex.isConfigured()) {
-      try {
-        const models = await this.apinex.fetchModels();
-        if (models.length) {
-          const freeModels = models.filter(m => m.isFree);
-          const paidModels = models.filter(m => !m.isFree);
-          if (freeModels.length && paidModels.length) {
-            providers.push({ id: "apinex", label: "APInex · Free Tier", models: freeModels });
-            providers.push({ id: "apinex", label: "APInex · Paid / Credits", models: paidModels });
-          } else {
-            providers.push({ id: "apinex", label: "APInex", models });
-          }
-        }
-      } catch (err) {
-        errors.apinex = err.message;
-        providers.push({
-          id: "apinex",
-          label: "APInex · Free Tier (configured default)",
-          models: [{
-            id: this.apinex.defaultModel,
-            label: this.apinex.defaultModel + " · Free Tier",
-            provider: "apinex",
-            isFree: true
-          }]
-        });
-      }
-    }
+    const defaultSelection = this.meta.isConfigured()
+      ? { provider: "claude", model: "anthropic/claude-3-5-sonnet" }
+      : this.gemini.isConfigured()
+        ? { provider: "gemini", model: this.gemini.defaultModel }
+        : this.apinex.isConfigured()
+          ? { provider: "apinex", model: this.apinex.defaultModel }
+          : null;
 
     return {
       providers,
       auto: true,
-      default: this.gemini.isConfigured() ? { provider: "gemini", model: this.gemini.defaultModel } :
-        this.apinex.isConfigured() ? { provider: "apinex", model: this.apinex.defaultModel } : null,
-      configured: { gemini: this.gemini.isConfigured(), apinex: this.apinex.isConfigured() },
+      default: defaultSelection,
+      configured: {
+        gemini: this.gemini.isConfigured(),
+        apinex: this.apinex.isConfigured(),
+        meta: this.meta.isConfigured(),
+        keyCount: this.meta.apiKeys.length
+      },
       errors
     };
   }
 
   async streamChat({ provider, model, messages, systemText, files, stream, webSearchFallback }, callbacks = {}) {
+    const isVirtual = model && (model.startsWith("openai/") || model.startsWith("anthropic/") || model.startsWith("gemini/") || model.startsWith("studio/"));
+    if (this.meta.isConfigured() && (provider === "meta" || provider === "openai" || provider === "claude" || provider === "studio" || isVirtual)) {
+      try {
+        return await this.meta.chat({ model, messages, systemText, files, stream }, callbacks);
+      } catch (err) {
+        if (this.gemini.isConfigured() && err.statusCode !== 400) {
+          console.warn(`Meta pool chat failed (${err.message}); falling back to Gemini.`);
+          return this.gemini.chat({ model: this.gemini.defaultModel, messages, systemText, files, stream }, callbacks);
+        }
+        throw err;
+      }
+    }
+
     const resolvedProvider = this.resolveProvider(provider);
     if (resolvedProvider === "apinex") {
       try {
@@ -547,11 +971,22 @@ class ProviderGateway {
     }
   }
 
-  async generateImage({ prompt, files }) {
-    if (!this.gemini.isConfigured()) {
-      throw new ProviderError("Bytes needs a Gemini API key configured on the server.", 503);
+  async generateImage({ prompt, files, model }) {
+    if (this.meta.isConfigured()) {
+      try {
+        return await this.meta.generateImage({ prompt, files, model });
+      } catch (err) {
+        if (this.gemini.isConfigured()) {
+          console.warn("Meta Image generation failed (" + err.message + "); falling back to Gemini Studio.");
+          return this.gemini.generateImage({ prompt, files });
+        }
+        throw err;
+      }
     }
-    return this.gemini.generateImage({ prompt, files });
+    if (this.gemini.isConfigured()) {
+      return this.gemini.generateImage({ prompt, files });
+    }
+    throw new ProviderError("Bytes needs a Gemini API key or META_API_KEY configured on the server.", 503);
   }
 }
 
@@ -563,6 +998,8 @@ module.exports = {
   ProviderError,
   GeminiAdapter,
   ApinexAdapter,
+  MetaModelAdapter,
   ProviderGateway,
-  createProviderGateway
+  createProviderGateway,
+  VIRTUAL_MODELS
 };

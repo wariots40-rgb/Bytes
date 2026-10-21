@@ -12,13 +12,33 @@ const REQUIRE_AUTH = String(process.env.REQUIRE_AUTH || "").toLowerCase() === "t
 const SUPABASE_URL = String(process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
 const SUPABASE_PUBLIC_KEY = String(process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "").trim();
 
+// Collect Meta Model API Key Pool (META_API_KEY_1..20, META_API_KEYS, META_API_KEY, MODEL_API_KEY)
+const metaKeys = [];
+if (process.env.META_API_KEYS) {
+  metaKeys.push(...process.env.META_API_KEYS.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean));
+}
+for (let i = 1; i <= 20; i++) {
+  const k = process.env[`META_API_KEY_${i}`];
+  if (k && k.trim()) metaKeys.push(k.trim());
+}
+if (process.env.META_API_KEY && process.env.META_API_KEY.trim()) {
+  metaKeys.push(process.env.META_API_KEY.trim());
+}
+if (process.env.MODEL_API_KEY && process.env.MODEL_API_KEY.trim()) {
+  metaKeys.push(process.env.MODEL_API_KEY.trim());
+}
+const uniqueMetaKeys = Array.from(new Set(metaKeys));
+
 const providerGateway = createProviderGateway({
   geminiApiKey: process.env.GEMINI_API_KEY,
   geminiModel: process.env.GEMINI_MODEL || "gemini-3.5-flash",
   geminiImageModel: process.env.GEMINI_IMAGE_MODEL || "gemini-nano-banana-2.1",
   apinexApiKey: process.env.APINEX_API_KEY,
   apinexBaseUrl: process.env.APINEX_BASE_URL || "https://api.apinex.bond/v1",
-  apinexModel: process.env.APINEX_MODEL || "free/gemini-3.8-flash"
+  apinexModel: process.env.APINEX_MODEL || "free/gemini-3.8-flash",
+  metaApiKeys: uniqueMetaKeys,
+  metaBaseUrl: process.env.META_BASE_URL || "https://api.meta.ai/v1",
+  metaModel: process.env.META_MODEL || "llama-3.3-70b-instruct"
 });
 
 app.disable("x-powered-by");
@@ -116,7 +136,9 @@ app.get("/api/health", (_req, res) => {
     providerConfigured: providerGateway.hasConfiguredProvider(),
     providers: {
       gemini: providerGateway.gemini.isConfigured(),
-      apinex: providerGateway.apinex.isConfigured()
+      apinex: providerGateway.apinex.isConfigured(),
+      meta: providerGateway.meta ? providerGateway.meta.isConfigured() : false,
+      metaKeyCount: providerGateway.meta ? providerGateway.meta.apiKeys.length : 0
     },
     search: {
       searxngConfigured: Boolean(process.env.SEARXNG_URL),
@@ -517,7 +539,8 @@ app.post("/api/image", requireSupabaseUser, imageLimiter, async (req, res) => {
   try {
     const result = await providerGateway.generateImage({
       prompt,
-      files: checked.files
+      files: checked.files,
+      model: typeof req.body?.model === "string" ? req.body.model.trim() : ""
     });
     return res.json(result);
   } catch (error) {
