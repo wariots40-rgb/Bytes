@@ -2634,16 +2634,25 @@ function getModelMeta(rawId) {
     };
   }
   if (str.includes('claude')) {
-    let name = 'Claude 3.5 Sonnet';
-    let badge = 'ENGINEERING';
-    if (str.includes('haiku')) {
+    let name = 'Claude 3.7 Sonnet';
+    let badge = 'HYBRID REASONING';
+    if (str.includes('3-5') || str.includes('3.5')) {
+      if (str.includes('haiku')) {
+        name = 'Claude 3.5 Haiku';
+        badge = 'FAST';
+      } else {
+        name = 'Claude 3.5 Sonnet';
+        badge = 'ENGINEERING';
+      }
+    } else if (str.includes('haiku')) {
       name = 'Claude 3.5 Haiku';
       badge = 'FAST';
     } else if (str.includes('opus')) {
       name = 'Claude 3 Opus';
       badge = 'DEEP THINK';
-    } else if (str.includes('4.6')) {
-      name = 'Claude Sonnet 4.6';
+    } else if (str.includes('3-7') || str.includes('3.7')) {
+      name = 'Claude 3.7 Sonnet';
+      badge = 'HYBRID REASONING';
     }
     return {
       family: 'claude',
@@ -3091,24 +3100,24 @@ async function loadModelCatalog() {
           id: 'claude',
           label: 'Anthropic Claude',
           models: [
+            { id: 'anthropic/claude-3-7-sonnet', label: 'Claude 3.7 Sonnet · Hybrid Reasoning Flagship' },
             { id: 'anthropic/claude-3-5-sonnet', label: 'Claude 3.5 Sonnet · Premier Engineering' },
-            { id: 'anthropic/claude-3-5-haiku', label: 'Claude 3.5 Haiku · Instant Speed' },
-            { id: 'anthropic/claude-3-opus', label: 'Claude 3 Opus · Deep Analysis' }
+            { id: 'anthropic/claude-3-5-haiku', label: 'Claude 3.5 Haiku · Instant Speed' }
           ]
         },
         {
           id: 'gemini',
           label: 'Google Gemini',
           models: [
-            { id: 'gemini/gemini-2.5-flash', label: 'Gemini 2.5 Flash · Balanced & Fast' },
-            { id: 'gemini/gemini-2.5-pro', label: 'Gemini 2.5 Pro · Research & Logic' }
+            { id: 'gemini/gemini-2.5-pro', label: 'Gemini 2.5 Pro · Frontier Flagship' },
+            { id: 'gemini/gemini-2.5-flash', label: 'Gemini 2.5 Flash · Balanced & Fast' }
           ]
         },
         {
           id: 'studio',
           label: 'Visual Studio',
           models: [
-            { id: 'studio/bytes-canvas-realistic', label: 'Bytes Studio · Photorealistic Image', isImage: true },
+            { id: 'studio/bytes-canvas-realistic', label: 'Bytes Studio · Photorealistic Flagship', isImage: true },
             { id: 'studio/bytes-canvas-creative', label: 'Bytes Canvas · Stylized Art & Concept', isImage: true }
           ]
         }

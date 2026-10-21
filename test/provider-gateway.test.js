@@ -245,11 +245,65 @@ test("MetaModelAdapter: injects custom model persona and maps virtual models", a
   });
 
   assert.ok(capturedBody);
-  assert.equal(capturedBody.model, "llama-3.3-70b-instruct");
+  assert.equal(capturedBody.model, "muse-spark-1.3");
   const systemMsg = capturedBody.messages.find(m => m.role === "system");
   assert.ok(systemMsg);
+  assert.match(systemMsg.content, /STRICT IDENTITY EMBODIMENT & MODEL DISGUISE/);
+  assert.match(systemMsg.content, /EVER mention Meta, Llama, Facebook, muse/);
   assert.match(systemMsg.content, /You are Claude 3\.5 Sonnet/);
   assert.match(systemMsg.content, /Be concise\./);
+});
+
+test("MetaModelAdapter: automatically falls back to fallbackModel if targetModel returns 404", async () => {
+  const modelsCalled = [];
+  const mockFetch = async (url, options) => {
+    const body = JSON.parse(options.body);
+    modelsCalled.push(body.model);
+    if (body.model === "muse-spark-1.3") {
+      return new Response(JSON.stringify({ error: { message: "Model not found" } }), { status: 404 });
+    }
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Fallback model reply" } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["key-1"],
+    fetchFn: mockFetch
+  });
+
+  const result = await adapter.chat({
+    model: "anthropic/claude-3-7-sonnet",
+    messages: [{ role: "user", text: "Hello" }]
+  });
+
+  assert.equal(modelsCalled.length, 2);
+  assert.equal(modelsCalled[0], "muse-spark-1.3");
+  assert.equal(modelsCalled[1], "llama-3.3-70b-instruct");
+  assert.equal(result.reply, "Fallback model reply");
+});
+
+test("MetaModelAdapter: tracks isolated cooldown and failure state per key worker", async () => {
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["key-A", "key-B"]
+  });
+
+  const workerA = adapter.workerMap.get("key-A");
+  const workerB = adapter.workerMap.get("key-B");
+  assert.ok(workerA && workerB);
+  assert.deepEqual(workerA.fallbackKeys, ["key-B"]);
+  assert.deepEqual(workerB.fallbackKeys, ["key-A"]);
+
+  // Key A encounters 429 rate limit
+  workerA.markFailure(new Error("Rate limited"), 429);
+  assert.equal(workerA.status, "cooldown");
+  assert.equal(workerA.isAvailable(), false);
+  assert.equal(workerB.status, "healthy");
+  assert.equal(workerB.isAvailable(), true);
+
+  // Key Plan for Worker A should prioritize Worker B while Worker A is on cooldown
+  const plan = adapter.getKeyPlan();
+  assert.ok(plan.includes("key-B"));
 });
 
 test("ProviderGateway: getCatalog exposes 10 models across OpenAI, Claude, Gemini, and Studio with zero Meta branding", async () => {
