@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#0e0f14">
 <meta name="description" content="Bytes — an intelligent, thoughtful AI workspace powered by Google Gemini and advanced LLM gateways.">
 <title>Bytes — Thoughtful AI Workspace</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23121318'/%3E%3Crect x='1' y='1' width='62' height='62' rx='15' fill='none' stroke='rgba(255,255,255,0.1)' stroke-width='2'/%3E%3Cpath d='M22 14v36h12c7.732 0 14-6.268 14-14s-6.268-14-14-14c-1.8 0-3.5.34-5.06 1V14H22zm8 16.5c1.4-.4 2.9-.6 4.5-.6 4.97 0 9 4.03 9 9s-4.03 9-9 9H30V30.5z' fill='%23f59e0b'/%3E%3Ccircle cx='46' cy='18' r='4.5' fill='%23fbbf24'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23121318'/%3E%3Cpath d='M22 14v36h12c7.732 0 14-6.268 14-14s-6.268-14-14-14c-1.8 0-3.5.34-5.06 1V14H22zm8 16.5c1.4-.4 2.9-.6 4.5-.6 4.97 0 9 4.03 9 9s-4.03 9-9 9H30V30.5z' fill='%23f59e0b'/%3E%3Ccircle cx='46' cy='18' r='4.5' fill='%23fbbf24'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23141824'/%3E%3Cstop offset='100%25' stop-color='%230a0c12'/%3E%3C/linearGradient%3E%3ClinearGradient id='amber' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23fef08a'/%3E%3Cstop offset='40%25' stop-color='%23f59e0b'/%3E%3Cstop offset='100%25' stop-color='%23d97706'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23bg)'/%3E%3Crect x='1' y='1' width='62' height='62' rx='15' fill='none' stroke='rgba(255,255,255,0.18)' stroke-width='1.5'/%3E%3Ccircle cx='32' cy='37.5' r='14' fill='rgba(245,158,11,0.1)'/%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M 18 13 A 4 4 0 0 0 14 17 L 14 47 A 4 4 0 0 0 18 51 L 22 51 C 26 51 32 51 37 51 C 45 51 50.5 45.5 50.5 37.5 C 50.5 29.5 45 23 37 23 C 32 23 26 23.5 22 24 L 22 17 A 4 4 0 0 0 18 13 Z M 22 31.5 L 34 31.5 C 38 31.5 41.5 34 41.5 37.5 C 41.5 41 38 43.5 34 43.5 L 22 43.5 Z' fill='%23ffffff'/%3E%3Crect x='29.2' y='34.7' width='5.6' height='5.6' rx='1.4' transform='rotate(45 32 37.5)' fill='url(%23amber)'/%3E%3Ccircle cx='47' cy='16' r='6' fill='rgba(245,158,11,0.22)'/%3E%3Ccircle cx='47' cy='16' r='3.5' fill='url(%23amber)'/%3E%3Ccircle cx='47' cy='16' r='1.2' fill='%23ffffff'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="/logo.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -187,25 +187,39 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .brand-mark {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, var(--accent) 0%, #d96924 100%);
-  color: #fff;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 9px;
-  font: 800 17px var(--font-ui);
-  box-shadow: 0 4px 12px var(--accent-glow);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
   position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
 }
-.brand-mark::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 5px;
-  height: 5px;
-  background: #fde68a;
-  border-radius: 50%;
-  box-shadow: 0 0 6px #fbbf24;
+.brand-mark:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35);
+}
+.brand-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.brand-mark-mini {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.brand-mark-mini svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 .brand small {
   font: 700 10px var(--font-mono);
@@ -368,6 +382,27 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   border-left: 2.5px solid var(--accent);
   background: var(--card-bg);
 }
+.history-item.is-pinned {
+  border-left: 2px solid var(--accent);
+}
+.history-section-header {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 10px 8px 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pin-badge {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
+  margin-right: 6px;
+  flex-shrink: 0;
+}
 .history-actions {
   display: none;
   align-items: center;
@@ -389,6 +424,12 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .history-action-btn:hover {
   color: var(--ink);
   background: var(--line);
+}
+.history-action-btn.pinned {
+  color: var(--accent);
+}
+.history-action-btn.pinned:hover {
+  color: var(--accent-hover);
 }
 
 .sidebar-bottom {
@@ -808,6 +849,31 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   margin: auto 0;
   padding: 16px 0 40px;
   text-align: center;
+}
+
+.welcome-hero-brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+.welcome-hero-emblem {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  position: relative;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(245, 158, 11, 0.2);
+  cursor: default;
+}
+.welcome-hero-emblem:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7), 0 0 42px rgba(245, 158, 11, 0.35);
+}
+.welcome-hero-emblem svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 20px;
 }
 
 .welcome-badge-row {
@@ -1266,6 +1332,44 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   border-color: var(--line-strong);
 }
 
+/* User Message Actions */
+.user-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 6px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.message-row.user:hover .user-actions-bar,
+.message-row.user:focus-within .user-actions-bar {
+  opacity: 1;
+}
+.user-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.user-action-btn:hover {
+  background: var(--card-hover);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+.user-action-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
 /* Follow-up Suggestions Chips */
 .suggestion-chips {
   margin-top: 14px;
@@ -1701,6 +1805,152 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   background: var(--accent-hover);
 }
 
+/* Settings Diagnostics & Export Suite */
+.settings-branding-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+.settings-brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+}
+.settings-brand-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.settings-brand-info {
+  flex: 1;
+}
+.settings-brand-title {
+  font: 700 14px var(--font-ui);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.settings-version-pill {
+  font: 700 10px var(--font-mono);
+  color: var(--accent);
+  background: var(--accent-glow);
+  padding: 2px 6px;
+  border-radius: 99px;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.settings-brand-sub {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.settings-section {
+  margin-bottom: 16px;
+}
+.settings-section-title {
+  display: block;
+  font: 700 10.5px var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.settings-diagnostics-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 12px;
+}
+@media (max-width: 500px) {
+  .settings-diagnostics-card {
+    grid-template-columns: 1fr;
+  }
+}
+.diag-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.diag-label {
+  color: var(--muted);
+}
+.diag-val {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  display: flex;
+  align-items: center;
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+}
+.status-dot.green {
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+.status-dot.red {
+  background: #ef4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+}
+.settings-hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+.export-buttons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+@media (max-width: 500px) {
+  .export-buttons-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.export-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font: 600 12px var(--font-ui);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.export-btn:hover {
+  background: var(--card-hover);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+.export-btn.danger {
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+.export-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
 /* Image Lightbox */
 .lightbox-overlay {
   display: none;
@@ -1945,7 +2195,45 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header-row">
       <div class="brand">
-        <span class="brand-mark">b.</span>
+        <span class="brand-mark" title="Bytes AI Workspace">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sbBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#141824"/>
+                <stop offset="100%" stop-color="#0a0c12"/>
+              </linearGradient>
+              <linearGradient id="sbBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.22)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.04)"/>
+              </linearGradient>
+              <linearGradient id="sbGlyph" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="45%" stop-color="#f1f5f9"/>
+                <stop offset="100%" stop-color="#cbd5e1"/>
+              </linearGradient>
+              <linearGradient id="sbAmber" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fef08a"/>
+                <stop offset="40%" stop-color="#f59e0b"/>
+                <stop offset="100%" stop-color="#d97706"/>
+              </linearGradient>
+              <filter id="sbGlow" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <rect width="64" height="64" rx="16" fill="url(#sbBg)"/>
+            <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="15.25" fill="none" stroke="url(#sbBorder)" stroke-width="1.5"/>
+            <circle cx="32" cy="37.5" r="14" fill="rgba(245, 158, 11, 0.1)"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M 18 13 A 4 4 0 0 0 14 17 L 14 47 A 4 4 0 0 0 18 51 L 22 51 C 26 51 32 51 37 51 C 45 51 50.5 45.5 50.5 37.5 C 50.5 29.5 45 23 37 23 C 32 23 26 23.5 22 24 L 22 17 A 4 4 0 0 0 18 13 Z M 22 31.5 L 34 31.5 C 38 31.5 41.5 34 41.5 37.5 C 41.5 41 38 43.5 34 43.5 L 22 43.5 Z" fill="url(#sbGlyph)"/>
+            <rect x="29.2" y="34.7" width="5.6" height="5.6" rx="1.4" transform="rotate(45 32 37.5)" fill="url(#sbAmber)" filter="url(#sbGlow)"/>
+            <circle cx="47" cy="16" r="6" fill="rgba(245, 158, 11, 0.22)"/>
+            <circle cx="47" cy="16" r="3.5" fill="url(#sbAmber)"/>
+            <circle cx="47" cy="16" r="1.2" fill="#ffffff"/>
+          </svg>
+        </span>
         <span>bytes</span>
         <small>v2.4</small>
       </div>
@@ -1999,7 +2287,17 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
         <button class="mobile-menu-btn" id="menuBtn" aria-label="Toggle menu">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-        <span class="mobile-brand">bytes.</span>
+        <span class="mobile-brand">
+          <span class="brand-mark-mini">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="64" height="64" rx="16" fill="#141824"/>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M 18 13 A 4 4 0 0 0 14 17 L 14 47 A 4 4 0 0 0 18 51 L 22 51 C 26 51 32 51 37 51 C 45 51 50.5 45.5 50.5 37.5 C 50.5 29.5 45 23 37 23 C 32 23 26 23.5 22 24 L 22 17 A 4 4 0 0 0 18 13 Z M 22 31.5 L 34 31.5 C 38 31.5 41.5 34 41.5 37.5 C 41.5 41 38 43.5 34 43.5 L 22 43.5 Z" fill="#ffffff"/>
+              <rect x="29.2" y="34.7" width="5.6" height="5.6" rx="1.4" transform="rotate(45 32 37.5)" fill="#f59e0b"/>
+              <circle cx="47" cy="16" r="3.5" fill="#f59e0b"/>
+            </svg>
+          </span>
+          <span>bytes</span>
+        </span>
         
         <!-- Custom Rich Model Selector -->
         <div class="model-picker-container" id="modelPickerContainer">
@@ -2051,6 +2349,47 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 
     <section class="content" id="content">
       <div class="welcome-container" id="welcomeView">
+        <div class="welcome-hero-brand">
+          <div class="welcome-hero-emblem" title="Bytes AI Workspace">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="heroBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#141824"/>
+                  <stop offset="100%" stop-color="#0a0c12"/>
+                </linearGradient>
+                <linearGradient id="heroBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="rgba(255,255,255,0.25)"/>
+                  <stop offset="100%" stop-color="rgba(255,255,255,0.05)"/>
+                </linearGradient>
+                <linearGradient id="heroGlyph" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ffffff"/>
+                  <stop offset="45%" stop-color="#f1f5f9"/>
+                  <stop offset="100%" stop-color="#cbd5e1"/>
+                </linearGradient>
+                <linearGradient id="heroAmber" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fef08a"/>
+                  <stop offset="40%" stop-color="#f59e0b"/>
+                  <stop offset="100%" stop-color="#d97706"/>
+                </linearGradient>
+                <filter id="heroGlow" x="-40%" y="-40%" width="180%" height="180%">
+                  <feGaussianBlur stdDeviation="3" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <rect width="64" height="64" rx="16" fill="url(#heroBg)"/>
+              <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="15.25" fill="none" stroke="url(#heroBorder)" stroke-width="1.5"/>
+              <circle cx="32" cy="37.5" r="14" fill="rgba(245, 158, 11, 0.12)"/>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M 18 13 A 4 4 0 0 0 14 17 L 14 47 A 4 4 0 0 0 18 51 L 22 51 C 26 51 32 51 37 51 C 45 51 50.5 45.5 50.5 37.5 C 50.5 29.5 45 23 37 23 C 32 23 26 23.5 22 24 L 22 17 A 4 4 0 0 0 18 13 Z M 22 31.5 L 34 31.5 C 38 31.5 41.5 34 41.5 37.5 C 41.5 41 38 43.5 34 43.5 L 22 43.5 Z" fill="url(#heroGlyph)"/>
+              <rect x="29.2" y="34.7" width="5.6" height="5.6" rx="1.4" transform="rotate(45 32 37.5)" fill="url(#heroAmber)" filter="url(#heroGlow)"/>
+              <circle cx="47" cy="16" r="6" fill="rgba(245, 158, 11, 0.22)"/>
+              <circle cx="47" cy="16" r="3.5" fill="url(#heroAmber)"/>
+              <circle cx="47" cy="16" r="1.2" fill="#ffffff"/>
+            </svg>
+          </div>
+        </div>
         <div class="welcome-badge-row">
           <div class="welcome-badge">Editorial AI Workspace</div>
           <div class="welcome-model-pill" id="welcomeModelPill">
@@ -2740,6 +3079,7 @@ function persist() {
   try {
     const safe = conversations.slice(0, 100).map(c => ({
       ...c,
+      pinned: !!c.pinned,
       messages: c.messages.map(m => ({
         role: m.role,
         text: m.text,
@@ -2769,58 +3109,112 @@ function newConversation() {
 }
 $('#newChat').onclick = newConversation;
 
-function addHistory(conv) {
-  let item = historyEl.querySelector('[data-id="' + conv.id + '"]');
-  if (!item) {
-    item = document.createElement('div');
-    item.className = 'history-item' + (conv.id === currentId ? ' active' : '');
-    item.dataset.id = conv.id;
+function createHistoryItem(conv) {
+  const item = document.createElement('div');
+  item.className = 'history-item' + (conv.id === currentId ? ' active' : '') + (conv.pinned ? ' is-pinned' : '');
+  item.dataset.id = conv.id;
 
-    const span = document.createElement('span');
-    span.className = 'title-text';
-    span.textContent = conv.title || 'New conversation';
-    item.appendChild(span);
-
-    const actions = document.createElement('div');
-    actions.className = 'history-actions';
-
-    const renameBtn = document.createElement('button');
-    renameBtn.className = 'history-action-btn';
-    renameBtn.title = 'Rename';
-    renameBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>';
-    renameBtn.onclick = e => {
-      e.stopPropagation();
-      const newTitle = prompt('Rename conversation:', conv.title || '');
-      if (newTitle && newTitle.trim()) {
-        conv.title = newTitle.trim().slice(0, 80);
-        span.textContent = conv.title;
-        persist();
-      }
-    };
-
-    const delBtn = document.createElement('button');
-    delBtn.className = 'history-action-btn';
-    delBtn.title = 'Delete';
-    delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
-    delBtn.onclick = e => {
-      e.stopPropagation();
-      if (confirm('Delete this conversation?')) {
-        conversations = conversations.filter(c => c.id !== conv.id);
-        item.remove();
-        persist();
-        if (currentId === conv.id) newConversation();
-      }
-    };
-
-    actions.append(renameBtn, delBtn);
-    item.appendChild(actions);
-
-    item.onclick = () => loadConversation(conv.id);
-    historyEl.prepend(item);
-  } else {
-    item.querySelector('.title-text').textContent = conv.title || 'New conversation';
+  if (conv.pinned) {
+    const pinBadge = document.createElement('span');
+    pinBadge.className = 'pin-badge';
+    pinBadge.title = 'Pinned conversation';
+    pinBadge.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+    item.appendChild(pinBadge);
   }
+
+  const span = document.createElement('span');
+  span.className = 'title-text';
+  span.textContent = conv.title || 'New conversation';
+  item.appendChild(span);
+
+  const actions = document.createElement('div');
+  actions.className = 'history-actions';
+
+  const pinBtn = document.createElement('button');
+  pinBtn.type = 'button';
+  pinBtn.className = 'history-action-btn' + (conv.pinned ? ' pinned' : '');
+  pinBtn.title = conv.pinned ? 'Unpin' : 'Pin to top';
+  pinBtn.innerHTML = conv.pinned
+    ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>'
+    : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+  pinBtn.onclick = e => {
+    e.stopPropagation();
+    conv.pinned = !conv.pinned;
+    persist();
+    renderHistoryList();
+    toast(conv.pinned ? 'Conversation pinned to top' : 'Conversation unpinned');
+  };
+
+  const renameBtn = document.createElement('button');
+  renameBtn.type = 'button';
+  renameBtn.className = 'history-action-btn';
+  renameBtn.title = 'Rename';
+  renameBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>';
+  renameBtn.onclick = e => {
+    e.stopPropagation();
+    const newTitle = prompt('Rename conversation:', conv.title || '');
+    if (newTitle && newTitle.trim()) {
+      conv.title = newTitle.trim().slice(0, 80);
+      span.textContent = conv.title;
+      persist();
+    }
+  };
+
+  const delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.className = 'history-action-btn';
+  delBtn.title = 'Delete';
+  delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+  delBtn.onclick = e => {
+    e.stopPropagation();
+    if (confirm('Delete this conversation?')) {
+      conversations = conversations.filter(c => c.id !== conv.id);
+      persist();
+      renderHistoryList();
+      if (currentId === conv.id) newConversation();
+    }
+  };
+
+  actions.append(pinBtn, renameBtn, delBtn);
+  item.appendChild(actions);
+
+  item.onclick = () => loadConversation(conv.id);
+  return item;
+}
+
+function renderHistoryList() {
+  historyEl.innerHTML = '';
+  if (!conversations.length) {
+    filterHistory();
+    return;
+  }
+
+  const pinned = conversations.filter(c => !!c.pinned);
+  const unpinned = conversations.filter(c => !c.pinned);
+
+  if (pinned.length > 0) {
+    const pHeader = document.createElement('div');
+    pHeader.className = 'history-section-header';
+    pHeader.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="var(--accent)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> <span>Pinned</span>';
+    historyEl.appendChild(pHeader);
+    pinned.forEach(c => historyEl.appendChild(createHistoryItem(c)));
+
+    if (unpinned.length > 0) {
+      const rHeader = document.createElement('div');
+      rHeader.className = 'history-section-header';
+      rHeader.innerHTML = '<span>Recent</span>';
+      historyEl.appendChild(rHeader);
+      unpinned.forEach(c => historyEl.appendChild(createHistoryItem(c)));
+    }
+  } else {
+    unpinned.forEach(c => historyEl.appendChild(createHistoryItem(c)));
+  }
+
   filterHistory();
+}
+
+function addHistory(conv) {
+  renderHistoryList();
 }
 
 function filterHistory() {
@@ -2857,6 +3251,10 @@ input.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     $('#composer').requestSubmit();
+  } else if (e.key === 'ArrowUp' && !input.value.trim() && lastPrompt) {
+    e.preventDefault();
+    input.value = lastPrompt;
+    resizeInput();
   }
 });
 
@@ -3118,6 +3516,34 @@ function makeMessage(role, text, options = {}) {
     bubble.textContent = text;
   }
   contentDiv.appendChild(bubble);
+
+  if (role === 'user' && text.trim()) {
+    const userActions = document.createElement('div');
+    userActions.className = 'user-actions-bar';
+
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.className = 'user-action-btn';
+    editBtn.title = 'Edit prompt in composer';
+    editBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> <span>Edit</span>';
+    editBtn.onclick = () => {
+      input.value = text;
+      resizeInput();
+      input.focus();
+      input.scrollIntoView({ behavior: 'smooth' });
+      toast('Prompt loaded into composer.');
+    };
+
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'user-action-btn';
+    copyBtn.title = 'Copy prompt';
+    copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
+    copyBtn.onclick = () => copyText(text);
+
+    userActions.append(editBtn, copyBtn);
+    contentDiv.appendChild(userActions);
+  }
 
   if (Array.isArray(options.attachments) && options.attachments.length) {
     const fileContainer = document.createElement('div');
@@ -3643,48 +4069,161 @@ $('#menuBtn').onclick = () => {
 $('#sidebarCloseBtn')?.addEventListener('click', closeSidebar);
 $('#sidebarBackdrop').onclick = closeSidebar;
 
+function downloadFile(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 // Settings & Memory Modal
-function openSettingsModal() {
+async function openSettingsModal() {
+  const logoHtml = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="16" fill="#141824"/><circle cx="32" cy="37.5" r="14" fill="rgba(245,158,11,0.15)"/><path fill-rule="evenodd" clip-rule="evenodd" d="M 18 13 A 4 4 0 0 0 14 17 L 14 47 A 4 4 0 0 0 18 51 L 22 51 C 26 51 32 51 37 51 C 45 51 50.5 45.5 50.5 37.5 C 50.5 29.5 45 23 37 23 C 32 23 26 23.5 22 24 L 22 17 A 4 4 0 0 0 18 13 Z M 22 31.5 L 34 31.5 C 38 31.5 41.5 34 41.5 37.5 C 41.5 41 38 43.5 34 43.5 L 22 43.5 Z" fill="#ffffff"/><rect x="29.2" y="34.7" width="5.6" height="5.6" rx="1.4" transform="rotate(45 32 37.5)" fill="#f59e0b"/><circle cx="47" cy="16" r="3.5" fill="#f59e0b"/></svg>';
+
   const html =
-    '<label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">Your Memory & Background Context</label>' +
-    '<textarea id="memoryEditor" rows="5" maxlength="4000" placeholder="e.g. I work as a Python engineer. I prefer concise answers. Explain with real-world examples.">' + escapeHtml(memoryText) + '</textarea>' +
-    '<p style="font-size:11px;color:var(--muted);margin-bottom:18px;">This context is injected into future AI interactions to customize responses.</p>' +
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-      '<button type="button" class="modal-btn" id="exportChatBtn">📄 Export Active Chat (Markdown)</button>' +
-      '<button type="button" class="modal-btn" id="clearAllChatsBtn" style="color:#ef4444;">🗑️ Clear All Chats</button>' +
+    '<div class="settings-branding-row">' +
+      '<div class="settings-brand-mark">' + logoHtml + '</div>' +
+      '<div class="settings-brand-info">' +
+        '<div class="settings-brand-title">Bytes AI Workspace <span class="settings-version-pill">v2.4</span></div>' +
+        '<div class="settings-brand-sub">Editorial intelligence gateway · Google Gemini & Multi-Provider Architecture</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="settings-section">' +
+      '<div class="settings-section-title">System Status & Health Diagnostics</div>' +
+      '<div class="settings-diagnostics-card">' +
+        '<div class="diag-item"><span class="diag-label">API Gateway:</span><span class="diag-val" id="diagApiStatus"><span class="status-dot green"></span> Pinging...</span></div>' +
+        '<div class="diag-item"><span class="diag-label">Latency:</span><span class="diag-val" id="diagLatency">—</span></div>' +
+        '<div class="diag-item"><span class="diag-label">Search Circuit:</span><span class="diag-val" id="diagSearch">—</span></div>' +
+        '<div class="diag-item"><span class="diag-label">Providers:</span><span class="diag-val" id="diagProvider">—</span></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="settings-section">' +
+      '<label class="settings-section-title" for="memoryEditor">Assistant Memory & Context</label>' +
+      '<textarea id="memoryEditor" rows="4" maxlength="4000" placeholder="e.g. I work with Node.js and TypeScript. Prefer clean, modern patterns. Be concise and provide production-ready solutions.">' + escapeHtml(memoryText) + '</textarea>' +
+      '<p class="settings-hint">This context is automatically supplied to AI models to adapt tone and answers to your preferences.</p>' +
+    '</div>' +
+
+    '<div class="settings-section">' +
+      '<div class="settings-section-title">Conversation Export & Data</div>' +
+      '<div class="export-buttons-grid">' +
+        '<button type="button" class="export-btn" id="exportMdBtn">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>' +
+          '<span>Markdown (.md)</span>' +
+        '</button>' +
+        '<button type="button" class="export-btn" id="exportJsonBtn">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>' +
+          '<span>JSON Transcript (.json)</span>' +
+        '</button>' +
+        '<button type="button" class="export-btn" id="exportTxtBtn">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>' +
+          '<span>Plain Text (.txt)</span>' +
+        '</button>' +
+        '<button type="button" class="export-btn danger" id="clearAllChatsBtn">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>' +
+          '<span>Clear All History</span>' +
+        '</button>' +
+      '</div>' +
     '</div>';
 
-  openModal('Workspace Settings', html, 'Save Changes', () => {
+  openModal('Workspace Settings', html, 'Save Memory', () => {
     memoryText = ($('#memoryEditor')?.value || '').trim().slice(0, 4000);
     try { localStorage.setItem(MEMORY_KEY, memoryText); } catch (_) {}
     toast('Workspace memory saved.');
   });
 
-  $('#exportChatBtn').onclick = () => {
+  // Wire up Live Health Diagnostics
+  (async () => {
+    const t0 = performance.now();
+    try {
+      const res = await bytesFetch(apiUrl('/api/health'), { signal: AbortSignal.timeout(4000) });
+      const latency = Math.round(performance.now() - t0);
+      if (res.ok) {
+        const data = await res.json();
+        const apiEl = $('#diagApiStatus');
+        const latEl = $('#diagLatency');
+        const searchEl = $('#diagSearch');
+        const provEl = $('#diagProvider');
+        if (apiEl) apiEl.innerHTML = '<span class="status-dot green"></span> Operational';
+        if (latEl) latEl.textContent = latency + ' ms';
+        if (searchEl) {
+          const gen = data.search?.generalProviders ? data.search.generalProviders.join(', ') : 'Healthy';
+          searchEl.innerHTML = '<span class="status-dot green"></span> ' + escapeHtml(gen);
+        }
+        if (provEl) {
+          const provs = [];
+          if (data.providers?.gemini) provs.push('Gemini');
+          if (data.providers?.apinex) provs.push('APInex');
+          provEl.textContent = provs.length ? provs.join(' + ') : 'Auto';
+        }
+      }
+    } catch (_) {
+      const apiEl = $('#diagApiStatus');
+      if (apiEl) apiEl.innerHTML = '<span class="status-dot red"></span> Offline';
+    }
+  })();
+
+  $('#exportMdBtn').onclick = () => {
     const conv = conversations.find(c => c.id === currentId);
     if (!conv || !conv.messages.length) { toast('No conversation to export.'); return; }
     let md = '# ' + (conv.title || 'Conversation') + '\n\n';
+    md += '> Exported from Bytes AI Workspace on ' + new Date().toLocaleDateString() + '\n\n---\n\n';
     conv.messages.forEach(m => {
-      md += '### ' + (m.role === 'user' ? 'User' : 'Bytes AI') + '\n\n' + m.text + '\n\n---\n\n';
+      const author = m.role === 'user' ? 'User' : (m.model ? 'Bytes AI (' + m.model + ')' : 'Bytes AI');
+      md += '### ' + author + '\n\n' + m.text + '\n\n---\n\n';
     });
-    const blob = new Blob([md], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = (conv.title || 'bytes-chat').replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.md';
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadFile(md, (conv.title || 'bytes-chat').replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.md', 'text/markdown');
     toast('Exported conversation as Markdown.');
   };
 
+  $('#exportJsonBtn').onclick = () => {
+    const conv = conversations.find(c => c.id === currentId);
+    if (!conv || !conv.messages.length) { toast('No conversation to export.'); return; }
+    const payload = {
+      app: 'Bytes AI Workspace',
+      version: '2.4',
+      exportedAt: new Date().toISOString(),
+      conversation: {
+        id: conv.id,
+        title: conv.title,
+        pinned: !!conv.pinned,
+        messages: conv.messages.map(m => ({
+          role: m.role,
+          text: m.text,
+          model: m.model || null,
+          generatedImage: !!m.generatedImage
+        }))
+      }
+    };
+    downloadFile(JSON.stringify(payload, null, 2), (conv.title || 'bytes-chat').replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.json', 'application/json');
+    toast('Exported conversation transcript as JSON.');
+  };
+
+  $('#exportTxtBtn').onclick = () => {
+    const conv = conversations.find(c => c.id === currentId);
+    if (!conv || !conv.messages.length) { toast('No conversation to export.'); return; }
+    let txt = '=== ' + (conv.title || 'Conversation') + ' ===\n\n';
+    conv.messages.forEach(m => {
+      txt += (m.role === 'user' ? '[YOU]' : '[BYTES AI]') + ':\n' + m.text + '\n\n';
+    });
+    downloadFile(txt, (conv.title || 'bytes-chat').replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.txt', 'text/plain');
+    toast('Exported conversation as Plain Text.');
+  };
+
   $('#clearAllChatsBtn').onclick = () => {
-    if (confirm('Delete all saved conversations permanently?')) {
+    if (confirm('Delete all saved conversations permanently? This cannot be undone.')) {
       conversations = [];
       persist();
-      historyEl.innerHTML = '';
+      renderHistoryList();
       newConversation();
       $('#modalBackdrop').classList.remove('open');
-      toast('Chat history cleared.');
+      toast('All conversation history cleared.');
     }
   };
 }
@@ -3832,9 +4371,7 @@ function activateWorkspaceStorage() {
   currentId = null;
   chatView.innerHTML = '';
   content.classList.remove('chat-mode');
-  historyEl.innerHTML = '';
-  conversations.forEach(addHistory);
-  filterHistory();
+  renderHistoryList();
 }
 
 async function initAuth() {

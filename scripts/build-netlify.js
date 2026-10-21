@@ -21,6 +21,12 @@ if (parsed.protocol !== "https:" && parsed.hostname !== "localhost" && parsed.ho
 
 fs.rmSync(dist, { recursive: true, force: true });
 fs.mkdirSync(dist, { recursive: true });
+
+const pubDir = path.join(root, "public");
+if (fs.existsSync(pubDir)) {
+  fs.cpSync(pubDir, dist, { recursive: true });
+}
+
 let html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const marker = "<!-- BYTES_RUNTIME_CONFIG -->";
 if (!html.includes(marker)) throw new Error("Could not find the runtime-config insertion marker in index.html.");
