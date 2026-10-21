@@ -3,71 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111215">
-<meta name="description" content="Bytes — an intelligent, thoughtful workspace to think, make, and get things done with AI.">
-<title>Bytes — Intelligent AI Workspace</title>
+<meta name="theme-color" content="#0e0f14">
+<meta name="description" content="Bytes — an intelligent, thoughtful AI workspace powered by Google Gemini and advanced LLM gateways.">
+<title>Bytes — Thoughtful AI Workspace</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23121318'/%3E%3Crect x='1' y='1' width='62' height='62' rx='15' fill='none' stroke='rgba(255,255,255,0.1)' stroke-width='2'/%3E%3Cpath d='M22 14v36h12c7.732 0 14-6.268 14-14s-6.268-14-14-14c-1.8 0-3.5.34-5.06 1V14H22zm8 16.5c1.4-.4 2.9-.6 4.5-.6 4.97 0 9 4.03 9 9s-4.03 9-9 9H30V30.5z' fill='%23f59e0b'/%3E%3Ccircle cx='46' cy='18' r='4.5' fill='%23fbbf24'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23121318'/%3E%3Cpath d='M22 14v36h12c7.732 0 14-6.268 14-14s-6.268-14-14-14c-1.8 0-3.5.34-5.06 1V14H22zm8 16.5c1.4-.4 2.9-.6 4.5-.6 4.97 0 9 4.03 9 9s-4.03 9-9 9H30V30.5z' fill='%23f59e0b'/%3E%3Ccircle cx='46' cy='18' r='4.5' fill='%23fbbf24'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
   color-scheme: dark;
-  --bg: #111215;
-  --sidebar-bg: #15161b;
-  --card-bg: #1a1c22;
-  --card-hover: #22242e;
-  --surface: #1e2027;
-  --paper: #1a1c22;
-  --ink: #f5f4ef;
-  --ink-secondary: #c2c0b6;
-  --muted: #828178;
-  --line: #272933;
-  --line-strong: #363947;
-  --soft: #181920;
-  --accent: #e59324;
-  --accent-glow: rgba(229, 147, 36, 0.18);
-  --accent-ink: #191204;
-  --accent-hover: #f3a238;
-  --user-bubble: #222530;
+  --bg: #0d0f14;
+  --sidebar-bg: #12141c;
+  --card-bg: #171a24;
+  --card-hover: #1f2332;
+  --surface: #151822;
+  --paper: #171a24;
+  --ink: #f8fafc;
+  --ink-secondary: #cbd5e1;
+  --muted: #7e8799;
+  --line: #242938;
+  --line-strong: #333a4f;
+  --soft: #181c28;
+  --accent: #f59e0b;
+  --accent-glow: rgba(245, 158, 11, 0.2);
+  --accent-ink: #171204;
+  --accent-hover: #fbbf24;
+  --user-bubble: #1f2536;
   --user-ink: #f8fafc;
-  --code-bg: #0b0c0f;
-  --sidebar: 268px;
+  --code-bg: #090a0f;
+  --sidebar: 272px;
   --radius-xl: 20px;
   --radius-lg: 14px;
   --radius-md: 10px;
   --radius-sm: 6px;
-  --shadow-lg: 0 20px 50px rgba(0,0,0,0.5), 0 1px 2px rgba(255,255,255,0.03);
-  --shadow-md: 0 10px 25px rgba(0,0,0,0.35);
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.55), 0 1px 2px rgba(255,255,255,0.03);
+  --shadow-md: 0 10px 25px rgba(0,0,0,0.4);
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.25);
   --font-editorial: 'Newsreader', Georgia, serif;
   --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* AI Brand Palette */
+  --gemini-color: #4e82ee;
+  --gemini-bg: rgba(78, 130, 238, 0.14);
+  --gemini-border: rgba(78, 130, 238, 0.3);
+
+  --claude-color: #d97757;
+  --claude-bg: rgba(217, 119, 87, 0.14);
+  --claude-border: rgba(217, 119, 87, 0.3);
+
+  --deepseek-color: #4d6bfe;
+  --deepseek-bg: rgba(77, 107, 254, 0.14);
+  --deepseek-border: rgba(77, 107, 254, 0.3);
+
+  --openai-color: #10a37f;
+  --openai-bg: rgba(16, 163, 127, 0.14);
+  --openai-border: rgba(16, 163, 127, 0.3);
+
+  --mistral-color: #ff7000;
+  --mistral-bg: rgba(255, 112, 0, 0.14);
+  --mistral-border: rgba(255, 112, 0, 0.3);
+
+  --auto-color: #f59e0b;
+  --auto-bg: rgba(245, 158, 11, 0.14);
+  --auto-border: rgba(245, 158, 11, 0.3);
 }
 
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #fcfbf8;
-  --sidebar-bg: #f4f0e6;
+  --bg: #faf8f5;
+  --sidebar-bg: #f2eee5;
   --card-bg: #ffffff;
-  --card-hover: #f9f6ef;
+  --card-hover: #f7f4ec;
   --surface: #ffffff;
   --paper: #ffffff;
-  --ink: #1c1917;
-  --ink-secondary: #44403c;
-  --muted: #78716c;
-  --line: #e6dfd3;
-  --line-strong: #d4cbbe;
-  --soft: #ede6d9;
+  --ink: #181512;
+  --ink-secondary: #3f3933;
+  --muted: #7d756c;
+  --line: #e7dfd3;
+  --line-strong: #d5cbbe;
+  --soft: #ebe5d8;
   --accent: #b46b14;
   --accent-glow: rgba(180, 107, 20, 0.15);
   --accent-ink: #ffffff;
   --accent-hover: #9c5a0e;
-  --user-bubble: #ece6da;
-  --user-ink: #1c1917;
+  --user-bubble: #e8e2d4;
+  --user-ink: #181512;
   --code-bg: #1c1d22;
   --shadow-lg: 0 20px 45px rgba(35,30,20,0.08), 0 1px 3px rgba(0,0,0,0.04);
   --shadow-md: 0 8px 24px rgba(35,30,20,0.05);
   --shadow-sm: 0 2px 6px rgba(35,30,20,0.04);
+
+  --gemini-bg: rgba(78, 130, 238, 0.1);
+  --claude-bg: rgba(217, 119, 87, 0.1);
+  --deepseek-bg: rgba(77, 107, 254, 0.1);
+  --openai-bg: rgba(16, 163, 127, 0.1);
+  --mistral-bg: rgba(255, 112, 0, 0.1);
+  --auto-bg: rgba(180, 107, 20, 0.1);
 }
 
 * { box-sizing: border-box; }
@@ -97,12 +131,12 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   width: var(--sidebar);
   background: var(--sidebar-bg);
   border-right: 1px solid var(--line);
-  padding: 20px 14px 16px;
+  padding: 18px 14px 16px;
   display: flex;
   flex-direction: column;
   position: fixed;
   inset: 0 auto 0 0;
-  z-index: 25;
+  z-index: 30;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -110,9 +144,9 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
-  z-index: 24;
+  z-index: 28;
 }
 
 .sidebar-header-row {
@@ -145,9 +179,10 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   align-items: center;
   gap: 10px;
   padding: 0;
-  font: 800 22px var(--font-ui);
+  font: 800 21px var(--font-ui);
   letter-spacing: -0.6px;
   color: var(--ink);
+  text-decoration: none;
 }
 .brand-mark {
   width: 32px;
@@ -159,6 +194,18 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   border-radius: 9px;
   font: 800 17px var(--font-ui);
   box-shadow: 0 4px 12px var(--accent-glow);
+  position: relative;
+}
+.brand-mark::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 5px;
+  height: 5px;
+  background: #fde68a;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #fbbf24;
 }
 .brand small {
   font: 700 10px var(--font-mono);
@@ -185,10 +232,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   font-size: 13px;
   box-shadow: var(--shadow-sm);
   transition: all 0.18s ease;
+  width: 100%;
 }
 .new-chat:hover {
   background: var(--card-hover);
-  border-color: var(--line-strong);
+  border-color: var(--accent);
   transform: translateY(-1px);
 }
 .new-chat .plus-icon {
@@ -197,7 +245,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 }
 .new-chat .kbd {
   margin-left: auto;
-  font-size: 10.5px;
+  font-size: 10px;
   font-family: var(--font-mono);
   color: var(--muted);
   background: var(--soft);
@@ -208,7 +256,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 
 .sidebar-search {
   position: relative;
-  margin: 14px 0 6px;
+  margin: 12px 0 6px;
 }
 .sidebar-search input {
   width: 100%;
@@ -236,13 +284,47 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   pointer-events: none;
 }
 
+.persona-picker {
+  margin: 8px 0 10px;
+  padding: 9px 11px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+.persona-picker label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.persona-picker select {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  outline: 0;
+  transition: border-color 0.15s;
+}
+.persona-picker select:focus {
+  border-color: var(--accent);
+}
+
 .nav-label {
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
-  margin: 18px 8px 8px;
+  margin: 14px 6px 6px;
 }
 
 .history {
@@ -309,46 +391,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   background: var(--line);
 }
 
-.persona-picker {
-  margin: 10px 0;
-  padding: 10px 12px;
-  background: var(--soft);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-}
-.persona-picker label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--muted);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.persona-picker select {
-  width: 100%;
-  border: 1px solid var(--line);
-  background: var(--card-bg);
-  color: var(--ink);
-  border-radius: 6px;
-  padding: 6px 8px;
-  font-size: 12px;
-  cursor: pointer;
-  outline: 0;
-  transition: border-color 0.15s;
-}
-.persona-picker select:focus {
-  border-color: var(--accent);
-}
-
 .sidebar-bottom {
   margin-top: auto;
   padding-top: 10px;
   border-top: 1px solid var(--line);
 }
-
 .profile-card {
   display: flex;
   align-items: center;
@@ -403,17 +450,17 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 
 /* Topbar */
 .topbar {
-  height: 64px;
+  height: 62px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 28px;
+  padding: 0 24px;
   border-bottom: 1px solid var(--line);
   background: var(--bg);
   backdrop-filter: blur(16px);
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 25;
 }
 
 .topbar-left {
@@ -436,30 +483,77 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   display: none;
   font: 800 18px var(--font-ui);
   letter-spacing: -0.5px;
+  color: var(--ink);
 }
 
-.model-pill {
-  display: flex;
+/* Model Selector Component */
+.model-picker-container {
+  position: relative;
+}
+
+.model-picker-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   background: var(--surface);
   border: 1px solid var(--line);
-  padding: 6px 12px;
+  padding: 5px 12px 5px 8px;
   border-radius: 99px;
-  font-size: 12.5px;
-  font-weight: 600;
+  color: var(--ink);
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.15s;
+  transition: all 0.18s ease;
+  user-select: none;
 }
-.model-pill:focus-within {
+.model-picker-btn:hover, .model-picker-container.open .model-picker-btn {
   border-color: var(--accent);
+  background: var(--card-hover);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
+
+.model-picker-icon-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--soft);
+  transition: background 0.18s;
+}
+.model-picker-icon-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.model-picker-meta {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  line-height: 1.2;
+}
+.model-picker-name {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.model-picker-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 .model-indicator {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: #10b981;
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+  flex-shrink: 0;
 }
 .model-indicator.thinking {
   background: var(--accent);
@@ -468,16 +562,193 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 }
 @keyframes pulse-dot { 50% { opacity: 0.3; transform: scale(0.85); } }
 
-.model-pill select {
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: var(--ink);
-  font-weight: 600;
-  cursor: pointer;
-  max-width: 240px;
+.chevron-icon {
+  color: var(--muted);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.model-picker-container.open .chevron-icon {
+  transform: rotate(180deg);
+  color: var(--accent);
 }
 
+/* Model Dropdown Popover */
+.model-picker-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 320px;
+  max-width: 90vw;
+  background: var(--card-bg);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 10px;
+  z-index: 50;
+  animation: dropdownIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(20px);
+}
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.model-dropdown-top {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 8px;
+}
+.model-dropdown-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 6px;
+  padding: 0 4px;
+}
+.model-search-wrap {
+  position: relative;
+}
+.model-search-wrap input {
+  width: 100%;
+  padding: 7px 10px 7px 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 12px;
+  outline: 0;
+}
+.model-search-wrap input:focus {
+  border-color: var(--accent);
+}
+.model-search-wrap svg {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.model-options-list {
+  max-height: 380px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-right: 2px;
+}
+.model-options-list::-webkit-scrollbar { width: 4px; }
+.model-options-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+.model-group-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  padding: 8px 8px 4px;
+}
+
+.model-option-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.model-option-item:hover, .model-option-item:focus-visible {
+  background: var(--card-hover);
+  border-color: var(--line);
+}
+.model-option-item.active {
+  background: var(--soft);
+  border-color: var(--accent);
+}
+
+.model-option-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.model-option-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.model-option-info {
+  flex: 1;
+  min-width: 0;
+}
+.model-option-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.model-option-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.model-option-desc {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.model-tag {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.tag-smart { background: var(--auto-bg); color: var(--auto-color); border: 1px solid var(--auto-border); }
+.tag-reasoning { background: var(--gemini-bg); color: var(--gemini-color); border: 1px solid var(--gemini-border); }
+.tag-free { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+.tag-fast { background: rgba(14, 165, 233, 0.15); color: #0ea5e9; border: 1px solid rgba(14, 165, 233, 0.3); }
+.tag-omni { background: var(--openai-bg); color: var(--openai-color); border: 1px solid var(--openai-border); }
+.tag-claude { background: var(--claude-bg); color: var(--claude-color); border: 1px solid var(--claude-border); }
+
+.model-check-icon {
+  color: var(--accent);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.model-option-item.active .model-check-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Theme classes for badges & avatars */
+.theme-gemini { background: var(--gemini-bg); color: var(--gemini-color); border-color: var(--gemini-border); }
+.theme-claude { background: var(--claude-bg); color: var(--claude-color); border-color: var(--claude-border); }
+.theme-deepseek { background: var(--deepseek-bg); color: var(--deepseek-color); border-color: var(--deepseek-border); }
+.theme-openai { background: var(--openai-bg); color: var(--openai-color); border-color: var(--openai-border); }
+.theme-llama { background: rgba(4, 104, 255, 0.14); color: #0468ff; border-color: rgba(4, 104, 255, 0.3); }
+.theme-mistral { background: var(--mistral-bg); color: var(--mistral-color); border-color: var(--mistral-border); }
+.theme-auto { background: var(--auto-bg); color: var(--auto-color); border-color: var(--auto-border); }
+
+/* Topbar Right Actions */
 .topbar-right {
   display: flex;
   align-items: center;
@@ -523,12 +794,12 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 
 /* Content Container */
 .content {
-  width: min(820px, calc(100% - 48px));
+  width: min(840px, calc(100% - 48px));
   margin: 0 auto;
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 44px 0 24px;
+  padding: 40px 0 24px;
   position: relative;
 }
 
@@ -537,6 +808,15 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   margin: auto 0;
   padding: 16px 0 40px;
   text-align: center;
+}
+
+.welcome-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .welcome-badge {
@@ -551,8 +831,24 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 24px;
-  border: 1px solid rgba(229, 147, 36, 0.25);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.welcome-model-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 99px;
+  background: var(--soft);
+  color: var(--ink-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid var(--line);
+}
+.welcome-model-pill svg {
+  width: 13px;
+  height: 13px;
 }
 
 .welcome-headline {
@@ -574,8 +870,8 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   font-size: 15.5px;
   line-height: 1.65;
   color: var(--muted);
-  margin: 0 auto 36px;
-  max-width: 520px;
+  margin: 0 auto 34px;
+  max-width: 540px;
 }
 
 /* Category Tabs */
@@ -672,7 +968,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .chat-view {
   display: none;
   flex-direction: column;
-  gap: 30px;
+  gap: 28px;
   padding-bottom: 30px;
 }
 .chat-mode .welcome-container { display: none; }
@@ -695,39 +991,59 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .avatar-mark {
   width: 32px;
   height: 32px;
-  border-radius: 9px;
+  border-radius: 10px;
   display: grid;
   place-items: center;
   font-size: 12px;
   font-weight: 700;
   flex-shrink: 0;
+  border: 1px solid var(--line);
+  transition: transform 0.2s;
 }
 .message-row.user .avatar-mark {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   color: #fff;
+  border-color: rgba(99, 102, 241, 0.4);
 }
 .message-row.assistant .avatar-mark {
-  background: linear-gradient(135deg, var(--accent) 0%, #b46b14 100%);
-  color: #fff;
-  box-shadow: 0 4px 12px var(--accent-glow);
+  background: var(--surface);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.message-row.assistant .avatar-mark svg {
+  width: 17px;
+  height: 17px;
 }
 
 .message-content {
-  max-width: min(88%, 720px);
+  max-width: min(88%, 730px);
   position: relative;
 }
 
 .message-meta {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 600;
   color: var(--muted);
   margin-bottom: 6px;
   display: flex;
   align-items: center;
   gap: 6px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
 }
 .message-row.user .message-meta { justify-content: flex-end; }
+
+.meta-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink);
+  font-weight: 700;
+}
+.meta-brand-badge svg {
+  width: 13px;
+  height: 13px;
+}
+.meta-dot { color: var(--line-strong); }
+.meta-time { font-size: 10.5px; color: var(--muted); }
 
 .message-bubble {
   font-size: 14.5px;
@@ -1025,7 +1341,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .scroll-bottom-btn {
   position: fixed;
   bottom: 120px;
-  right: calc(50% - 380px);
+  right: calc(50% - 390px);
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -1055,7 +1371,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   bottom: 0;
   background: linear-gradient(180deg, transparent 0%, var(--bg) 28%);
   padding-top: 20px;
-  z-index: 18;
+  z-index: 20;
 }
 
 .composer-box {
@@ -1209,6 +1525,32 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 }
 @keyframes pulse-ring { 50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25); } }
 
+/* Composer Model Indicator Pill */
+.composer-model-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 9px;
+  border-radius: 99px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  color: var(--ink-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.composer-model-pill:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+  background: var(--card-hover);
+}
+.composer-model-pill svg {
+  width: 12px;
+  height: 12px;
+}
+
 .tools-right {
   display: flex;
   align-items: center;
@@ -1256,14 +1598,14 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   inset: 0;
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(8px);
-  z-index: 50;
+  z-index: 60;
   place-items: center;
   padding: 20px;
 }
 .modal-overlay.open { display: grid; }
 
 .modal-window {
-  width: min(450px, 100%);
+  width: min(460px, 100%);
   background: var(--card-bg);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
@@ -1365,7 +1707,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.92);
-  z-index: 60;
+  z-index: 70;
   place-items: center;
   padding: 24px;
 }
@@ -1421,7 +1763,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   opacity: 0;
   pointer-events: none;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 70;
+  z-index: 80;
   box-shadow: var(--shadow-lg);
   display: flex;
   align-items: center;
@@ -1462,7 +1804,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   :root { --sidebar: 280px; }
   .sidebar {
     transform: translateX(-100%);
-    box-shadow: 12px 0 48px rgba(0,0,0,0.45);
+    box-shadow: 12px 0 48px rgba(0,0,0,0.5);
     padding-top: max(18px, env(safe-area-inset-top, 18px));
     padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
   }
@@ -1489,15 +1831,25 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   }
   .topbar-left { gap: 8px; }
   .mobile-brand { font-size: 16px; }
-  .model-pill {
-    padding: 4px 8px;
+  .model-picker-btn {
+    padding: 4px 8px 4px 6px;
     gap: 6px;
-    font-size: 11.5px;
   }
-  .model-pill select {
-    max-width: 130px;
-    font-size: 11.5px;
+  .model-picker-icon-badge {
+    width: 20px;
+    height: 20px;
   }
+  .model-picker-icon-badge svg {
+    width: 12px;
+    height: 12px;
+  }
+  .model-picker-name {
+    font-size: 11px;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .model-picker-tag { display: none; }
   .topbar-right { gap: 4px; }
   .topbar-btn {
     height: 32px;
@@ -1508,9 +1860,12 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
     width: 32px;
     height: 32px;
   }
-  .welcome-container {
-    padding: 8px 0 20px;
+  .model-picker-dropdown {
+    width: calc(100vw - 24px);
+    left: -40px;
   }
+
+  .welcome-container { padding: 8px 0 20px; }
   .welcome-headline {
     font-size: clamp(26px, 7vw, 36px);
     margin-bottom: 12px;
@@ -1535,33 +1890,14 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
     white-space: nowrap;
     flex-shrink: 0;
   }
-  .prompt-card {
-    padding: 14px;
-    min-height: 84px;
-  }
-  .prompt-title { font-size: 13px; }
-  .prompt-desc { font-size: 11.5px; }
 
   /* Chat View on Mobile */
   .chat-view { gap: 20px; }
   .message-content { max-width: 92%; }
-  .user-bubble {
-    padding: 10px 14px;
-    font-size: 14px;
-  }
-  .assistant-bubble {
-    font-size: 14px;
-    line-height: 1.6;
-  }
-  .assistant-bubble pre {
-    margin: 10px 0;
-    padding: 10px 12px;
-    font-size: 12px;
-  }
 
   /* Composer Dock on Mobile */
   .composer-wrap {
-    padding-top: 12px;
+    padding-top: 10px;
     padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
   }
   .composer-box {
@@ -1569,12 +1905,10 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
     border-radius: var(--radius-md);
   }
   .composer-box textarea {
-    font-size: 16px; /* Prevents auto-zoom on iOS */
+    font-size: 16px; /* Avoids iOS zoom bug */
     min-height: 38px;
   }
-  .composer-bottom {
-    margin-top: 6px;
-  }
+  .composer-bottom { margin-top: 6px; }
   .tools-left {
     gap: 4px;
     flex-wrap: nowrap;
@@ -1591,20 +1925,16 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
     white-space: nowrap;
     flex-shrink: 0;
   }
+  .composer-model-pill { display: none; }
   .send-action-btn {
     width: 34px;
     height: 34px;
     border-radius: 8px;
   }
-  .disclaimer-text {
-    font-size: 10px;
-    margin-top: 6px;
-  }
 }
 
 @media (max-width: 400px) {
   .mobile-brand { display: none; }
-  .model-pill select { max-width: 110px; }
   #shareBtn { display: none; }
 }
 </style>
@@ -1617,7 +1947,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
       <div class="brand">
         <span class="brand-mark">b.</span>
         <span>bytes</span>
-        <small>v2</small>
+        <small>v2.4</small>
       </div>
       <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close menu">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -1636,11 +1966,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
     <div class="persona-picker">
       <label for="personaSelect">Assistant Tone</label>
       <select id="personaSelect" aria-label="Choose assistant persona">
-        <option value="default">Bytes · Balanced & Thoughtful</option>
-        <option value="coder">Senior Staff Engineer</option>
-        <option value="concise">Direct & Concise</option>
-        <option value="academic">Academic & First-Principles</option>
-        <option value="creative">Creative & Expressive</option>
+        <option value="default">✨ Bytes · Balanced & Thoughtful</option>
+        <option value="coder">💻 Senior Staff Engineer</option>
+        <option value="concise">⚡ Direct & Concise</option>
+        <option value="academic">📚 Academic & First-Principles</option>
+        <option value="creative">🎨 Creative & Expressive</option>
       </select>
     </div>
 
@@ -1670,13 +2000,41 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
         <span class="mobile-brand">bytes.</span>
-        <div class="model-pill">
-          <span class="model-indicator" id="modelIndicator"></span>
-          <select id="modelSelect" aria-label="Select AI model">
+        
+        <!-- Custom Rich Model Selector -->
+        <div class="model-picker-container" id="modelPickerContainer">
+          <button type="button" class="model-picker-btn" id="modelPickerBtn" aria-haspopup="listbox" aria-expanded="false" title="Choose AI Model">
+            <span class="model-picker-icon-badge" id="modelPickerIconBadge">
+              <!-- Loaded by JS -->
+            </span>
+            <div class="model-picker-meta">
+              <span class="model-picker-name" id="modelPickerName">Auto · Best Available</span>
+              <span class="model-picker-tag" id="modelPickerTag">SMART ROUTE</span>
+            </div>
+            <span class="model-indicator" id="modelIndicator" title="Model operational"></span>
+            <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+
+          <div class="model-picker-dropdown" id="modelPickerDropdown" role="listbox" hidden>
+            <div class="model-dropdown-top">
+              <div class="model-dropdown-title">Select Intelligence</div>
+              <div class="model-search-wrap">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="modelSearchInput" placeholder="Search models (Gemini, Claude, DeepSeek...)" autocomplete="off">
+              </div>
+            </div>
+            <div class="model-options-list" id="modelOptionsList">
+              <!-- Rendered dynamically with real SVG brand icons -->
+            </div>
+          </div>
+
+          <!-- Hidden standard select element for full backward compatibility -->
+          <select id="modelSelect" style="display:none;" aria-hidden="true">
             <option value="auto">Auto · Best available</option>
           </select>
         </div>
       </div>
+
       <div class="topbar-right">
         <button class="topbar-icon-btn" id="themeToggleBtn" title="Toggle dark/light theme" aria-label="Toggle dark/light theme">
           <svg class="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
@@ -1693,9 +2051,15 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 
     <section class="content" id="content">
       <div class="welcome-container" id="welcomeView">
-        <div class="welcome-badge">Editorial AI Workspace</div>
+        <div class="welcome-badge-row">
+          <div class="welcome-badge">Editorial AI Workspace</div>
+          <div class="welcome-model-pill" id="welcomeModelPill">
+            <span id="welcomeModelIcon"></span>
+            <span id="welcomeModelText">Auto Model Routing</span>
+          </div>
+        </div>
         <h1 class="welcome-headline" id="greetingHeadline">Good morning,<br><em>what are we exploring today?</em></h1>
-        <p class="welcome-subhead">A quiet, thoughtful environment to think, solve problems, write code, and explore ideas with AI.</p>
+        <p class="welcome-subhead">A calm, high-precision environment to think, solve problems, write production code, and reason with frontier AI models.</p>
         
         <div class="category-tabs" id="categoryTabs">
           <button class="category-tab active" data-cat="code">
@@ -1717,7 +2081,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
         </div>
 
         <div class="prompts-grid" id="promptsGrid">
-          <!-- Populated by JS based on category tab -->
+          <!-- Populated by JS -->
         </div>
       </div>
 
@@ -1759,6 +2123,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
               <button type="button" class="tool-btn" id="voiceBtn" title="Speech to text input">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                 <span>Voice</span>
+              </button>
+
+              <button type="button" class="composer-model-pill" id="composerModelBtn" title="Current active model. Click to change.">
+                <span id="composerModelIcon"></span>
+                <span id="composerModelName">Auto</span>
               </button>
             </div>
             <div class="tools-right">
@@ -1868,6 +2237,128 @@ let imageMode = false;
 let webSearchEnabled = false;
 let recognition = null;
 let recording = false;
+
+// Real SVG Icons for AI Models
+const AI_ICONS = {
+  gemini: '<svg viewBox="0 0 24 24" fill="none" class="ai-brand-svg"><path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81" fill="currentColor"/></svg>',
+
+  claude: '<svg viewBox="0 0 24 24" fill="currentColor" class="ai-brand-svg"><path d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"/></svg>',
+
+  deepseek: '<svg viewBox="0 0 512 510" fill="currentColor" class="ai-brand-svg"><path fill-rule="nonzero" d="M440.898 139.167c-4.001-1.961-5.723 1.776-8.062 3.673-.801.612-1.479 1.407-2.154 2.141-5.848 6.246-12.681 10.349-21.607 9.859-13.048-.734-24.192 3.368-34.04 13.348-2.093-12.307-9.048-19.658-19.635-24.37-5.54-2.449-11.141-4.9-15.02-10.227-2.708-3.795-3.447-8.021-4.801-12.185-.861-2.509-1.725-5.082-4.618-5.512-3.139-.49-4.372 2.142-5.601 4.349-4.925 9.002-6.833 18.921-6.647 28.962.432 22.597 9.972 40.597 28.932 53.397 2.154 1.47 2.707 2.939 2.032 5.082-1.293 4.41-2.832 8.695-4.186 13.105-.862 2.817-2.157 3.429-5.172 2.205-10.402-4.346-19.391-10.778-27.332-18.553-13.481-13.044-25.668-27.434-40.873-38.702a177.614 177.614 0 00-10.834-7.409c-15.512-15.063 2.032-27.434 6.094-28.902 4.247-1.532 1.478-6.797-12.251-6.736-13.727.061-26.285 4.653-42.288 10.777-2.34.92-4.801 1.593-7.326 2.142-14.527-2.756-29.608-3.368-45.367-1.593-29.671 3.305-53.368 17.329-70.788 41.272-20.928 28.785-25.854 61.482-19.821 95.59 6.34 35.943 24.683 65.704 52.876 88.974 29.239 24.123 62.911 35.943 101.32 33.677 23.329-1.346 49.307-4.468 78.607-29.27 7.387 3.673 15.142 5.144 28.008 6.246 9.911.92 19.452-.49 26.839-2.019 11.573-2.449 10.773-13.166 6.586-15.124-33.915-15.797-26.47-9.368-33.24-14.573 17.235-20.39 43.213-41.577 53.369-110.222.8-5.448.121-8.877 0-13.287-.061-2.692.553-3.734 3.632-4.041 8.494-.981 16.742-3.305 24.314-7.471 21.975-12.002 30.84-31.719 32.933-55.355.307-3.612-.061-7.348-3.879-9.245v-.003zM249.4 351.89c-32.872-25.838-48.814-34.352-55.4-33.984-6.155.368-5.048 7.41-3.694 12.002 1.415 4.532 3.264 7.654 5.848 11.634 1.785 2.634 3.017 6.551-1.784 9.493-10.587 6.55-28.993-2.205-29.856-2.635-21.421-12.614-39.334-29.269-51.954-52.047-12.187-21.924-19.267-45.435-20.435-70.542-.308-6.061 1.478-8.207 7.509-9.307 7.94-1.471 16.127-1.778 24.068-.615 33.547 4.9 62.108 19.902 86.054 43.66 13.666 13.531 24.007 29.699 34.658 45.496 11.326 16.778 23.514 32.761 39.026 45.865 5.479 4.592 9.848 8.083 14.035 10.656-12.62 1.407-33.673 1.714-48.075-9.676zm15.899-102.519c.521-2.111 2.421-3.658 4.722-3.658a4.74 4.74 0 011.661.305c.678.246 1.293.614 1.786 1.163.861.859 1.354 2.083 1.354 3.368 0 2.695-2.154 4.837-4.862 4.837a4.748 4.748 0 01-4.738-4.034 5.01 5.01 0 01.077-1.981zm47.208 26.915c-2.606.996-5.2 1.778-7.707 1.88-4.679.244-9.787-1.654-12.556-3.981-4.308-3.612-7.386-5.631-8.679-11.941-.554-2.695-.247-6.858.246-9.246 1.108-5.144-.124-8.451-3.754-11.451-2.954-2.449-6.711-3.122-10.834-3.122-1.539 0-2.954-.673-4.001-1.224-1.724-.856-3.139-3-1.785-5.634.432-.856 2.525-2.939 3.018-3.305 5.6-3.185 12.065-2.144 18.034.244 5.54 2.266 9.727 6.429 15.759 12.307 6.155 7.102 7.263 9.063 10.773 14.39 2.771 4.163 5.294 8.451 7.018 13.348.877 2.561.071 4.74-2.341 6.277-.981.625-2.109 1.044-3.191 1.458z"/></svg>',
+
+  openai: '<svg viewBox="0 0 24 24" fill="currentColor" class="ai-brand-svg"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg>',
+
+  llama: '<svg viewBox="0 0 24 24" fill="currentColor" class="ai-brand-svg"><path d="M6.915 4.03c-1.968 0-3.683 1.28-4.871 3.113C.704 9.208 0 11.883 0 14.449c0 .706.07 1.369.21 1.973a6.624 6.624 0 0 0 .265.86 5.297 5.297 0 0 0 .371.761c.696 1.159 1.818 1.927 3.593 1.927 1.497 0 2.633-.671 3.965-2.444.76-1.012 1.144-1.626 2.663-4.32l.756-1.339.186-.325c.061.1.121.196.183.3l2.152 3.595c.724 1.21 1.665 2.556 2.47 3.314 1.046.987 1.992 1.22 3.06 1.22 1.075 0 1.876-.355 2.455-.843a3.743 3.743 0 0 0 .81-.973c.542-.939.861-2.127.861-3.745 0-2.72-.681-5.357-2.084-7.45-1.282-1.912-2.957-2.93-4.716-2.93-1.047 0-2.088.467-3.053 1.308-.652.57-1.257 1.29-1.82 2.05-.69-.875-1.335-1.547-1.958-2.056-1.182-.966-2.315-1.303-3.454-1.303zm10.16 2.053c1.147 0 2.188.758 2.992 1.999 1.132 1.748 1.647 4.195 1.647 6.4 0 1.548-.368 2.9-1.839 2.9-.58 0-1.027-.23-1.664-1.004-.496-.601-1.343-1.878-2.832-4.358l-.617-1.028a44.908 44.908 0 0 0-1.255-1.98c.07-.109.141-.224.211-.327 1.12-1.667 2.118-2.602 3.358-2.602zm-10.201.553c1.265 0 2.058.791 2.675 1.446.307.327.737.871 1.234 1.579l-1.02 1.566c-.757 1.163-1.882 3.017-2.837 4.338-1.191 1.649-1.81 1.817-2.486 1.817-.524 0-1.038-.237-1.383-.794-.263-.426-.464-1.13-.464-2.046 0-2.221.63-4.535 1.66-6.088.454-.687.964-1.226 1.533-1.533a2.264 2.264 0 0 1 1.088-.285z"/></svg>',
+
+  mistral: '<svg viewBox="0 0 256 233" fill="currentColor" class="ai-brand-svg"><path d="M186.182 0h46.545v46.545h-46.545z" fill="#f2a73b"/><path fill="#f7d046" d="M209.455 0H256v46.545h-46.545z"/><path d="M0 0h46.545v46.545H0zM0 46.545h46.545V93.09H0zM0 93.091h46.545v46.545H0zM0 139.636h46.545v46.545H0zM0 186.182h46.545V233H0z" fill="#eb5829"/><path d="M46.545 186.182h46.545V233H46.545zM93.091 186.182h46.545V233H93.091zM139.636 186.182h46.545V233h-46.545zM186.182 186.182h46.545V233h-46.545z" fill="#ea3326"/><path d="M139.636 139.636h46.545v46.545h-46.545z" fill="#ee792f"/><path d="M186.182 139.636h46.545v46.545h-46.545z" fill="#eb5829"/><path d="M186.182 93.091h46.545v46.545h-46.545z" fill="#f2a73b"/><path d="M186.182 46.545h46.545V93.09h-46.545z" fill="#f7d046"/><path d="M139.636 46.545h46.545V93.09h-46.545z" fill="#ee792f"/><path d="M93.091 46.545h46.545V93.09H93.091z" fill="#eb5829"/><path d="M46.545 46.545h46.545V93.09H46.545z" fill="#ea3326"/></svg>',
+
+  auto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="ai-brand-svg"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+};
+
+// Model Metadata & Branding Extraction
+function getModelMeta(rawId) {
+  const str = String(rawId || 'auto').toLowerCase();
+  if (str === 'auto' || str === '') {
+    return {
+      family: 'auto',
+      brand: 'Smart Route',
+      displayName: 'Auto · Best Available',
+      shortName: 'Auto',
+      badge: 'SMART',
+      tagClass: 'tag-smart',
+      desc: 'Automatic routing across Gemini & APInex',
+      themeClass: 'theme-auto',
+      iconSvg: AI_ICONS.auto
+    };
+  }
+  if (str.includes('claude')) {
+    const isSonnet = str.includes('sonnet');
+    const name = isSonnet ? (str.includes('4.6') ? 'Claude Sonnet 4.6' : 'Claude 3.5 Sonnet') : 'Anthropic Claude';
+    return {
+      family: 'claude',
+      brand: 'Anthropic',
+      displayName: name,
+      shortName: name,
+      badge: str.includes('free') ? 'FREE TIER' : 'REASONING',
+      tagClass: str.includes('free') ? 'tag-free' : 'tag-claude',
+      desc: 'Anthropic · Nuanced prose & code architecture',
+      themeClass: 'theme-claude',
+      iconSvg: AI_ICONS.claude
+    };
+  }
+  if (str.includes('deepseek')) {
+    const isV4 = str.includes('v4');
+    const name = isV4 ? 'DeepSeek V4 Flash' : 'DeepSeek Chat';
+    return {
+      family: 'deepseek',
+      brand: 'DeepSeek',
+      displayName: name,
+      shortName: name,
+      badge: str.includes('free') ? 'FREE TIER' : 'CODE & MATH',
+      tagClass: str.includes('free') ? 'tag-free' : 'tag-fast',
+      desc: 'DeepSeek · High-performance math & code synthesis',
+      themeClass: 'theme-deepseek',
+      iconSvg: AI_ICONS.deepseek
+    };
+  }
+  if (str.includes('gpt') || str.includes('openai') || str.includes('o1') || str.includes('o3')) {
+    const name = str.includes('4o') ? 'GPT-4o' : str.includes('o1') ? 'OpenAI o1' : 'GPT-4o Mini';
+    return {
+      family: 'openai',
+      brand: 'OpenAI',
+      displayName: name,
+      shortName: name,
+      badge: 'OMNI',
+      tagClass: 'tag-omni',
+      desc: 'OpenAI · Multimodal flagship intelligence',
+      themeClass: 'theme-openai',
+      iconSvg: AI_ICONS.openai
+    };
+  }
+  if (str.includes('llama')) {
+    return {
+      family: 'llama',
+      brand: 'Meta',
+      displayName: 'Meta Llama 3.3',
+      shortName: 'Llama 3.3',
+      badge: 'OPEN WEIGHTS',
+      tagClass: 'tag-fast',
+      desc: 'Meta AI · Open-weights powerhouse',
+      themeClass: 'theme-llama',
+      iconSvg: AI_ICONS.llama
+    };
+  }
+  if (str.includes('mistral')) {
+    return {
+      family: 'mistral',
+      brand: 'Mistral',
+      displayName: 'Mistral Large',
+      shortName: 'Mistral',
+      badge: 'FRANCE',
+      tagClass: 'tag-reasoning',
+      desc: 'Mistral AI · European reasoning & speed',
+      themeClass: 'theme-mistral',
+      iconSvg: AI_ICONS.mistral
+    };
+  }
+  // Default to Google Gemini for Gemini models
+  const is38 = str.includes('3.8');
+  const isLite = str.includes('lite');
+  const name = is38 ? 'Gemini 3.8 Flash' : isLite ? 'Gemini Flash Lite' : 'Gemini 3.5 Flash';
+  const badge = is38 ? 'REASONING' : isLite ? 'INSTANT' : 'BALANCED';
+  const tagClass = str.includes('free') ? 'tag-free' : (is38 ? 'tag-reasoning' : (isLite ? 'tag-fast' : 'tag-smart'));
+  return {
+    family: 'gemini',
+    brand: 'Google AI',
+    displayName: name,
+    shortName: name,
+    badge: (str.includes('free') ? 'FREE · ' : '') + badge,
+    tagClass,
+    desc: 'Google Gemini · Deep multimodal reasoning',
+    themeClass: 'theme-gemini',
+    iconSvg: AI_ICONS.gemini
+  };
+}
 
 // Toast helper
 function toast(msg) {
@@ -2005,11 +2496,201 @@ function updateGreeting() {
   $('#greetingHeadline').innerHTML = timeStr + ',<br><em>what are we exploring today?</em>';
 }
 
+// Update Active Model UI Everywhere
+function updateActiveModelDisplay(val) {
+  selectedModel = val || 'auto';
+  const meta = getModelMeta(selectedModel);
+
+  // Topbar Trigger Button
+  const iconBadge = $('#modelPickerIconBadge');
+  if (iconBadge) {
+    iconBadge.innerHTML = meta.iconSvg;
+    iconBadge.className = 'model-picker-icon-badge ' + meta.themeClass;
+  }
+  const nameEl = $('#modelPickerName');
+  if (nameEl) nameEl.textContent = meta.displayName;
+  const tagEl = $('#modelPickerTag');
+  if (tagEl) tagEl.textContent = meta.badge;
+
+  // Composer Pill
+  const cIcon = $('#composerModelIcon');
+  if (cIcon) cIcon.innerHTML = meta.iconSvg;
+  const cName = $('#composerModelName');
+  if (cName) cName.textContent = meta.shortName;
+
+  // Welcome Pill
+  const wIcon = $('#welcomeModelIcon');
+  if (wIcon) wIcon.innerHTML = meta.iconSvg;
+  const wText = $('#welcomeModelText');
+  if (wText) wText.textContent = meta.displayName + ' · ' + meta.brand;
+
+  // Sync hidden native select
+  const nativeSelect = $('#modelSelect');
+  if (nativeSelect) nativeSelect.value = selectedModel;
+
+  // Mark active item in dropdown
+  $$('.model-option-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.value === selectedModel);
+  });
+}
+
+// Custom Model Dropdown Rendering & Events
+function renderModelDropdown(catalog) {
+  const list = $('#modelOptionsList');
+  list.innerHTML = '';
+
+  const groups = [
+    {
+      title: 'Smart Routing',
+      models: [
+        {
+          value: 'auto',
+          meta: getModelMeta('auto')
+        }
+      ]
+    }
+  ];
+
+  for (const prov of catalog.providers || []) {
+    const rawModels = (prov.models || []).slice(0, 6);
+    if (!rawModels.length) continue;
+    const isGemini = prov.id === 'gemini';
+    const groupTitle = prov.label || (isGemini ? 'Google Gemini' : 'APInex');
+    groups.push({
+      title: groupTitle,
+      models: rawModels.map(m => ({
+        value: prov.id + '|' + m.id,
+        meta: getModelMeta(m.id)
+      }))
+    });
+  }
+
+  // Populate hidden native select as well
+  const nativeSelect = $('#modelSelect');
+  nativeSelect.innerHTML = '<option value="auto">Auto · Best Available</option>';
+
+  groups.forEach(group => {
+    const groupEl = document.createElement('div');
+    groupEl.className = 'model-group-title';
+    groupEl.textContent = group.title;
+    list.appendChild(groupEl);
+
+    const nativeGroup = document.createElement('optgroup');
+    nativeGroup.label = group.title;
+
+    group.models.forEach(item => {
+      const optEl = document.createElement('div');
+      optEl.className = 'model-option-item' + (item.value === selectedModel ? ' active' : '');
+      optEl.dataset.value = item.value;
+      optEl.dataset.search = (item.meta.displayName + ' ' + item.meta.brand + ' ' + item.meta.desc).toLowerCase();
+      optEl.tabIndex = 0;
+
+      optEl.innerHTML =
+        '<div class="model-option-icon ' + item.meta.themeClass + '">' + item.meta.iconSvg + '</div>' +
+        '<div class="model-option-info">' +
+          '<div class="model-option-title-row">' +
+            '<span class="model-option-name">' + escapeHtml(item.meta.displayName) + '</span>' +
+            '<span class="model-tag ' + item.meta.tagClass + '">' + escapeHtml(item.meta.badge) + '</span>' +
+          '</div>' +
+          '<div class="model-option-desc">' + escapeHtml(item.meta.desc) + '</div>' +
+        '</div>' +
+        '<div class="model-check-icon">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>' +
+        '</div>';
+
+      optEl.onclick = () => selectModelOption(item.value);
+      optEl.onkeydown = e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          selectModelOption(item.value);
+        }
+      };
+      list.appendChild(optEl);
+
+      const nOpt = document.createElement('option');
+      nOpt.value = item.value;
+      nOpt.textContent = item.meta.displayName;
+      nativeGroup.appendChild(nOpt);
+    });
+
+    if (nativeGroup.children.length) nativeSelect.appendChild(nativeGroup);
+  });
+}
+
+function selectModelOption(val) {
+  selectedModel = val || 'auto';
+  try { localStorage.setItem('bytes.model-selection.v1', selectedModel); } catch (_) {}
+  updateActiveModelDisplay(selectedModel);
+  closeModelDropdown();
+  const meta = getModelMeta(selectedModel);
+  toast('Switched to ' + meta.displayName);
+}
+
+function toggleModelDropdown() {
+  const container = $('#modelPickerContainer');
+  const dropdown = $('#modelPickerDropdown');
+  const isOpen = !dropdown.hidden;
+  if (isOpen) {
+    closeModelDropdown();
+  } else {
+    dropdown.hidden = false;
+    container.classList.add('open');
+    $('#modelPickerBtn').setAttribute('aria-expanded', 'true');
+    const search = $('#modelSearchInput');
+    if (search) {
+      search.value = '';
+      search.focus();
+      filterModelOptions('');
+    }
+  }
+}
+
+function closeModelDropdown() {
+  const container = $('#modelPickerContainer');
+  const dropdown = $('#modelPickerDropdown');
+  dropdown.hidden = true;
+  container.classList.remove('open');
+  $('#modelPickerBtn').setAttribute('aria-expanded', 'false');
+}
+
+function filterModelOptions(query) {
+  const q = String(query || '').trim().toLowerCase();
+  $$('.model-option-item').forEach(el => {
+    const match = !q || el.dataset.search.includes(q);
+    el.style.display = match ? 'flex' : 'none';
+  });
+  $$('.model-group-title').forEach(titleEl => {
+    let next = titleEl.nextElementSibling;
+    let hasVisible = false;
+    while (next && next.classList.contains('model-option-item')) {
+      if (next.style.display !== 'none') hasVisible = true;
+      next = next.nextElementSibling;
+    }
+    titleEl.style.display = hasVisible ? 'block' : 'none';
+  });
+}
+
+$('#modelPickerBtn').onclick = e => {
+  e.stopPropagation();
+  toggleModelDropdown();
+};
+$('#composerModelBtn').onclick = e => {
+  e.stopPropagation();
+  toggleModelDropdown();
+};
+$('#modelSearchInput')?.addEventListener('input', e => filterModelOptions(e.target.value));
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#modelPickerContainer') && !e.target.closest('#composerModelBtn')) {
+    closeModelDropdown();
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModelDropdown();
+});
+
 // Model Catalog Loading
 async function loadModelCatalog() {
-  const select = $('#modelSelect');
-  select.disabled = true;
-  select.title = 'Loading live AI models…';
   try {
     const res = await bytesFetch(apiUrl('/api/models'), { cache: 'no-store', signal: AbortSignal.timeout(6000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -2022,8 +2703,8 @@ async function loadModelCatalog() {
           id: 'gemini',
           label: 'Google Gemini',
           models: [
-            { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash · Fast & Balanced' },
             { id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash · Deep Reasoning' },
+            { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash · Fast & Balanced' },
             { id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite · Instant Speed' }
           ]
         },
@@ -2042,32 +2723,9 @@ async function loadModelCatalog() {
     };
   }
 
-  select.innerHTML = '';
-  const auto = document.createElement('option');
-  auto.value = 'auto';
-  auto.textContent = 'Auto · Best Available';
-  select.appendChild(auto);
-
-  // Curate to show a clean, high-value selection without cluttering the UI
-  for (const prov of modelCatalog.providers || []) {
-    const models = (prov.models || []).slice(0, 4);
-    if (!models.length) continue;
-    const group = document.createElement('optgroup');
-    group.label = prov.label || prov.id;
-    for (const m of models) {
-      const opt = document.createElement('option');
-      opt.value = prov.id + '|' + m.id;
-      opt.textContent = m.label || m.id;
-      group.appendChild(opt);
-    }
-    if (group.children.length) select.appendChild(group);
-  }
-
   try { selectedModel = localStorage.getItem('bytes.model-selection.v1') || 'auto'; } catch (_) { selectedModel = 'auto'; }
-  const valid = Array.from(select.options).some(o => o.value === selectedModel);
-  if (!valid) selectedModel = 'auto';
-  select.value = selectedModel;
-  select.disabled = false;
+  renderModelDropdown(modelCatalog);
+  updateActiveModelDisplay(selectedModel);
   $('#modelIndicator').className = 'model-indicator';
 }
 
@@ -2076,11 +2734,6 @@ function modelRequest() {
   const split = selectedModel.indexOf('|');
   return split < 0 ? { provider: 'auto', model: '' } : { provider: selectedModel.slice(0, split), model: selectedModel.slice(split + 1) };
 }
-$('#modelSelect').addEventListener('change', () => {
-  selectedModel = $('#modelSelect').value || 'auto';
-  try { localStorage.setItem('bytes.model-selection.v1', selectedModel); } catch (_) {}
-  toast('Model changed.');
-});
 
 // Storage Persistence
 function persist() {
@@ -2090,6 +2743,7 @@ function persist() {
       messages: c.messages.map(m => ({
         role: m.role,
         text: m.text,
+        model: m.model,
         generatedImage: !!m.generatedImage,
         attachments: Array.isArray(m.attachments) ? m.attachments.map(a => ({ name: a.name, type: a.type, size: a.size || 0 })) : undefined
       }))
@@ -2186,7 +2840,7 @@ function loadConversation(id) {
   if (!conv) return;
   currentId = id;
   chatView.innerHTML = '';
-  conv.messages.forEach(m => makeMessage(m.role, m.text, { attachments: m.attachments, generatedImage: m.generatedImage }));
+  conv.messages.forEach(m => makeMessage(m.role, m.text, { attachments: m.attachments, generatedImage: m.generatedImage, model: m.model }));
   content.classList.add('chat-mode');
   $$('.history-item').forEach(b => b.classList.toggle('active', b.dataset.id === id));
   if (innerWidth <= 820) closeSidebar();
@@ -2206,7 +2860,6 @@ input.addEventListener('keydown', e => {
   }
 });
 
-// HTML & Markdown Sanitizers
 function escapeHtml(s) {
   return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
@@ -2223,7 +2876,7 @@ function renderMarkdown(raw) {
   const codeBlocks = [];
 
   // Protect code blocks
-  source = source.replace(/\`\`\`([\w+-]*)\n([\s\S]*?)\`\`\`/g, (_, lang, code) => {
+  source = source.replace(/```([\w+-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
     const id = codeBlocks.length;
     codeBlocks.push({ lang: lang || 'CODE', code: code.replace(/\n$/, '') });
     return '\n@@CODE_BLOCK_' + id + '@@\n';
@@ -2244,7 +2897,7 @@ function renderMarkdown(raw) {
   out = out.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
            .replace(/\*(.+?)\*/g, '<em>$1</em>')
            .replace(/~~(.+?)~~/g, '<del>$1</del>')
-           .replace(/\`([^\`]+)\`/g, '<code>$1</code>');
+           .replace(/`([^`]+)`/g, '<code>$1</code>');
 
   const lines = out.split('\n');
   const result = [];
@@ -2303,7 +2956,7 @@ function renderMarkdown(raw) {
       continue;
     }
 
-    // Table detection: line contains |
+    // Table detection
     if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
       flushPara();
       closeList();
@@ -2363,7 +3016,7 @@ function renderMarkdown(raw) {
   return result.join('') || '<p></p>';
 }
 
-// Generate smart follow-up suggestions algorithm
+// Generate smart follow-up suggestions
 function getSmartSuggestions(replyText, userPrompt) {
   const suggestions = [];
   const text = (replyText || '').toLowerCase();
@@ -2399,21 +3052,42 @@ function extractCitations(text) {
   return citations.slice(0, 5);
 }
 
-// Message Rendering
+// Message Rendering with Real Brand Icons
 function makeMessage(role, text, options = {}) {
   const row = document.createElement('div');
   row.className = 'message-row ' + role;
 
   const mark = document.createElement('div');
   mark.className = 'avatar-mark';
-  mark.textContent = role === 'user' ? 'Y' : 'b.';
 
   const contentDiv = document.createElement('div');
   contentDiv.className = 'message-content';
 
   const meta = document.createElement('div');
   meta.className = 'message-meta';
-  meta.textContent = role === 'user' ? 'You' : 'Bytes AI';
+
+  if (role === 'user') {
+    mark.textContent = 'You';
+    meta.textContent = 'You';
+  } else {
+    // Determine which model answered
+    const modelUsed = options.model || (imageMode ? 'gemini-nano-banana-2.1' : selectedModel);
+    const modelMeta = getModelMeta(modelUsed);
+    mark.innerHTML = modelMeta.iconSvg;
+    mark.className = 'avatar-mark assistant-avatar ' + modelMeta.themeClass;
+
+    const timeStr = options.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    meta.innerHTML =
+      '<span class="meta-brand-badge ' + modelMeta.themeClass + '">' +
+        modelMeta.iconSvg +
+        '<span>' + escapeHtml(modelMeta.displayName) + '</span>' +
+      '</span>' +
+      '<span class="meta-dot">·</span>' +
+      '<span style="color:var(--muted);">' + escapeHtml(modelMeta.brand) + '</span>' +
+      '<span class="meta-dot">·</span>' +
+      '<span class="meta-time">' + escapeHtml(timeStr) + '</span>';
+  }
+
   contentDiv.appendChild(meta);
 
   const bubble = document.createElement('div');
@@ -2559,43 +3233,36 @@ async function copyText(text) {
 // Auto-scroll logic
 let userScrolledUp = false;
 window.addEventListener('scroll', () => {
-  const distFromBottom = document.body.scrollHeight - window.innerHeight - window.scrollY;
-  userScrolledUp = distFromBottom > 120;
-  scrollBottomBtn.classList.toggle('visible', userScrolledUp);
+  const threshold = 120;
+  const isNearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - threshold);
+  userScrolledUp = !isNearBottom;
+  scrollBottomBtn.classList.toggle('visible', userScrolledUp && content.classList.contains('chat-mode'));
 });
 scrollBottomBtn.onclick = () => {
   window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 };
 
-// Stream Reader with Abort Signal
+// Stream Reader
 async function readStream(response, onText, signal) {
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.error || 'Server error ' + response.status);
-  }
-  if (!response.body) throw new Error('Streaming not supported.');
-
+  if (!response.body) throw new Error('ReadableStream not supported.');
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = '', answer = '';
+  let answer = '';
+  let buffer = '';
 
   try {
     while (true) {
-      if (signal?.aborted) {
-        reader.cancel();
-        break;
-      }
-      const { value, done } = await reader.read();
+      if (signal?.aborted) { reader.cancel(); break; }
+      const { done, value } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-      const events = buffer.split('\n\n');
-      buffer = events.pop() || '';
-
-      for (const ev of events) {
-        const line = ev.split('\n').find(x => x.startsWith('data:'));
-        if (!line) continue;
-        const payload = line.slice(5).trim();
-        if (payload === '[DONE]') continue;
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) continue;
+        const payload = trimmed.slice(5).trim();
+        if (!payload || payload === '[DONE]') continue;
         let data;
         try {
           data = JSON.parse(payload);
@@ -2654,11 +3321,20 @@ async function sendMessage(text) {
   $('#sendBtn').title = 'Stop generating';
   $('#modelIndicator').classList.add('thinking');
 
+  const currentModelMeta = getModelMeta(imageMode ? 'gemini-nano-banana-2.1' : selectedModel);
+
   const typingRow = document.createElement('div');
   typingRow.className = 'message-row assistant';
-  typingRow.innerHTML = '<div class="avatar-mark">b.</div><div class="message-content"><div class="message-meta">Bytes AI</div><div class="message-bubble"><span style="color:var(--muted);font-size:13px;">' +
-    (imageMode ? 'Generating artwork in Gemini Studio…' : webSearchEnabled ? 'Searching the live web for verified facts…' : 'Thinking…') +
-    '</span><span class="streaming-cursor"></span></div></div>';
+  typingRow.innerHTML =
+    '<div class="avatar-mark assistant-avatar ' + currentModelMeta.themeClass + '">' + currentModelMeta.iconSvg + '</div>' +
+    '<div class="message-content">' +
+      '<div class="message-meta">' +
+        '<span class="meta-brand-badge ' + currentModelMeta.themeClass + '">' + currentModelMeta.iconSvg + '<span>' + escapeHtml(currentModelMeta.displayName) + '</span></span>' +
+      '</div>' +
+      '<div class="message-bubble"><span style="color:var(--muted);font-size:13px;">' +
+        (imageMode ? 'Generating artwork in Gemini Studio…' : webSearchEnabled ? 'Searching the live web for verified facts…' : 'Thinking with ' + escapeHtml(currentModelMeta.displayName) + '…') +
+      '</span><span class="streaming-cursor"></span></div>' +
+    '</div>';
   chatView.appendChild(typingRow);
 
   window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -2679,8 +3355,8 @@ async function sendMessage(text) {
       if (!response.ok) throw new Error(data.error || 'Image generation failed.');
 
       typingRow.remove();
-      makeMessage('assistant', data.reply || 'Here is your generated image.', { imageData: data.imageData, mimeType: data.mimeType });
-      conv.messages.push({ role: 'assistant', text: data.reply || 'Image generated.', generatedImage: true });
+      makeMessage('assistant', data.reply || 'Here is your generated image.', { imageData: data.imageData, mimeType: data.mimeType, model: 'gemini-nano-banana-2.1' });
+      conv.messages.push({ role: 'assistant', text: data.reply || 'Image generated.', generatedImage: true, model: 'gemini-nano-banana-2.1' });
     } else {
       const personaPrompt = PERSONA_PROMPTS[selectedPersona] || PERSONA_PROMPTS.default;
       const combinedMemory = (memoryText ? memoryText + '\n\n' : '') + '[Assistant Persona Directive]: ' + personaPrompt;
@@ -2702,7 +3378,7 @@ async function sendMessage(text) {
       const answer = await readStream(response, partial => {
         if (!assistantWrap) {
           typingRow.remove();
-          assistantWrap = makeMessage('assistant', '');
+          assistantWrap = makeMessage('assistant', '', { model: selectedModel });
         }
         const markdownNode = assistantWrap.querySelector('.rendered-markdown');
         if (markdownNode) {
@@ -2713,13 +3389,13 @@ async function sendMessage(text) {
 
       typingRow.remove();
       if (!assistantWrap) {
-        assistantWrap = makeMessage('assistant', answer || 'I was unable to complete that response.');
+        assistantWrap = makeMessage('assistant', answer || 'I was unable to complete that response.', { model: selectedModel });
       } else {
         const markdownNode = assistantWrap.querySelector('.rendered-markdown');
         if (markdownNode) markdownNode.innerHTML = renderMarkdown(answer);
       }
 
-      if (answer.trim()) conv.messages.push({ role: 'assistant', text: answer });
+      if (answer.trim()) conv.messages.push({ role: 'assistant', text: answer, model: selectedModel });
       else conv.messages.pop();
     }
     persist();
@@ -2729,7 +3405,7 @@ async function sendMessage(text) {
     if (err.name === 'AbortError' || currentAbortController?.signal.aborted) {
       toast('Generation stopped.');
     } else {
-      makeMessage('assistant', '**Error completing request**\n\n' + err.message);
+      makeMessage('assistant', '**Error completing request**\n\n' + err.message, { model: selectedModel });
     }
   } finally {
     busy = false;
@@ -2764,7 +3440,7 @@ async function regenerate() {
   if (!last || last.role !== 'user') return;
   const prompt = last.text;
   chatView.innerHTML = '';
-  conv.messages.forEach(m => makeMessage(m.role, m.text));
+  conv.messages.forEach(m => makeMessage(m.role, m.text, { model: m.model }));
   conv.messages.pop();
   persist();
   await sendMessage(prompt);
@@ -2903,7 +3579,7 @@ function speakText(text, btn) {
   window.speechSynthesis.cancel();
   if (speakingBtn) speakingBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> <span>Speak</span>';
 
-  const clean = text.replace(/\`\`\`[\s\S]*?\`\`\`/g, 'Code block omitted.').replace(/[#*_\`>~|]/g, '');
+  const clean = text.replace(/```[\s\S]*?```/g, 'Code block omitted.').replace(/[#*_`>~|]/g, '');
   const u = new SpeechSynthesisUtterance(clean);
   u.lang = navigator.language || 'en-US';
   speakingBtn = btn;
@@ -3031,22 +3707,24 @@ document.addEventListener('keydown', e => {
   }
   if (e.key === 'Escape') {
     closeSidebar();
+    closeModelDropdown();
     $('#modalBackdrop').classList.remove('open');
-    $('#lightbox').classList.remove('open');
   }
 });
 
-// Supabase Authentication UI
+// Authentication with Supabase
 function updateAuthUi() {
-  const authBtn = $('#authBtn');
+  const btn = $('#authBtn');
   if (authUser) {
-    authBtn.textContent = 'Account';
-    const name = authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User';
-    $('#profileName').textContent = name;
-    $('#profileSubtitle').textContent = authUser.email || 'Signed in';
-    $('#profileAvatar').textContent = name.slice(0, 2).toUpperCase();
+    const email = authUser.email || 'User';
+    btn.textContent = email.split('@')[0];
+    btn.title = 'Account: ' + email;
+    $('#profileName').textContent = email.split('@')[0];
+    $('#profileSubtitle').textContent = 'Cloud Sync Active';
+    $('#profileAvatar').textContent = email[0].toUpperCase();
   } else {
-    authBtn.textContent = 'Sign in';
+    btn.textContent = 'Sign in';
+    btn.title = 'Sign in with Supabase';
     $('#profileName').textContent = 'Bytes Workspace';
     $('#profileSubtitle').textContent = supabaseClient ? 'Sign in to sync' : 'Guest Mode';
     $('#profileAvatar').textContent = 'B';
