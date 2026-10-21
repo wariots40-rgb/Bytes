@@ -502,22 +502,22 @@ const VIRTUAL_MODELS = {
     brandName: "OpenAI",
     brandGroup: "openai",
     provider: "openai",
-    targetModel: "muse-wonder",
+    targetModel: "muse-wonder-1.0",
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.7,
     personaPrompt: "You are GPT-4o, OpenAI's flagship multimodal intelligence model. You are highly capable, direct, structured, and pragmatic. Provide clean, production-ready code with concise explanations and well-structured Markdown tables when appropriate. Avoid unnecessary conversational preambles."
   },
-  "openai/o1": {
-    id: "openai/o1",
-    label: "OpenAI o1 · Deep Reasoning",
-    uiName: "OpenAI o1",
+  "openai/o3-mini": {
+    id: "openai/o3-mini",
+    label: "OpenAI o3-mini · Reasoning Flagship",
+    uiName: "OpenAI o3-mini",
     brandName: "OpenAI",
     brandGroup: "openai",
     provider: "openai",
     targetModel: "muse-spark-1.3",
     fallbackModel: "llama-3.3-70b-instruct",
-    temperature: 0.3,
-    personaPrompt: "You are OpenAI o1, OpenAI's premier reasoning model designed for complex multi-step reasoning, mathematical proof, algorithm design, and deep technical architecture. Think through edge cases systematically, verify logical correctness before concluding, and provide thorough, methodical solutions."
+    temperature: 0.25,
+    personaPrompt: "You are OpenAI o3-mini, OpenAI's premier reasoning model designed for complex multi-step reasoning, mathematical proof, algorithm design, and deep technical architecture. Think through edge cases systematically, verify logical correctness before concluding, and provide thorough, methodical solutions."
   },
   "openai/gpt-4o-mini": {
     id: "openai/gpt-4o-mini",
@@ -531,20 +531,21 @@ const VIRTUAL_MODELS = {
     temperature: 0.7,
     personaPrompt: "You are GPT-4o Mini, OpenAI's agile and lightweight intelligence model. You provide rapid, accurate, and concise answers, perfect for quick iteration and clear responses."
   },
-
-  // Anthropic Claude Family
-  "anthropic/claude-3-7-sonnet": {
-    id: "anthropic/claude-3-7-sonnet",
-    label: "Claude 3.7 Sonnet · Hybrid Reasoning Flagship",
-    uiName: "Claude 3.7 Sonnet",
-    brandName: "Anthropic",
-    brandGroup: "claude",
-    provider: "claude",
+  "openai/o1": {
+    id: "openai/o1",
+    label: "OpenAI o1 · Deep Reasoning",
+    uiName: "OpenAI o1",
+    brandName: "OpenAI",
+    brandGroup: "openai",
+    hidden: true,
+    provider: "openai",
     targetModel: "muse-spark-1.3",
     fallbackModel: "llama-3.3-70b-instruct",
-    temperature: 0.6,
-    personaPrompt: "You are Claude 3.7 Sonnet, Anthropic's flagship hybrid reasoning model. You seamlessly unite rapid intuitive thinking with deep, rigorous, multi-turn technical reasoning. When coding or analyzing systems, provide production-ready, elegantly architected solutions with flawless error handling, modular decomposition, and insightful explanations."
+    temperature: 0.3,
+    personaPrompt: "You are OpenAI o1, OpenAI's premier reasoning model designed for complex multi-step reasoning, mathematical proof, algorithm design, and deep technical architecture."
   },
+
+  // Anthropic Claude Family
   "anthropic/claude-3-5-sonnet": {
     id: "anthropic/claude-3-5-sonnet",
     label: "Claude 3.5 Sonnet · Premier Engineering",
@@ -575,38 +576,89 @@ const VIRTUAL_MODELS = {
     uiName: "Claude 3 Opus",
     brandName: "Anthropic",
     brandGroup: "claude",
-    hidden: true,
     provider: "claude",
-    targetModel: "muse-wonder",
+    targetModel: "muse-wonder-1.0",
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.5,
     personaPrompt: "You are Claude 3 Opus, Anthropic's deep analytical model. You excel at comprehensive analysis, philosophical depth, holistic system design, and synthesizing complex ideas into structured frameworks."
   },
-
-  // Google Gemini Family
-  "gemini/gemini-2.5-pro": {
-    id: "gemini/gemini-2.5-pro",
-    label: "Gemini 2.5 Pro · Frontier Flagship",
-    uiName: "Gemini 2.5 Pro",
-    brandName: "Google",
-    brandGroup: "gemini",
-    provider: "gemini",
+  "anthropic/claude-3-7-sonnet": {
+    id: "anthropic/claude-3-7-sonnet",
+    label: "Claude 3.5 Sonnet · Premier Engineering",
+    uiName: "Claude 3.5 Sonnet",
+    brandName: "Anthropic",
+    brandGroup: "claude",
+    hidden: true,
+    provider: "claude",
     targetModel: "muse-spark-1.3",
     fallbackModel: "llama-3.3-70b-instruct",
-    temperature: 0.55,
-    personaPrompt: "You are Google Gemini 2.5 Pro, Google DeepMind's frontier flagship model. You excel at complex cross-domain reasoning, comprehensive technical synthesis, advanced mathematics, code intelligence, and structured data handling. Your answers are authoritative, thorough, and precise."
+    temperature: 0.6,
+    personaPrompt: "You are Claude 3.5 Sonnet, an AI assistant created by Anthropic."
   },
-  "gemini/gemini-2.5-flash": {
-    id: "gemini/gemini-2.5-flash",
-    label: "Gemini 2.5 Flash · Balanced & Fast",
-    uiName: "Gemini 2.5 Flash",
+
+  // Google Gemini Family
+  "gemini/gemini-2.0-flash": {
+    id: "gemini/gemini-2.0-flash",
+    label: "Gemini 2.0 Flash · Next-Gen Multimodal",
+    uiName: "Gemini 2.0 Flash",
     brandName: "Google",
     brandGroup: "gemini",
     provider: "gemini",
     targetModel: "llama-3.3-70b-instruct",
     fallbackModel: "muse-spark-1.3",
     temperature: 0.7,
-    personaPrompt: "You are Google Gemini 2.5 Flash, a versatile multimodal AI model created by Google. You are fast, highly responsive, adaptable, and skilled at multimodal synthesis and structured formatting."
+    personaPrompt: "You are Google Gemini 2.0 Flash, Google's next-generation multimodal frontier model. You are lightning-fast, highly responsive, adaptable, and skilled at multimodal synthesis, coding, and structured formatting."
+  },
+  "gemini/gemini-2.0-flash-thinking": {
+    id: "gemini/gemini-2.0-flash-thinking",
+    label: "Gemini 2.0 Flash Thinking · Deep Reasoning",
+    uiName: "Gemini 2.0 Flash Thinking",
+    brandName: "Google",
+    brandGroup: "gemini",
+    provider: "gemini",
+    targetModel: "muse-spark-1.3",
+    fallbackModel: "llama-3.3-70b-instruct",
+    temperature: 0.4,
+    personaPrompt: "You are Google Gemini 2.0 Flash Thinking, Google's advanced reasoning model. You think deeply through complex problems, show your analytical reasoning path clearly, and verify facts and logic before presenting concise conclusions."
+  },
+  "gemini/gemini-1.5-pro": {
+    id: "gemini/gemini-1.5-pro",
+    label: "Gemini 1.5 Pro · 2M Long Context",
+    uiName: "Gemini 1.5 Pro",
+    brandName: "Google",
+    brandGroup: "gemini",
+    hidden: true,
+    provider: "gemini",
+    targetModel: "muse-spark-1.3",
+    fallbackModel: "llama-3.3-70b-instruct",
+    temperature: 0.5,
+    personaPrompt: "You are Google Gemini 1.5 Pro, Google's long-context flagship model."
+  },
+  "gemini/gemini-2.5-pro": {
+    id: "gemini/gemini-2.5-pro",
+    label: "Gemini 2.0 Flash Thinking · Deep Reasoning",
+    uiName: "Gemini 2.0 Flash Thinking",
+    brandName: "Google",
+    brandGroup: "gemini",
+    hidden: true,
+    provider: "gemini",
+    targetModel: "muse-spark-1.3",
+    fallbackModel: "llama-3.3-70b-instruct",
+    temperature: 0.4,
+    personaPrompt: "You are Google Gemini 2.0 Flash Thinking."
+  },
+  "gemini/gemini-2.5-flash": {
+    id: "gemini/gemini-2.5-flash",
+    label: "Gemini 2.0 Flash · Next-Gen Multimodal",
+    uiName: "Gemini 2.0 Flash",
+    brandName: "Google",
+    brandGroup: "gemini",
+    hidden: true,
+    provider: "gemini",
+    targetModel: "llama-3.3-70b-instruct",
+    fallbackModel: "muse-spark-1.3",
+    temperature: 0.7,
+    personaPrompt: "You are Google Gemini 2.0 Flash."
   },
 
   // Visual Studio Family (Image Generation)
@@ -619,6 +671,7 @@ const VIRTUAL_MODELS = {
     provider: "studio",
     isImage: true,
     targetModel: "muse-image-1.0",
+    fallbackModel: "muse-image",
     personaPrompt: "Photorealistic, hyper-detailed, authentic lighting, 8k resolution, Hasselblad lens, cinematic composition."
   },
   "studio/bytes-canvas-creative": {
@@ -630,6 +683,7 @@ const VIRTUAL_MODELS = {
     provider: "studio",
     isImage: true,
     targetModel: "muse-image-1.0",
+    fallbackModel: "muse-image",
     personaPrompt: "Creative, stylized, concept art, artistic flair, vivid dramatic lighting, dynamic composition."
   }
 };
@@ -751,17 +805,24 @@ class MetaModelAdapter {
 
       // Model fallback: if the requested model returns 404 (not provisioned on this key tier),
       // retry with the key's fallbackModel (e.g. llama-3.3-70b-instruct)
-      if (upstream.status === 404 && fallbackModel && model !== fallbackModel) {
-        console.warn(`Upstream model ${model} not available on Meta API; falling back to ${fallbackModel}.`);
-        return this._executeChat(apiKey, {
-          model: fallbackModel,
-          fallbackModel: null,
-          temperature,
-          messages,
-          systemText,
-          files,
-          stream
-        }, callbacks);
+      if (upstream.status === 404) {
+        let nextFallback = fallbackModel;
+        if (model === "muse-wonder-1.0") nextFallback = "muse-wonder";
+        else if (model === "muse-spark-1.3") nextFallback = "muse-spark";
+        else if (model === "muse-spark" || model === "muse-wonder") nextFallback = fallbackModel || this.baseModel;
+
+        if (nextFallback && model !== nextFallback) {
+          console.warn(`Upstream model ${model} not available on Meta API; falling back to ${nextFallback}.`);
+          return this._executeChat(apiKey, {
+            model: nextFallback,
+            fallbackModel: nextFallback !== fallbackModel ? fallbackModel : null,
+            temperature,
+            messages,
+            systemText,
+            files,
+            stream
+          }, callbacks);
+        }
       }
 
       console.error("Meta Model API error:", upstream.status, rawMsg || "Unknown error");
@@ -1069,7 +1130,7 @@ class ProviderGateway {
     }
 
     const defaultSelection = this.meta.isConfigured()
-      ? { provider: "claude", model: "anthropic/claude-3-7-sonnet" }
+      ? { provider: "claude", model: "anthropic/claude-3-5-sonnet" }
       : this.gemini.isConfigured()
         ? { provider: "gemini", model: this.gemini.defaultModel }
         : this.apinex.isConfigured()

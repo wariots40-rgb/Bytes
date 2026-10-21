@@ -259,7 +259,7 @@ test("MetaModelAdapter: automatically falls back to fallbackModel if targetModel
   const mockFetch = async (url, options) => {
     const body = JSON.parse(options.body);
     modelsCalled.push(body.model);
-    if (body.model === "muse-spark-1.3") {
+    if (body.model === "muse-spark-1.3" || body.model === "muse-spark") {
       return new Response(JSON.stringify({ error: { message: "Model not found" } }), { status: 404 });
     }
     return new Response(JSON.stringify({
@@ -273,13 +273,14 @@ test("MetaModelAdapter: automatically falls back to fallbackModel if targetModel
   });
 
   const result = await adapter.chat({
-    model: "anthropic/claude-3-7-sonnet",
+    model: "anthropic/claude-3-5-sonnet",
     messages: [{ role: "user", text: "Hello" }]
   });
 
-  assert.equal(modelsCalled.length, 2);
+  assert.equal(modelsCalled.length, 3);
   assert.equal(modelsCalled[0], "muse-spark-1.3");
-  assert.equal(modelsCalled[1], "llama-3.3-70b-instruct");
+  assert.equal(modelsCalled[1], "muse-spark");
+  assert.equal(modelsCalled[2], "llama-3.3-70b-instruct");
   assert.equal(result.reply, "Fallback model reply");
 });
 

@@ -2634,25 +2634,14 @@ function getModelMeta(rawId) {
     };
   }
   if (str.includes('claude')) {
-    let name = 'Claude 3.7 Sonnet';
-    let badge = 'HYBRID REASONING';
-    if (str.includes('3-5') || str.includes('3.5')) {
-      if (str.includes('haiku')) {
-        name = 'Claude 3.5 Haiku';
-        badge = 'FAST';
-      } else {
-        name = 'Claude 3.5 Sonnet';
-        badge = 'ENGINEERING';
-      }
-    } else if (str.includes('haiku')) {
+    let name = 'Claude 3.5 Sonnet';
+    let badge = 'ENGINEERING';
+    if (str.includes('haiku')) {
       name = 'Claude 3.5 Haiku';
       badge = 'FAST';
     } else if (str.includes('opus')) {
       name = 'Claude 3 Opus';
       badge = 'DEEP THINK';
-    } else if (str.includes('3-7') || str.includes('3.7')) {
-      name = 'Claude 3.7 Sonnet';
-      badge = 'HYBRID REASONING';
     }
     return {
       family: 'claude',
@@ -2669,12 +2658,15 @@ function getModelMeta(rawId) {
   if (str.includes('gpt') || str.includes('openai') || str.includes('o1') || str.includes('o3')) {
     let name = 'GPT-4o';
     let badge = 'OMNI';
-    if (str.includes('mini')) {
-      name = 'GPT-4o Mini';
-      badge = 'FAST';
+    if (str.includes('o3')) {
+      name = 'OpenAI o3-mini';
+      badge = 'REASONING';
     } else if (str.includes('o1')) {
       name = 'OpenAI o1';
       badge = 'REASONING';
+    } else if (str.includes('mini')) {
+      name = 'GPT-4o Mini';
+      badge = 'FAST';
     }
     return {
       family: 'openai',
@@ -2683,6 +2675,11 @@ function getModelMeta(rawId) {
       shortName: name,
       badge: badge,
       tagClass: 'tag-omni',
+      desc: 'OpenAI · Multimodal flagship intelligence',
+      themeClass: 'theme-openai',
+      iconSvg: AI_ICONS.openai
+    };
+  }
       desc: 'OpenAI · Multimodal flagship intelligence',
       themeClass: 'theme-openai',
       iconSvg: AI_ICONS.openai
@@ -2730,11 +2727,11 @@ function getModelMeta(rawId) {
     };
   }
   // Default to Google Gemini for Gemini models
+  const isThinking = str.includes('thinking');
   const isPro = str.includes('pro');
-  const isLite = str.includes('lite');
-  const name = isPro ? 'Gemini 2.5 Pro' : isLite ? 'Gemini Flash Lite' : 'Gemini 2.5 Flash';
-  const badge = isPro ? 'RESEARCH' : isLite ? 'INSTANT' : 'BALANCED';
-  const tagClass = str.includes('free') ? 'tag-free' : (isPro ? 'tag-reasoning' : (isLite ? 'tag-fast' : 'tag-smart'));
+  const name = isThinking ? 'Gemini 2.0 Flash Thinking' : isPro ? 'Gemini 1.5 Pro' : 'Gemini 2.0 Flash';
+  const badge = isThinking ? 'REASONING' : isPro ? '2M CONTEXT' : 'MULTIMODAL';
+  const tagClass = str.includes('free') ? 'tag-free' : (isThinking ? 'tag-reasoning' : 'tag-smart');
   return {
     family: 'gemini',
     brand: 'Google Gemini',
@@ -2742,7 +2739,7 @@ function getModelMeta(rawId) {
     shortName: name,
     badge: (str.includes('free') ? 'FREE · ' : '') + badge,
     tagClass,
-    desc: 'Google Gemini · Deep multimodal reasoning',
+    desc: 'Google DeepMind · Frontier multimodal intelligence',
     themeClass: 'theme-gemini',
     iconSvg: AI_ICONS.gemini
   };
@@ -3092,25 +3089,25 @@ async function loadModelCatalog() {
           label: 'OpenAI',
           models: [
             { id: 'openai/gpt-4o', label: 'GPT-4o · Omni Flagship' },
-            { id: 'openai/gpt-4o-mini', label: 'GPT-4o Mini · Fast & Agile' },
-            { id: 'openai/o1', label: 'OpenAI o1 · Deep Reasoning' }
+            { id: 'openai/o3-mini', label: 'OpenAI o3-mini · Reasoning Flagship' },
+            { id: 'openai/gpt-4o-mini', label: 'GPT-4o Mini · Fast & Agile' }
           ]
         },
         {
           id: 'claude',
           label: 'Anthropic Claude',
           models: [
-            { id: 'anthropic/claude-3-7-sonnet', label: 'Claude 3.7 Sonnet · Hybrid Reasoning Flagship' },
             { id: 'anthropic/claude-3-5-sonnet', label: 'Claude 3.5 Sonnet · Premier Engineering' },
-            { id: 'anthropic/claude-3-5-haiku', label: 'Claude 3.5 Haiku · Instant Speed' }
+            { id: 'anthropic/claude-3-5-haiku', label: 'Claude 3.5 Haiku · Instant Speed' },
+            { id: 'anthropic/claude-3-opus', label: 'Claude 3 Opus · Deep Analysis' }
           ]
         },
         {
           id: 'gemini',
           label: 'Google Gemini',
           models: [
-            { id: 'gemini/gemini-2.5-pro', label: 'Gemini 2.5 Pro · Frontier Flagship' },
-            { id: 'gemini/gemini-2.5-flash', label: 'Gemini 2.5 Flash · Balanced & Fast' }
+            { id: 'gemini/gemini-2.0-flash', label: 'Gemini 2.0 Flash · Next-Gen Multimodal' },
+            { id: 'gemini/gemini-2.0-flash-thinking', label: 'Gemini 2.0 Flash Thinking · Deep Reasoning' }
           ]
         },
         {
