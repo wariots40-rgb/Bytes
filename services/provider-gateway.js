@@ -507,8 +507,8 @@ const VIRTUAL_MODELS = {
     provider: "openai",
     assignedKeyIndex: 0,
     assignedKeyName: "META_API_KEY_1",
-    fallbackKeyIndices: [1, 2, 3, 4, 5],
     targetModel: "muse-wonder-1.0",
+    modelFallbacks: ["muse-wonder-1.0", "muse-wonder", "muse-spark-1.3", "muse-spark", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.5,
     personaPrompt: "You are GPT-6 Astra, OpenAI's flagship frontier AI model designed for deep multi-step reasoning, autonomous execution, rigorous mathematics, and elite system architecture. You think systematically through edge cases, verify logical correctness before concluding, and provide structured, production-ready solutions with complete implementations."
@@ -522,8 +522,8 @@ const VIRTUAL_MODELS = {
     provider: "openai",
     assignedKeyIndex: 1,
     assignedKeyName: "META_API_KEY_2",
-    fallbackKeyIndices: [0, 3, 5, 2, 4],
     targetModel: "muse-spark-1.3",
+    modelFallbacks: ["muse-spark-1.3", "muse-spark", "llama-3.3-70b-instruct", "llama-3.1-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.6,
     personaPrompt: "You are GPT-6.1 Sol, OpenAI's high-efficiency production intelligence model. You deliver razor-sharp, pragmatic, and high-velocity reasoning for software engineering, system architecture, and technical workflows. You prioritize high-signal code, modern idioms, and zero conversational fluff."
@@ -538,8 +538,8 @@ const VIRTUAL_MODELS = {
     provider: "openai",
     assignedKeyIndex: 0,
     assignedKeyName: "META_API_KEY_1",
-    fallbackKeyIndices: [1, 2, 3],
     targetModel: "muse-wonder-1.0",
+    modelFallbacks: ["muse-wonder-1.0", "muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.7,
     personaPrompt: "You are GPT-4o, OpenAI's flagship multimodal intelligence model. You are highly capable, direct, structured, and pragmatic. Provide clean, production-ready code with concise explanations and well-structured Markdown tables when appropriate. Avoid unnecessary conversational preambles."
@@ -554,8 +554,8 @@ const VIRTUAL_MODELS = {
     provider: "openai",
     assignedKeyIndex: 1,
     assignedKeyName: "META_API_KEY_2",
-    fallbackKeyIndices: [0, 3, 5],
     targetModel: "muse-spark-1.3",
+    modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.25,
     personaPrompt: "You are OpenAI o3-mini, OpenAI's premier reasoning model designed for complex multi-step reasoning, mathematical proof, algorithm design, and deep technical architecture. Think through edge cases systematically, verify logical correctness before concluding, and provide thorough, methodical solutions."
@@ -570,8 +570,8 @@ const VIRTUAL_MODELS = {
     provider: "openai",
     assignedKeyIndex: 1,
     assignedKeyName: "META_API_KEY_2",
-    fallbackKeyIndices: [0, 5],
     targetModel: "llama-3.3-70b-instruct",
+    modelFallbacks: ["llama-3.3-70b-instruct", "muse-spark-1.3"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.7,
     personaPrompt: "You are GPT-4o Mini, OpenAI's agile and lightweight intelligence model. You provide rapid, accurate, and concise answers, perfect for quick iteration and clear responses."
@@ -586,8 +586,8 @@ const VIRTUAL_MODELS = {
     provider: "openai",
     assignedKeyIndex: 0,
     assignedKeyName: "META_API_KEY_1",
-    fallbackKeyIndices: [1, 2],
     targetModel: "muse-spark-1.3",
+    modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.3,
     personaPrompt: "You are OpenAI o1, OpenAI's premier reasoning model designed for complex multi-step reasoning, mathematical proof, algorithm design, and deep technical architecture."
@@ -603,8 +603,8 @@ const VIRTUAL_MODELS = {
     provider: "claude",
     assignedKeyIndex: 2,
     assignedKeyName: "META_API_KEY_3",
-    fallbackKeyIndices: [3, 0, 4, 1, 5],
     targetModel: "muse-wonder-1.0",
+    modelFallbacks: ["muse-wonder-1.0", "muse-wonder", "muse-spark-1.3", "muse-spark", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.5,
     personaPrompt: "You are Claude Opus 5.5, Anthropic's flagship deep reasoning architecture. You excel at comprehensive analysis, complex repository-scale engineering, philosophical rigor, and holistic system design. Your prose is calm, articulate, nuanced, and deeply insightful."
@@ -618,8 +618,8 @@ const VIRTUAL_MODELS = {
     provider: "claude",
     assignedKeyIndex: 3,
     assignedKeyName: "META_API_KEY_4",
-    fallbackKeyIndices: [2, 1, 5, 0, 4],
     targetModel: "muse-spark-1.3",
+    modelFallbacks: ["muse-spark-1.3", "muse-spark", "llama-3.3-70b-instruct", "llama-3.1-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.6,
     personaPrompt: "You are Claude Sonnet 5.5, an AI assistant created by Anthropic. You are thoughtful, nuanced, intellectually rigorous, and an elite software engineer. When writing code, provide complete, production-ready implementations with clean naming, strict error handling, and elegant architectural design."
@@ -634,8 +634,8 @@ const VIRTUAL_MODELS = {
     provider: "claude",
     assignedKeyIndex: 3,
     assignedKeyName: "META_API_KEY_4",
-    fallbackKeyIndices: [2, 1],
     targetModel: "muse-spark-1.3",
+    modelFallbacks: ["muse-spark-1.3", "muse-spark", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.6,
     personaPrompt: "You are Claude 3.5 Sonnet, an AI assistant created by Anthropic. You are thoughtful, nuanced, intellectually rigorous, and an elite software engineer. When writing code, provide complete, production-ready, beautiful implementations with clean naming and edge-case handling. Your prose is calm, articulate, and insightful."
@@ -650,8 +650,8 @@ const VIRTUAL_MODELS = {
     provider: "claude",
     assignedKeyIndex: 3,
     assignedKeyName: "META_API_KEY_4",
-    fallbackKeyIndices: [1, 5],
     targetModel: "llama-3.3-70b-instruct",
+    modelFallbacks: ["llama-3.3-70b-instruct", "muse-spark-1.3"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.6,
     personaPrompt: "You are Claude 3.5 Haiku by Anthropic. You are exceptionally fast, sharp, and concise. Deliver answers directly with maximum signal and zero conversational fluff."
@@ -666,8 +666,8 @@ const VIRTUAL_MODELS = {
     provider: "claude",
     assignedKeyIndex: 2,
     assignedKeyName: "META_API_KEY_3",
-    fallbackKeyIndices: [3, 0],
     targetModel: "muse-wonder-1.0",
+    modelFallbacks: ["muse-wonder-1.0", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.5,
     personaPrompt: "You are Claude 3 Opus, Anthropic's deep analytical model. You excel at comprehensive analysis, philosophical depth, holistic system design, and synthesizing complex ideas into structured frameworks."
@@ -682,8 +682,8 @@ const VIRTUAL_MODELS = {
     provider: "claude",
     assignedKeyIndex: 3,
     assignedKeyName: "META_API_KEY_4",
-    fallbackKeyIndices: [2, 1],
     targetModel: "muse-spark-1.3",
+    modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.6,
     personaPrompt: "You are Claude 3.7 Sonnet, an AI assistant created by Anthropic."
@@ -699,8 +699,8 @@ const VIRTUAL_MODELS = {
     provider: "gemini",
     assignedKeyIndex: 4,
     assignedKeyName: "META_API_KEY_5",
-    fallbackKeyIndices: [5, 0, 2, 1, 3],
     targetModel: "muse-wonder-1.0",
+    modelFallbacks: ["muse-wonder-1.0", "muse-wonder", "muse-spark-1.3", "muse-spark", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.5,
     personaPrompt: "You are Google Gemini 4 Argon, Google DeepMind's next-generation multimodal scientific and deep reasoning model. You excel at analyzing vast contexts, multi-modal synthesis (text, code, structured schemas), and complex scientific/engineering problem solving with clean structured formatting."
@@ -714,8 +714,8 @@ const VIRTUAL_MODELS = {
     provider: "gemini",
     assignedKeyIndex: 5,
     assignedKeyName: "META_API_KEY_6",
-    fallbackKeyIndices: [4, 3, 1, 0, 2],
     targetModel: "llama-3.3-70b-instruct",
+    modelFallbacks: ["llama-3.3-70b-instruct", "llama-3.1-70b-instruct", "muse-spark-1.3", "muse-spark"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.7,
     personaPrompt: "You are Google Gemini 3.8 Flash, Google DeepMind's lightning-fast multimodal reasoning model. You deliver fast, accurate, and responsive completions for real-time coding, tool execution, and clear technical assistance."
@@ -730,8 +730,8 @@ const VIRTUAL_MODELS = {
     provider: "gemini",
     assignedKeyIndex: 5,
     assignedKeyName: "META_API_KEY_6",
-    fallbackKeyIndices: [4, 1],
     targetModel: "llama-3.3-70b-instruct",
+    modelFallbacks: ["llama-3.3-70b-instruct", "muse-spark-1.3"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.7,
     personaPrompt: "You are Google Gemini 2.0 Flash, Google's next-generation multimodal frontier model. You are lightning-fast, highly responsive, adaptable, and skilled at multimodal synthesis, coding, and structured formatting."
@@ -746,8 +746,8 @@ const VIRTUAL_MODELS = {
     provider: "gemini",
     assignedKeyIndex: 4,
     assignedKeyName: "META_API_KEY_5",
-    fallbackKeyIndices: [5, 2],
     targetModel: "muse-spark-1.3",
+    modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.4,
     personaPrompt: "You are Google Gemini 2.0 Flash Thinking, Google's advanced reasoning model. You think deeply through complex problems, show your analytical reasoning path clearly, and verify facts and logic before presenting concise conclusions."
@@ -762,8 +762,8 @@ const VIRTUAL_MODELS = {
     provider: "gemini",
     assignedKeyIndex: 4,
     assignedKeyName: "META_API_KEY_5",
-    fallbackKeyIndices: [5, 2],
     targetModel: "muse-spark-1.3",
+    modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.5,
     personaPrompt: "You are Google Gemini 1.5 Pro, Google's long-context flagship model."
@@ -778,8 +778,8 @@ const VIRTUAL_MODELS = {
     provider: "gemini",
     assignedKeyIndex: 4,
     assignedKeyName: "META_API_KEY_5",
-    fallbackKeyIndices: [5, 2],
     targetModel: "muse-spark-1.3",
+    modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.4,
     personaPrompt: "You are Google Gemini 2.5 Pro."
@@ -794,8 +794,8 @@ const VIRTUAL_MODELS = {
     provider: "gemini",
     assignedKeyIndex: 5,
     assignedKeyName: "META_API_KEY_6",
-    fallbackKeyIndices: [4, 1],
     targetModel: "llama-3.3-70b-instruct",
+    modelFallbacks: ["llama-3.3-70b-instruct", "muse-spark-1.3"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.7,
     personaPrompt: "You are Google Gemini 2.5 Flash."
@@ -812,8 +812,8 @@ const VIRTUAL_MODELS = {
     isImage: true,
     assignedKeyIndex: 6,
     assignedKeyName: "META_API_KEY_7",
-    fallbackKeyIndices: [7, 8, 9],
     targetModel: "muse-image-1.0",
+    modelFallbacks: ["muse-image-1.0", "muse-image"],
     fallbackModel: "muse-image",
     personaPrompt: "Hyper-detailed photorealism, crisp legible typography rendering, accurate subject anatomy, cinematic lighting, 8k resolution, balanced composition."
   },
@@ -827,8 +827,8 @@ const VIRTUAL_MODELS = {
     isImage: true,
     assignedKeyIndex: 7,
     assignedKeyName: "META_API_KEY_8",
-    fallbackKeyIndices: [6, 9, 8],
     targetModel: "muse-image-1.0",
+    modelFallbacks: ["muse-image-1.0", "muse-image"],
     fallbackModel: "muse-image",
     personaPrompt: "Vivid creative concept art, highly consistent character and subject rendering across variations, expressive illustrative details, vibrant atmospheric lighting, clean artistic illumination."
   },
@@ -842,8 +842,8 @@ const VIRTUAL_MODELS = {
     isImage: true,
     assignedKeyIndex: 8,
     assignedKeyName: "META_API_KEY_9",
-    fallbackKeyIndices: [9, 6, 7],
     targetModel: "muse-image-1.0",
+    modelFallbacks: ["muse-image-1.0", "muse-image"],
     fallbackModel: "muse-image",
     personaPrompt: "Medium-format Hasselblad camera aesthetics, authentic optical depth of field, natural diffused studio lighting, ultra-fine micro-surface textures, 8k Photorealistic capture."
   },
@@ -857,8 +857,8 @@ const VIRTUAL_MODELS = {
     isImage: true,
     assignedKeyIndex: 9,
     assignedKeyName: "META_API_KEY_10",
-    fallbackKeyIndices: [8, 7, 6],
     targetModel: "muse-image-1.0",
+    modelFallbacks: ["muse-image-1.0", "muse-image"],
     fallbackModel: "muse-image",
     personaPrompt: "Creative stylized concept art, dynamic illustration, vivid lighting contrasts, imaginative visual composition, rich textural depth."
   }
@@ -891,55 +891,25 @@ class MetaModelAdapter {
     return key;
   }
 
-  // Returns execution plan for the model:
-  // 1. Primary dedicated key assigned to this model (e.g. Key #1 for GPT-6 Astra)
-  // 2. Specific fallback keys in designated order if primary key is rate-limited (429) or on cooldown
-  getKeyPlan(model) {
-    if (!this.workers.length) return [];
+  getKeyForModel(model) {
+    if (!this.apiKeys.length) return null;
     const virtual = VIRTUAL_MODELS[model];
-    let primaryWorker;
-
     if (virtual && typeof virtual.assignedKeyIndex === "number") {
-      const targetIdx = virtual.assignedKeyIndex < this.workers.length
+      const targetIdx = virtual.assignedKeyIndex < this.apiKeys.length
         ? virtual.assignedKeyIndex
-        : (virtual.assignedKeyIndex % this.workers.length);
-      primaryWorker = this.workers[targetIdx];
-    } else {
-      const primaryIdx = this.keyIndex % this.workers.length;
-      this.keyIndex = (this.keyIndex + 1) % this.workers.length;
-      primaryWorker = this.workers[primaryIdx];
+        : (virtual.assignedKeyIndex % this.apiKeys.length);
+      return this.apiKeys[targetIdx];
     }
+    const primaryIdx = this.keyIndex % this.apiKeys.length;
+    this.keyIndex = (this.keyIndex + 1) % this.apiKeys.length;
+    return this.apiKeys[primaryIdx];
+  }
 
-    // Build dedicated fallback keys according to model's fallbackKeyIndices
-    const fallbackKeys = [];
-    if (virtual && Array.isArray(virtual.fallbackKeyIndices)) {
-      for (const idx of virtual.fallbackKeyIndices) {
-        const mappedIdx = idx < this.workers.length ? idx : (idx % this.workers.length);
-        const fbKey = this.workers[mappedIdx]?.key;
-        if (fbKey && fbKey !== primaryWorker.key && !fallbackKeys.includes(fbKey)) {
-          fallbackKeys.push(fbKey);
-        }
-      }
-    }
-    // Append remaining workers from primaryWorker.fallbackKeys
-    for (const w of primaryWorker.fallbackKeys) {
-      if (!fallbackKeys.includes(w)) {
-        fallbackKeys.push(w);
-      }
-    }
-
-    const availableFallbacks = fallbackKeys.filter(k => {
-      const w = this.workerMap.get(k);
-      return w ? w.isAvailable() : true;
-    });
-    const remainingFallbacks = fallbackKeys.filter(k => !availableFallbacks.includes(k));
-
-    if (primaryWorker.isAvailable()) {
-      return [primaryWorker.key, ...availableFallbacks, ...remainingFallbacks];
-    } else {
-      // Primary is on cooldown; place available fallbacks first
-      return [...availableFallbacks, primaryWorker.key, ...remainingFallbacks];
-    }
+  // Returns execution key for the model:
+  // Each UI model is strictly bound to its single assigned Meta API key (never crosses over to other keys).
+  getKeyPlan(model) {
+    const key = this.getKeyForModel(model);
+    return key ? [key] : [];
   }
 
   getCatalogGroups() {
@@ -1014,32 +984,10 @@ class MetaModelAdapter {
       const data = await upstream.json().catch(() => ({}));
       const rawMsg = data?.error?.message || data?.message;
 
-      // Model fallback: if the requested model returns 404 (not provisioned on this key tier),
-      // retry with the key's fallbackModel (e.g. llama-3.3-70b-instruct)
-      if (upstream.status === 404) {
-        let nextFallback = fallbackModel;
-        if (model === "muse-wonder-1.0") nextFallback = "muse-wonder";
-        else if (model === "muse-spark-1.3") nextFallback = "muse-spark";
-        else if (model === "muse-spark" || model === "muse-wonder") nextFallback = fallbackModel || this.baseModel;
-
-        if (nextFallback && model !== nextFallback) {
-          console.warn(`Upstream model ${model} not available on Meta API; falling back to ${nextFallback}.`);
-          return this._executeChat(apiKey, {
-            model: nextFallback,
-            fallbackModel: nextFallback !== fallbackModel ? fallbackModel : null,
-            temperature,
-            messages,
-            systemText,
-            files,
-            stream
-          }, callbacks);
-        }
-      }
-
       console.error("Meta Model API error:", upstream.status, rawMsg || "Unknown error");
       const userMsg = upstream.status === 429
         ? "AI gateway is receiving too many requests. Please try again shortly."
-        : rawMsg || "The AI model could not complete that request.";
+        : rawMsg || `Upstream model ${model} error (${upstream.status}).`;
       throw new ProviderError(userMsg, upstream.status === 429 ? 429 : (upstream.status || 502));
     }
 
@@ -1097,44 +1045,67 @@ class MetaModelAdapter {
       label: model,
       targetModel: this.baseModel,
       fallbackModel: "llama-3.3-70b-instruct",
+      modelFallbacks: [this.baseModel, "llama-3.3-70b-instruct"],
       temperature: 0.7,
       personaPrompt: ""
     };
 
+    // Strictly route to the single dedicated API key assigned to this UI model
+    const apiKey = this.getKeyForModel(model);
+    const worker = this.workerMap.get(apiKey);
     const effectiveSystemText = buildDisguiseSystemPrompt(virtual, systemText);
-    const keyPlan = this.getKeyPlan(model);
-    const maxAttempts = Math.max(1, Math.min(keyPlan.length, 5));
+
+    // Build model fallback chain for this request (executed on the SAME key)
+    let modelChain = Array.isArray(virtual.modelFallbacks) && virtual.modelFallbacks.length > 0
+      ? [...virtual.modelFallbacks]
+      : [virtual.targetModel, virtual.fallbackModel, this.baseModel].filter(Boolean);
+    modelChain = modelChain.filter((m, idx, arr) => arr.indexOf(m) === idx);
+
     let lastError = null;
 
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const apiKey = keyPlan[attempt];
-      const worker = this.workerMap.get(apiKey);
+    for (let i = 0; i < modelChain.length; i++) {
+      const upstreamModel = modelChain[i];
+      let hasStreamed = false;
+
+      const wrappedCallbacks = {
+        ...callbacks,
+        onChunk: (chunk) => {
+          hasStreamed = true;
+          callbacks.onChunk?.(chunk);
+        }
+      };
 
       try {
         const result = await this._executeChat(apiKey, {
-          model: virtual.targetModel || this.baseModel,
-          fallbackModel: virtual.fallbackModel || this.baseModel,
+          model: upstreamModel,
           temperature: virtual.temperature,
           messages,
           systemText: effectiveSystemText,
           files,
           stream
-        }, callbacks);
+        }, wrappedCallbacks);
 
         worker?.markSuccess();
         return result;
       } catch (err) {
         lastError = err;
         worker?.markFailure(err, err.statusCode);
-        if (err.statusCode === 429 || err.statusCode === 503) {
-          const keyLabel = worker ? `#${worker.index + 1}` : `attempt ${attempt + 1}`;
-          console.warn(`Meta API key ${keyLabel} rate-limited or busy (${err.message}); falling back to next key in pool.`);
+
+        // If chunks have already started streaming to the client, cannot swap models mid-stream
+        if (hasStreamed) {
+          throw err;
+        }
+
+        const nextModel = modelChain[i + 1];
+        if (nextModel) {
+          console.warn(`Upstream model ${upstreamModel} on dedicated key failed (${err.message}); falling back to ${nextModel} on the same key.`);
           continue;
         }
         throw err;
       }
     }
-    throw lastError || new ProviderError("All API keys in the pool were busy. Please try again shortly.", 429);
+
+    throw lastError || new ProviderError("All model fallbacks on the dedicated key failed.", 502);
   }
 
   async generateImage({ prompt, files, model }) {
@@ -1142,14 +1113,21 @@ class MetaModelAdapter {
       throw new ProviderError("Bytes needs a Gemini API key or META_API_KEY configured on the server.", 503);
     }
     const virtual = VIRTUAL_MODELS[model] || VIRTUAL_MODELS["studio/bytes-canvas-realistic"];
+    // Strictly route to the single dedicated API key assigned to this UI image model
+    const apiKey = this.getKeyForModel(model);
+    const worker = this.workerMap.get(apiKey);
     const enhancedPrompt = virtual.personaPrompt ? `${prompt}. (${virtual.personaPrompt})` : prompt;
-    const keyPlan = this.getKeyPlan(model);
-    const maxAttempts = Math.max(1, Math.min(keyPlan.length, 5));
+
+    // Build image model fallback chain executed strictly on the SAME key
+    let modelChain = Array.isArray(virtual.modelFallbacks) && virtual.modelFallbacks.length > 0
+      ? [...virtual.modelFallbacks]
+      : [virtual.targetModel, virtual.fallbackModel, this.imageModel].filter(Boolean);
+    modelChain = modelChain.filter((m, idx, arr) => arr.indexOf(m) === idx);
+
     let lastError = null;
 
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const apiKey = keyPlan[attempt];
-      const worker = this.workerMap.get(apiKey);
+    for (let i = 0; i < modelChain.length; i++) {
+      const upstreamModel = modelChain[i];
 
       try {
         let response = await this.fetchFn(this.baseUrl + "/images/generations", {
@@ -1159,7 +1137,7 @@ class MetaModelAdapter {
             "Authorization": "Bearer " + apiKey
           },
           body: JSON.stringify({
-            model: virtual.targetModel || this.imageModel,
+            model: upstreamModel,
             prompt: enhancedPrompt,
             n: 1,
             size: "1024x1024",
@@ -1176,7 +1154,7 @@ class MetaModelAdapter {
               "Authorization": "Bearer " + apiKey
             },
             body: JSON.stringify({
-              model: virtual.targetModel || this.imageModel,
+              model: upstreamModel,
               prompt: enhancedPrompt
             }),
             signal: AbortSignal.timeout(90000)
@@ -1186,12 +1164,6 @@ class MetaModelAdapter {
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
           const msg = data?.error?.message || data?.message || "HTTP " + response.status;
-          worker?.markFailure(new Error(msg), response.status);
-          if (response.status === 429 || response.status === 503) {
-            console.warn(`Meta Image API key attempt ${attempt + 1} busy (${msg}); falling back to next key.`);
-            lastError = new ProviderError(msg, response.status);
-            continue;
-          }
           throw new ProviderError(msg, response.status || 502);
         }
 
@@ -1212,6 +1184,7 @@ class MetaModelAdapter {
           if (imgRes.ok) {
             const ab = await imgRes.arrayBuffer();
             const base64 = Buffer.from(ab).toString("base64");
+            worker?.markSuccess();
             return {
               reply: data?.output_text || "Here is your generated image.",
               imageData: base64,
@@ -1223,13 +1196,17 @@ class MetaModelAdapter {
         throw new ProviderError("Image model returned no image data. Try refining your prompt.", 502);
       } catch (err) {
         lastError = err;
-        if (err.statusCode === 429 || err.statusCode === 503) {
+        worker?.markFailure(err, err.statusCode);
+        const nextModel = modelChain[i + 1];
+        if (nextModel) {
+          console.warn(`Upstream image model ${upstreamModel} on dedicated key failed (${err.message}); falling back to ${nextModel} on the same key.`);
           continue;
         }
         throw err;
       }
     }
-    throw lastError || new ProviderError("All image API keys were busy. Please try again shortly.", 429);
+
+    throw lastError || new ProviderError("All image model fallbacks on the dedicated key failed.", 502);
   }
 }
 

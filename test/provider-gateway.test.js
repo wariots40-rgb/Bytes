@@ -196,15 +196,18 @@ test("MetaModelAdapter: round-robins across multiple API keys", () => {
   assert.equal(adapter.getNextKey(), "key-B");
 });
 
-test("MetaModelAdapter: automatically fails over to the next key on 429 rate limit", async () => {
+test("MetaModelAdapter: automatically falls back to next model on the same key when upstream model hits 429 rate limit", async () => {
   const authHeaders = [];
+  const modelsCalled = [];
   const mockFetch = async (url, options) => {
     authHeaders.push(options.headers["Authorization"]);
+    const body = JSON.parse(options.body);
+    modelsCalled.push(body.model);
     if (authHeaders.length === 1) {
       return new Response(JSON.stringify({ error: { message: "Rate limit exceeded" } }), { status: 429 });
     }
     return new Response(JSON.stringify({
-      choices: [{ message: { content: "Failover succeeded with second key" } }]
+      choices: [{ message: { content: "Failover succeeded with second model on same key" } }]
     }), { status: 200, headers: { "content-type": "application/json" } });
   };
 
@@ -219,9 +222,12 @@ test("MetaModelAdapter: automatically fails over to the next key on 429 rate lim
   });
 
   assert.equal(authHeaders.length, 2);
+  // Both attempts strictly use the dedicated key (key-1)
   assert.equal(authHeaders[0], "Bearer key-1");
-  assert.equal(authHeaders[1], "Bearer key-2");
-  assert.equal(result.reply, "Failover succeeded with second key");
+  assert.equal(authHeaders[1], "Bearer key-1");
+  assert.equal(modelsCalled[0], "muse-wonder-1.0");
+  assert.equal(modelsCalled[1], "muse-spark-1.3");
+  assert.equal(result.reply, "Failover succeeded with second model on same key");
 });
 
 test("MetaModelAdapter: injects custom model persona and maps virtual models", async () => {
@@ -302,9 +308,8 @@ test("MetaModelAdapter: tracks isolated cooldown and failure state per key worke
   assert.equal(workerB.status, "healthy");
   assert.equal(workerB.isAvailable(), true);
 
-  // Key Plan for Worker A should prioritize Worker B while Worker A is on cooldown
-  const plan = adapter.getKeyPlan();
-  assert.ok(plan.includes("key-B"));
+  // Worker B remains unaffected by Worker A's cooldown
+  assert.equal(adapter.getKeyForModel("openai/gpt-6.1-sol"), "key-B");
 });
 
 test("ProviderGateway: getCatalog exposes 10 models across OpenAI, Claude, Gemini, and Studio with zero Meta branding", async () => {
@@ -492,7 +497,7 @@ test("MetaModelAdapter: dedicated 1-to-1 key mapping routes each UI model to its
   assert.equal(keysUsed[3], "Bearer meta-key-8-banana");
 });
 
-test("MetaModelAdapter: dedicated fallback keys trigger in specified order when primary key hits cooldown", async () => {
+test("MetaModelAdapter: dedicated 1-to-1 key mapping strictly preserves key assignment and never switches keys across models", async () => {
   const tenKeys = [
     "key-1-primary",
     "key-2-fb1",
@@ -506,31 +511,45 @@ test("MetaModelAdapter: dedicated fallback keys trigger in specified order when 
     "key-10-img4"
   ];
 
+  const modelsCalled = [];
+  const authHeaders = [];
+  const mockFetch = async (url, options) => {
+    authHeaders.push(options.headers["Authorization"]);
+    const body = JSON.parse(options.body);
+    modelsCalled.push(body.model);
+    if (body.model === "muse-wonder-1.0") {
+      return new Response(JSON.stringify({ error: { message: "Model overloaded" } }), { status: 503 });
+    }
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Claude Opus reasoning reply" } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
   const adapter = new MetaModelAdapter({
-    apiKeys: tenKeys
+    apiKeys: tenKeys,
+    fetchFn: mockFetch
   });
 
-  // Key #1 is healthy -> plan starts with Key #1
-  let plan = adapter.getKeyPlan("openai/gpt-6-astra");
-  assert.equal(plan[0], "key-1-primary");
-  assert.equal(plan[1], "key-2-fb1");
+  // Key Plan must contain strictly the dedicated key for Claude Opus (key-3-fb2)
+  const plan = adapter.getKeyPlan("anthropic/claude-opus-5-5");
+  assert.deepEqual(plan, ["key-3-fb2"]);
 
-  // Mark Key #1 in cooldown (429 rate limit)
-  const worker1 = adapter.workerMap.get("key-1-primary");
-  worker1.markFailure(new Error("Rate limited"), 429);
-  assert.equal(worker1.isAvailable(), false);
+  // Chat execution falls back from muse-wonder-1.0 to muse-wonder on the SAME key (key-3-fb2)
+  const result = await adapter.chat({
+    model: "anthropic/claude-opus-5-5",
+    messages: [{ role: "user", text: "Explain general relativity" }]
+  });
 
-  // Fallback key #2 must immediately become #1 in plan
-  plan = adapter.getKeyPlan("openai/gpt-6-astra");
-  assert.equal(plan[0], "key-2-fb1");
-  assert.equal(plan[1], "key-3-fb2");
+  assert.equal(authHeaders.length, 2);
+  assert.equal(authHeaders[0], "Bearer key-3-fb2");
+  assert.equal(authHeaders[1], "Bearer key-3-fb2");
+  assert.equal(modelsCalled[0], "muse-wonder-1.0");
+  assert.equal(modelsCalled[1], "muse-wonder");
+  assert.equal(result.reply, "Claude Opus reasoning reply");
 
-  // Verify dedicated image fallbacks: Key #7 marked in cooldown -> falls back to Key #8
-  const worker7 = adapter.workerMap.get("key-7-img1");
-  worker7.markFailure(new Error("Image rate limited"), 429);
+  // Verify image model dedication
   const imgPlan = adapter.getKeyPlan("openai/gpt-image-2.5");
-  assert.equal(imgPlan[0], "key-8-img2");
-  assert.equal(imgPlan[1], "key-9-img3");
+  assert.deepEqual(imgPlan, ["key-7-img1"]);
 });
 
 test("ProviderGateway: Google Gemini and APInex are completely isolated when Meta is configured", async () => {
