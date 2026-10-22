@@ -976,8 +976,10 @@ class MetaModelAdapter {
         signal: AbortSignal.timeout(60000)
       });
     } catch (error) {
+      console.error("Meta Model upstream fetch error:", error);
       const timedOut = error.name === "TimeoutError" || error.name === "AbortError";
-      throw new ProviderError(timedOut ? "The request took too long. Please try again." : "Could not reach the AI gateway. Check connection and try again.", timedOut ? 504 : 502);
+      const detail = error && error.message ? ` (${error.message})` : "";
+      throw new ProviderError(timedOut ? "The request took too long. Please try again." : `Could not reach the AI gateway${detail}. Check connection and try again.`, timedOut ? 504 : 502);
     }
 
     if (!upstream.ok) {
