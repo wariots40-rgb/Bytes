@@ -30,7 +30,7 @@ class GeminiAdapter {
     this.apiKey = config.apiKey || "";
     this.defaultModel = config.defaultModel || "gemini-3.5-flash";
     this.imageModel = config.imageModel || "gemini-nano-banana-2.1";
-    this.fetchFn = config.fetchFn || global.fetch;
+    this.fetchFn = (url, init) => (config.fetchFn || globalThis.fetch)(url, init);
   }
 
   isConfigured() {
@@ -254,7 +254,7 @@ class ApinexAdapter {
     this.apiKey = config.apiKey || "";
     this.baseUrl = (config.baseUrl || "https://api.apinex.bond/v1").replace(/\/+$/, "");
     this.defaultModel = config.defaultModel || "free/gemini-3.8-flash";
-    this.fetchFn = config.fetchFn || global.fetch;
+    this.fetchFn = (url, init) => (config.fetchFn || globalThis.fetch)(url, init);
   }
 
   isConfigured() {
@@ -872,7 +872,7 @@ class MetaModelAdapter {
     this.baseUrl = (config.baseUrl || "https://api.meta.ai/v1").replace(/\/+$/, "");
     this.baseModel = config.baseModel || "llama-3.3-70b-instruct";
     this.imageModel = config.imageModel || "muse-image-1.0";
-    this.fetchFn = config.fetchFn || global.fetch;
+    this.fetchFn = (url, init) => (config.fetchFn || globalThis.fetch)(url, init);
     this.keyIndex = 0;
 
     // Dedicated key workers with independent status & dedicated fallbacks
