@@ -12,22 +12,40 @@ const REQUIRE_AUTH = String(process.env.REQUIRE_AUTH || "").toLowerCase() === "t
 const SUPABASE_URL = String(process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
 const SUPABASE_PUBLIC_KEY = String(process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "").trim();
 
-// Collect Meta Model API Key Pool (META_API_KEY_1..20, META_API_KEYS, META_API_KEY, MODEL_API_KEY)
+// Collect Meta Model API Key Pool in exact 1-to-1 indexed order:
+// META_API_KEY_1 -> Key #1 (openai/gpt-6-astra)
+// META_API_KEY_2 -> Key #2 (openai/gpt-6.1-sol)
+// META_API_KEY_3 -> Key #3 (anthropic/claude-opus-5-5)
+// META_API_KEY_4 -> Key #4 (anthropic/claude-sonnet-5-5)
+// META_API_KEY_5 -> Key #5 (google/gemini-4-argon)
+// META_API_KEY_6 -> Key #6 (google/gemini-3.8-flash)
+// META_API_KEY_7 -> Key #7 (openai/gpt-image-2.5)
+// META_API_KEY_8 -> Key #8 (google/gemini-nano-banana-2.1)
+// META_API_KEY_9 -> Key #9 (studio/bytes-canvas-realistic)
+// META_API_KEY_10 -> Key #10 (studio/bytes-canvas-creative)
 const metaKeys = [];
-if (process.env.META_API_KEYS) {
-  metaKeys.push(...process.env.META_API_KEYS.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean));
-}
-for (let i = 1; i <= 20; i++) {
+for (let i = 1; i <= 10; i++) {
   const k = process.env[`META_API_KEY_${i}`];
-  if (k && k.trim()) metaKeys.push(k.trim());
+  if (k && k.trim()) metaKeys[i - 1] = k.trim();
+}
+if (process.env.META_API_KEYS) {
+  const list = process.env.META_API_KEYS.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+  list.forEach((k, idx) => {
+    if (!metaKeys[idx]) metaKeys[idx] = k;
+    else if (!metaKeys.includes(k)) metaKeys.push(k);
+  });
 }
 if (process.env.META_API_KEY && process.env.META_API_KEY.trim()) {
-  metaKeys.push(process.env.META_API_KEY.trim());
+  const single = process.env.META_API_KEY.trim();
+  if (!metaKeys[0]) metaKeys[0] = single;
+  else if (!metaKeys.includes(single)) metaKeys.push(single);
 }
 if (process.env.MODEL_API_KEY && process.env.MODEL_API_KEY.trim()) {
-  metaKeys.push(process.env.MODEL_API_KEY.trim());
+  const single = process.env.MODEL_API_KEY.trim();
+  if (!metaKeys[0]) metaKeys[0] = single;
+  else if (!metaKeys.includes(single)) metaKeys.push(single);
 }
-const uniqueMetaKeys = Array.from(new Set(metaKeys));
+const uniqueMetaKeys = metaKeys.filter(Boolean);
 
 const providerGateway = createProviderGateway({
   geminiApiKey: process.env.GEMINI_API_KEY,
@@ -134,11 +152,11 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     providerConfigured: providerGateway.hasConfiguredProvider(),
-    providers: {
-      gemini: providerGateway.gemini.isConfigured(),
-      apinex: providerGateway.apinex.isConfigured(),
-      meta: providerGateway.meta ? providerGateway.meta.isConfigured() : false,
-      metaKeyCount: providerGateway.meta ? providerGateway.meta.apiKeys.length : 0
+    frontierEngine: {
+      active: true,
+      modelsAvailable: 10,
+      keyPoolConfigured: providerGateway.meta ? providerGateway.meta.isConfigured() : false,
+      keyPoolSize: providerGateway.meta ? providerGateway.meta.apiKeys.length : 0
     },
     search: {
       searxngConfigured: Boolean(process.env.SEARXNG_URL),
@@ -147,8 +165,8 @@ app.get("/api/health", (_req, res) => {
       cacheTtlSeconds: Math.round(SEARCH_CACHE_TTL_MS / 1000),
       providerHealth: safeProviderHealth
     },
-    chatModel: providerGateway.gemini.defaultModel,
-    imageModel: providerGateway.gemini.imageModel
+    defaultModel: "anthropic/claude-sonnet-5-5",
+    imageModel: "openai/gpt-image-2.5"
   });
 });
 

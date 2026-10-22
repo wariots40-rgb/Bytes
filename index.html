@@ -4302,11 +4302,8 @@ async function openSettingsModal() {
           searchEl.innerHTML = '<span class="status-dot green"></span> ' + escapeHtml(gen);
         }
         if (provEl) {
-          const provs = [];
-          if (data.providers?.meta) provs.push('Multi-Key Gateway (' + (data.providers.metaKeyCount || 10) + ' keys)');
-          if (data.providers?.gemini) provs.push('Gemini');
-          if (data.providers?.apinex) provs.push('APInex');
-          provEl.textContent = provs.length ? provs.join(' + ') : 'Active';
+          const keyPool = data.frontierEngine?.keyPoolSize || 10;
+          provEl.textContent = 'Dedicated Multi-Key Engine (' + keyPool + ' keys active)';
         }
       }
     } catch (_) {

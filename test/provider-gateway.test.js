@@ -430,3 +430,141 @@ test("MetaModelAdapter: dedicated image generators (gpt-image-2.5 & gemini-nano-
   assert.equal(imageBodies[1].model, "muse-image-1.0");
   assert.match(imageBodies[1].prompt, /character.*rendering/i);
 });
+
+test("MetaModelAdapter: dedicated 1-to-1 key mapping routes each UI model to its specific API key in the pool", async () => {
+  const tenKeys = [
+    "meta-key-1-astra",
+    "meta-key-2-sol",
+    "meta-key-3-opus",
+    "meta-key-4-sonnet",
+    "meta-key-5-argon",
+    "meta-key-6-flash",
+    "meta-key-7-gptimage",
+    "meta-key-8-banana",
+    "meta-key-9-realistic",
+    "meta-key-10-creative"
+  ];
+
+  const keysUsed = [];
+  const mockFetch = async (url, options) => {
+    keysUsed.push(options.headers["Authorization"]);
+    if (url.includes("/images/generations")) {
+      return new Response(JSON.stringify({
+        data: [{ b64_json: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" }]
+      }), { status: 200, headers: { "content-type": "application/json" } });
+    }
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Model reply" } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: tenKeys,
+    fetchFn: mockFetch
+  });
+
+  // Verify dedicated plan for all 10 models
+  assert.equal(adapter.getKeyPlan("openai/gpt-6-astra")[0], "meta-key-1-astra");
+  assert.equal(adapter.getKeyPlan("openai/gpt-6.1-sol")[0], "meta-key-2-sol");
+  assert.equal(adapter.getKeyPlan("anthropic/claude-opus-5-5")[0], "meta-key-3-opus");
+  assert.equal(adapter.getKeyPlan("anthropic/claude-sonnet-5-5")[0], "meta-key-4-sonnet");
+  assert.equal(adapter.getKeyPlan("google/gemini-4-argon")[0], "meta-key-5-argon");
+  assert.equal(adapter.getKeyPlan("google/gemini-3.8-flash")[0], "meta-key-6-flash");
+  assert.equal(adapter.getKeyPlan("openai/gpt-image-2.5")[0], "meta-key-7-gptimage");
+  assert.equal(adapter.getKeyPlan("google/gemini-nano-banana-2.1")[0], "meta-key-8-banana");
+  assert.equal(adapter.getKeyPlan("studio/bytes-canvas-realistic")[0], "meta-key-9-realistic");
+  assert.equal(adapter.getKeyPlan("studio/bytes-canvas-creative")[0], "meta-key-10-creative");
+
+  // Chat execution on Key #1
+  await adapter.chat({ model: "openai/gpt-6-astra", messages: [{ role: "user", text: "test" }] });
+  assert.equal(keysUsed[0], "Bearer meta-key-1-astra");
+
+  // Chat execution on Key #4
+  await adapter.chat({ model: "anthropic/claude-sonnet-5-5", messages: [{ role: "user", text: "test" }] });
+  assert.equal(keysUsed[1], "Bearer meta-key-4-sonnet");
+
+  // Image execution on Key #7
+  await adapter.generateImage({ model: "openai/gpt-image-2.5", prompt: "A poster" });
+  assert.equal(keysUsed[2], "Bearer meta-key-7-gptimage");
+
+  // Image execution on Key #8
+  await adapter.generateImage({ model: "google/gemini-nano-banana-2.1", prompt: "A hero" });
+  assert.equal(keysUsed[3], "Bearer meta-key-8-banana");
+});
+
+test("MetaModelAdapter: dedicated fallback keys trigger in specified order when primary key hits cooldown", async () => {
+  const tenKeys = [
+    "key-1-primary",
+    "key-2-fb1",
+    "key-3-fb2",
+    "key-4-fb3",
+    "key-5-fb4",
+    "key-6-fb5",
+    "key-7-img1",
+    "key-8-img2",
+    "key-9-img3",
+    "key-10-img4"
+  ];
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: tenKeys
+  });
+
+  // Key #1 is healthy -> plan starts with Key #1
+  let plan = adapter.getKeyPlan("openai/gpt-6-astra");
+  assert.equal(plan[0], "key-1-primary");
+  assert.equal(plan[1], "key-2-fb1");
+
+  // Mark Key #1 in cooldown (429 rate limit)
+  const worker1 = adapter.workerMap.get("key-1-primary");
+  worker1.markFailure(new Error("Rate limited"), 429);
+  assert.equal(worker1.isAvailable(), false);
+
+  // Fallback key #2 must immediately become #1 in plan
+  plan = adapter.getKeyPlan("openai/gpt-6-astra");
+  assert.equal(plan[0], "key-2-fb1");
+  assert.equal(plan[1], "key-3-fb2");
+
+  // Verify dedicated image fallbacks: Key #7 marked in cooldown -> falls back to Key #8
+  const worker7 = adapter.workerMap.get("key-7-img1");
+  worker7.markFailure(new Error("Image rate limited"), 429);
+  const imgPlan = adapter.getKeyPlan("openai/gpt-image-2.5");
+  assert.equal(imgPlan[0], "key-8-img2");
+  assert.equal(imgPlan[1], "key-9-img3");
+});
+
+test("ProviderGateway: Google Gemini and APInex are completely isolated when Meta is configured", async () => {
+  let geminiCalls = 0;
+  let apinexCalls = 0;
+
+  const mockGeminiFetch = async () => { geminiCalls++; return new Response("{}", { status: 200 }); };
+  const mockApinexFetch = async () => { apinexCalls++; return new Response("{}", { status: 200 }); };
+  const mockMetaFetch = async () => {
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Meta response exclusively" } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const gateway = createProviderGateway({
+    geminiApiKey: "gemini-secret",
+    apinexApiKey: "apinex-secret",
+    metaApiKeys: ["meta-key-only"],
+    fetchFn: mockMetaFetch
+  });
+
+  // Ensure catalog contains zero Gemini or APInex branding
+  const catalog = await gateway.getCatalog();
+  assert.equal(catalog.providers.some(p => p.id === "gemini" && !p.models.every(m => m.id.startsWith("google/"))), false);
+  assert.equal(catalog.providers.some(p => p.id === "apinex"), false);
+
+  // Execute chat
+  const chatResult = await gateway.streamChat({
+    provider: "auto",
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "test" }]
+  });
+
+  assert.equal(chatResult.reply, "Meta response exclusively");
+  assert.equal(geminiCalls, 0, "Gemini must never be called");
+  assert.equal(apinexCalls, 0, "APInex must never be called");
+});
