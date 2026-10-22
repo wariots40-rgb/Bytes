@@ -2618,6 +2618,32 @@ function getModelMeta(rawId) {
       iconSvg: AI_ICONS.auto
     };
   }
+  if (str.includes('gpt-image') || str.includes('image-2.5')) {
+    return {
+      family: 'studio',
+      brand: 'OpenAI Studio',
+      displayName: 'GPT Image 2.5',
+      shortName: 'GPT Image 2.5',
+      badge: 'IMAGE GEN',
+      tagClass: 'tag-studio',
+      desc: 'OpenAI · Next-gen typography & photorealistic visual synthesis',
+      themeClass: 'theme-studio',
+      iconSvg: AI_ICONS.studio
+    };
+  }
+  if (str.includes('banana')) {
+    return {
+      family: 'studio',
+      brand: 'Google DeepMind',
+      displayName: 'Gemini Nano Banana 2.1',
+      shortName: 'Nano Banana 2.1',
+      badge: 'IMAGE GEN',
+      tagClass: 'tag-studio',
+      desc: 'Google DeepMind · Specialized visual & consistent character rendering',
+      themeClass: 'theme-studio',
+      iconSvg: AI_ICONS.studio
+    };
+  }
   if (str.includes('studio') || str.includes('canvas')) {
     const isCreative = str.includes('creative');
     const name = isCreative ? 'Bytes Canvas · Creative Art' : 'Bytes Studio · Photorealistic';
@@ -2634,14 +2660,17 @@ function getModelMeta(rawId) {
     };
   }
   if (str.includes('claude')) {
-    let name = 'Claude 3.5 Sonnet';
-    let badge = 'ENGINEERING';
-    if (str.includes('haiku')) {
+    let name = 'Claude Sonnet 5.5';
+    let badge = 'PREMIER CODE';
+    if (str.includes('opus')) {
+      name = (str.includes('5-5') || str.includes('5.5') || !str.includes('3')) ? 'Claude Opus 5.5' : 'Claude 3 Opus';
+      badge = 'DEEP REASONING';
+    } else if (str.includes('haiku')) {
       name = 'Claude 3.5 Haiku';
       badge = 'FAST';
-    } else if (str.includes('opus')) {
-      name = 'Claude 3 Opus';
-      badge = 'DEEP THINK';
+    } else if (str.includes('3-5') || str.includes('3.5')) {
+      name = 'Claude 3.5 Sonnet';
+      badge = 'ENGINEERING';
     }
     return {
       family: 'claude',
@@ -2655,10 +2684,16 @@ function getModelMeta(rawId) {
       iconSvg: AI_ICONS.claude
     };
   }
-  if (str.includes('gpt') || str.includes('openai') || str.includes('o1') || str.includes('o3')) {
-    let name = 'GPT-4o';
-    let badge = 'OMNI';
-    if (str.includes('o3')) {
+  if (str.includes('gpt') || str.includes('openai') || str.includes('o1') || str.includes('o3') || str.includes('astra') || str.includes('sol')) {
+    let name = 'GPT-6 Astra';
+    let badge = 'FRONTIER';
+    if (str.includes('astra')) {
+      name = 'GPT-6 Astra';
+      badge = 'FRONTIER';
+    } else if (str.includes('sol') || str.includes('6.1') || str.includes('6-1')) {
+      name = 'GPT-6.1 Sol';
+      badge = 'PRODUCTION';
+    } else if (str.includes('o3')) {
       name = 'OpenAI o3-mini';
       badge = 'REASONING';
     } else if (str.includes('o1')) {
@@ -2667,6 +2702,9 @@ function getModelMeta(rawId) {
     } else if (str.includes('mini')) {
       name = 'GPT-4o Mini';
       badge = 'FAST';
+    } else if (str.includes('4o')) {
+      name = 'GPT-4o';
+      badge = 'OMNI';
     }
     return {
       family: 'openai',
@@ -2675,12 +2713,7 @@ function getModelMeta(rawId) {
       shortName: name,
       badge: badge,
       tagClass: 'tag-omni',
-      desc: 'OpenAI · Multimodal flagship intelligence',
-      themeClass: 'theme-openai',
-      iconSvg: AI_ICONS.openai
-    };
-  }
-      desc: 'OpenAI · Multimodal flagship intelligence',
+      desc: 'OpenAI · Multimodal frontier intelligence',
       themeClass: 'theme-openai',
       iconSvg: AI_ICONS.openai
     };
@@ -2727,11 +2760,13 @@ function getModelMeta(rawId) {
     };
   }
   // Default to Google Gemini for Gemini models
+  const isArgon = str.includes('argon') || str.includes('gemini-4');
+  const isFlash38 = str.includes('3.8') || str.includes('3-8');
   const isThinking = str.includes('thinking');
   const isPro = str.includes('pro');
-  const name = isThinking ? 'Gemini 2.0 Flash Thinking' : isPro ? 'Gemini 1.5 Pro' : 'Gemini 2.0 Flash';
-  const badge = isThinking ? 'REASONING' : isPro ? '2M CONTEXT' : 'MULTIMODAL';
-  const tagClass = str.includes('free') ? 'tag-free' : (isThinking ? 'tag-reasoning' : 'tag-smart');
+  const name = isArgon ? 'Gemini 4 Argon' : isFlash38 ? 'Gemini 3.8 Flash' : isThinking ? 'Gemini 2.0 Flash Thinking' : isPro ? 'Gemini 1.5 Pro' : 'Gemini 2.0 Flash';
+  const badge = isArgon ? 'MULTIMODAL FRONTIER' : isFlash38 ? 'FAST REASONING' : isThinking ? 'REASONING' : isPro ? '2M CONTEXT' : 'MULTIMODAL';
+  const tagClass = str.includes('free') ? 'tag-free' : (isArgon || isThinking ? 'tag-reasoning' : 'tag-smart');
   return {
     family: 'gemini',
     brand: 'Google Gemini',
@@ -3088,32 +3123,32 @@ async function loadModelCatalog() {
           id: 'openai',
           label: 'OpenAI',
           models: [
-            { id: 'openai/gpt-4o', label: 'GPT-4o · Omni Flagship' },
-            { id: 'openai/o3-mini', label: 'OpenAI o3-mini · Reasoning Flagship' },
-            { id: 'openai/gpt-4o-mini', label: 'GPT-4o Mini · Fast & Agile' }
+            { id: 'openai/gpt-6-astra', label: 'GPT-6 Astra · Frontier Flagship' },
+            { id: 'openai/gpt-6.1-sol', label: 'GPT-6.1 Sol · Production Workhorse' }
           ]
         },
         {
           id: 'claude',
           label: 'Anthropic Claude',
           models: [
-            { id: 'anthropic/claude-3-5-sonnet', label: 'Claude 3.5 Sonnet · Premier Engineering' },
-            { id: 'anthropic/claude-3-5-haiku', label: 'Claude 3.5 Haiku · Instant Speed' },
-            { id: 'anthropic/claude-3-opus', label: 'Claude 3 Opus · Deep Analysis' }
+            { id: 'anthropic/claude-opus-5-5', label: 'Claude Opus 5.5 · Frontier Reasoning' },
+            { id: 'anthropic/claude-sonnet-5-5', label: 'Claude Sonnet 5.5 · Premier Engineering' }
           ]
         },
         {
           id: 'gemini',
           label: 'Google Gemini',
           models: [
-            { id: 'gemini/gemini-2.0-flash', label: 'Gemini 2.0 Flash · Next-Gen Multimodal' },
-            { id: 'gemini/gemini-2.0-flash-thinking', label: 'Gemini 2.0 Flash Thinking · Deep Reasoning' }
+            { id: 'google/gemini-4-argon', label: 'Gemini 4 Argon · Multimodal Flagship' },
+            { id: 'google/gemini-3.8-flash', label: 'Gemini 3.8 Flash · Next-Gen Speed' }
           ]
         },
         {
           id: 'studio',
           label: 'Visual Studio',
           models: [
+            { id: 'openai/gpt-image-2.5', label: 'GPT Image 2.5 · Photorealism & Typography', isImage: true },
+            { id: 'google/gemini-nano-banana-2.1', label: 'Gemini Nano Banana 2.1 · Consistent Art', isImage: true },
             { id: 'studio/bytes-canvas-realistic', label: 'Bytes Studio · Photorealistic Flagship', isImage: true },
             { id: 'studio/bytes-canvas-creative', label: 'Bytes Canvas · Stylized Art & Concept', isImage: true }
           ]
@@ -3809,7 +3844,12 @@ async function sendMessage(text) {
   $('#sendBtn').title = 'Stop generating';
   $('#modelIndicator').classList.add('thinking');
 
-  const targetImageModel = selectedModel.startsWith('studio/') ? selectedModel : 'studio/bytes-canvas-realistic';
+  const isSelectedImage = selectedModel.startsWith('studio/') ||
+    selectedModel === 'openai/gpt-image-2.5' ||
+    selectedModel === 'google/gemini-nano-banana-2.1' ||
+    selectedModel.includes('banana') ||
+    selectedModel.includes('gpt-image');
+  const targetImageModel = isSelectedImage ? selectedModel : 'openai/gpt-image-2.5';
   const currentModelMeta = getModelMeta(imageMode ? targetImageModel : selectedModel);
 
   const typingRow = document.createElement('div');

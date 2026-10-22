@@ -357,3 +357,76 @@ test("MetaModelAdapter: image generation routes to muse-image-1.0 using key pool
   assert.ok(result.imageData);
   assert.equal(result.mimeType, "image/png");
 });
+
+test("MetaModelAdapter: routes gpt-6-astra and gemini-4-argon with strict disguise persona to muse-wonder-1.0", async () => {
+  const bodies = [];
+  const mockFetch = async (url, options) => {
+    bodies.push(JSON.parse(options.body));
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Frontier response" } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["key-frontier"],
+    fetchFn: mockFetch
+  });
+
+  // Test GPT-6 Astra
+  await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "Explain deep agent reasoning" }]
+  });
+
+  // Test Gemini 4 Argon
+  await adapter.chat({
+    model: "google/gemini-4-argon",
+    messages: [{ role: "user", text: "Analyze multimodal sensor feed" }]
+  });
+
+  assert.equal(bodies.length, 2);
+  assert.equal(bodies[0].model, "muse-wonder-1.0");
+  const astraSystem = bodies[0].messages.find(m => m.role === "system");
+  assert.match(astraSystem.content, /You are GPT-6 Astra/);
+  assert.match(astraSystem.content, /STRICT IDENTITY EMBODIMENT & MODEL DISGUISE/);
+
+  assert.equal(bodies[1].model, "muse-wonder-1.0");
+  const geminiSystem = bodies[1].messages.find(m => m.role === "system");
+  assert.match(geminiSystem.content, /You are Google Gemini 4 Argon/);
+  assert.match(geminiSystem.content, /STRICT IDENTITY EMBODIMENT & MODEL DISGUISE/);
+});
+
+test("MetaModelAdapter: dedicated image generators (gpt-image-2.5 & gemini-nano-banana-2.1) route to muse-image-1.0", async () => {
+  const imageBodies = [];
+  const mockFetch = async (url, options) => {
+    imageBodies.push(JSON.parse(options.body));
+    return new Response(JSON.stringify({
+      data: [{ b64_json: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["img-key-1"],
+    fetchFn: mockFetch
+  });
+
+  // Test GPT Image 2.5
+  const gptImg = await adapter.generateImage({
+    prompt: "Vintage poster with crisp typography",
+    model: "openai/gpt-image-2.5"
+  });
+  assert.equal(gptImg.model, "openai/gpt-image-2.5");
+
+  // Test Gemini Nano Banana 2.1
+  const bananaImg = await adapter.generateImage({
+    prompt: "Stylized hero character in dynamic armor",
+    model: "google/gemini-nano-banana-2.1"
+  });
+  assert.equal(bananaImg.model, "google/gemini-nano-banana-2.1");
+
+  assert.equal(imageBodies.length, 2);
+  assert.equal(imageBodies[0].model, "muse-image-1.0");
+  assert.match(imageBodies[0].prompt, /typography/i);
+  assert.equal(imageBodies[1].model, "muse-image-1.0");
+  assert.match(imageBodies[1].prompt, /character.*rendering/i);
+});

@@ -495,12 +495,37 @@ function buildDisguiseSystemPrompt(virtual, userSystemText) {
 // 10 Curated Flagship Virtual Models for Frontend (Zero Meta branding exposed)
 const VIRTUAL_MODELS = {
   // OpenAI Family
+  "openai/gpt-6-astra": {
+    id: "openai/gpt-6-astra",
+    label: "GPT-6 Astra · Frontier Flagship",
+    uiName: "GPT-6 Astra",
+    brandName: "OpenAI",
+    brandGroup: "openai",
+    provider: "openai",
+    targetModel: "muse-wonder-1.0",
+    fallbackModel: "llama-3.3-70b-instruct",
+    temperature: 0.5,
+    personaPrompt: "You are GPT-6 Astra, OpenAI's flagship frontier AI model designed for deep multi-step reasoning, autonomous computer-use workflows, and elite software architecture. You think systematically through edge cases, verify logical correctness, and provide structured, production-ready solutions."
+  },
+  "openai/gpt-6.1-sol": {
+    id: "openai/gpt-6.1-sol",
+    label: "GPT-6.1 Sol · Production Workhorse",
+    uiName: "GPT-6.1 Sol",
+    brandName: "OpenAI",
+    brandGroup: "openai",
+    provider: "openai",
+    targetModel: "muse-spark-1.3",
+    fallbackModel: "llama-3.3-70b-instruct",
+    temperature: 0.6,
+    personaPrompt: "You are GPT-6.1 Sol, OpenAI's high-efficiency production intelligence model. You deliver razor-sharp, pragmatic, and high-velocity reasoning for software engineering, system architecture, and technical workflows."
+  },
   "openai/gpt-4o": {
     id: "openai/gpt-4o",
     label: "GPT-4o · Omni Flagship",
     uiName: "GPT-4o",
     brandName: "OpenAI",
     brandGroup: "openai",
+    hidden: true,
     provider: "openai",
     targetModel: "muse-wonder-1.0",
     fallbackModel: "llama-3.3-70b-instruct",
@@ -513,6 +538,7 @@ const VIRTUAL_MODELS = {
     uiName: "OpenAI o3-mini",
     brandName: "OpenAI",
     brandGroup: "openai",
+    hidden: true,
     provider: "openai",
     targetModel: "muse-spark-1.3",
     fallbackModel: "llama-3.3-70b-instruct",
@@ -525,6 +551,7 @@ const VIRTUAL_MODELS = {
     uiName: "GPT-4o Mini",
     brandName: "OpenAI",
     brandGroup: "openai",
+    hidden: true,
     provider: "openai",
     targetModel: "llama-3.3-70b-instruct",
     fallbackModel: "muse-spark-1.3",
@@ -546,12 +573,37 @@ const VIRTUAL_MODELS = {
   },
 
   // Anthropic Claude Family
+  "anthropic/claude-opus-5-5": {
+    id: "anthropic/claude-opus-5-5",
+    label: "Claude Opus 5.5 · Frontier Reasoning",
+    uiName: "Claude Opus 5.5",
+    brandName: "Anthropic",
+    brandGroup: "claude",
+    provider: "claude",
+    targetModel: "muse-wonder-1.0",
+    fallbackModel: "llama-3.3-70b-instruct",
+    temperature: 0.5,
+    personaPrompt: "You are Claude Opus 5.5, Anthropic's flagship deep reasoning architecture. You excel at comprehensive analysis, complex repository-scale engineering, philosophical rigor, and holistic system design. Your prose is calm, articulate, and deeply insightful."
+  },
+  "anthropic/claude-sonnet-5-5": {
+    id: "anthropic/claude-sonnet-5-5",
+    label: "Claude Sonnet 5.5 · Premier Engineering",
+    uiName: "Claude Sonnet 5.5",
+    brandName: "Anthropic",
+    brandGroup: "claude",
+    provider: "claude",
+    targetModel: "muse-spark-1.3",
+    fallbackModel: "llama-3.3-70b-instruct",
+    temperature: 0.6,
+    personaPrompt: "You are Claude Sonnet 5.5, an AI assistant created by Anthropic. You are thoughtful, nuanced, intellectually rigorous, and an elite software engineer. When writing code, provide complete, production-ready implementations with clean naming and robust error handling."
+  },
   "anthropic/claude-3-5-sonnet": {
     id: "anthropic/claude-3-5-sonnet",
     label: "Claude 3.5 Sonnet · Premier Engineering",
     uiName: "Claude 3.5 Sonnet",
     brandName: "Anthropic",
     brandGroup: "claude",
+    hidden: true,
     provider: "claude",
     targetModel: "muse-spark-1.3",
     fallbackModel: "llama-3.3-70b-instruct",
@@ -564,6 +616,7 @@ const VIRTUAL_MODELS = {
     uiName: "Claude 3.5 Haiku",
     brandName: "Anthropic",
     brandGroup: "claude",
+    hidden: true,
     provider: "claude",
     targetModel: "llama-3.3-70b-instruct",
     fallbackModel: "muse-spark-1.3",
@@ -576,6 +629,7 @@ const VIRTUAL_MODELS = {
     uiName: "Claude 3 Opus",
     brandName: "Anthropic",
     brandGroup: "claude",
+    hidden: true,
     provider: "claude",
     targetModel: "muse-wonder-1.0",
     fallbackModel: "llama-3.3-70b-instruct",
@@ -584,8 +638,8 @@ const VIRTUAL_MODELS = {
   },
   "anthropic/claude-3-7-sonnet": {
     id: "anthropic/claude-3-7-sonnet",
-    label: "Claude 3.5 Sonnet · Premier Engineering",
-    uiName: "Claude 3.5 Sonnet",
+    label: "Claude 3.7 Sonnet · Premier Engineering",
+    uiName: "Claude 3.7 Sonnet",
     brandName: "Anthropic",
     brandGroup: "claude",
     hidden: true,
@@ -593,16 +647,41 @@ const VIRTUAL_MODELS = {
     targetModel: "muse-spark-1.3",
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.6,
-    personaPrompt: "You are Claude 3.5 Sonnet, an AI assistant created by Anthropic."
+    personaPrompt: "You are Claude 3.7 Sonnet, an AI assistant created by Anthropic."
   },
 
   // Google Gemini Family
+  "google/gemini-4-argon": {
+    id: "google/gemini-4-argon",
+    label: "Gemini 4 Argon · Multimodal Flagship",
+    uiName: "Gemini 4 Argon",
+    brandName: "Google",
+    brandGroup: "gemini",
+    provider: "gemini",
+    targetModel: "muse-wonder-1.0",
+    fallbackModel: "llama-3.3-70b-instruct",
+    temperature: 0.5,
+    personaPrompt: "You are Google Gemini 4 Argon, Google's next-generation multimodal scientific and deep reasoning model. You excel at analyzing vast contexts, multi-modal synthesis (text, audio, video, code), and complex scientific/engineering problem solving."
+  },
+  "google/gemini-3.8-flash": {
+    id: "google/gemini-3.8-flash",
+    label: "Gemini 3.8 Flash · Next-Gen Speed",
+    uiName: "Gemini 3.8 Flash",
+    brandName: "Google",
+    brandGroup: "gemini",
+    provider: "gemini",
+    targetModel: "llama-3.3-70b-instruct",
+    fallbackModel: "muse-spark-1.3",
+    temperature: 0.7,
+    personaPrompt: "You are Google Gemini 3.8 Flash, Google's lightning-fast multimodal reasoning model. You deliver fast, accurate, and responsive completions for real-time coding, tool use, and conversational assistance."
+  },
   "gemini/gemini-2.0-flash": {
     id: "gemini/gemini-2.0-flash",
     label: "Gemini 2.0 Flash · Next-Gen Multimodal",
     uiName: "Gemini 2.0 Flash",
     brandName: "Google",
     brandGroup: "gemini",
+    hidden: true,
     provider: "gemini",
     targetModel: "llama-3.3-70b-instruct",
     fallbackModel: "muse-spark-1.3",
@@ -615,6 +694,7 @@ const VIRTUAL_MODELS = {
     uiName: "Gemini 2.0 Flash Thinking",
     brandName: "Google",
     brandGroup: "gemini",
+    hidden: true,
     provider: "gemini",
     targetModel: "muse-spark-1.3",
     fallbackModel: "llama-3.3-70b-instruct",
@@ -636,8 +716,8 @@ const VIRTUAL_MODELS = {
   },
   "gemini/gemini-2.5-pro": {
     id: "gemini/gemini-2.5-pro",
-    label: "Gemini 2.0 Flash Thinking · Deep Reasoning",
-    uiName: "Gemini 2.0 Flash Thinking",
+    label: "Gemini 2.5 Pro · Deep Reasoning",
+    uiName: "Gemini 2.5 Pro",
     brandName: "Google",
     brandGroup: "gemini",
     hidden: true,
@@ -645,12 +725,12 @@ const VIRTUAL_MODELS = {
     targetModel: "muse-spark-1.3",
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.4,
-    personaPrompt: "You are Google Gemini 2.0 Flash Thinking."
+    personaPrompt: "You are Google Gemini 2.5 Pro."
   },
   "gemini/gemini-2.5-flash": {
     id: "gemini/gemini-2.5-flash",
-    label: "Gemini 2.0 Flash · Next-Gen Multimodal",
-    uiName: "Gemini 2.0 Flash",
+    label: "Gemini 2.5 Flash · Next-Gen Multimodal",
+    uiName: "Gemini 2.5 Flash",
     brandName: "Google",
     brandGroup: "gemini",
     hidden: true,
@@ -658,10 +738,34 @@ const VIRTUAL_MODELS = {
     targetModel: "llama-3.3-70b-instruct",
     fallbackModel: "muse-spark-1.3",
     temperature: 0.7,
-    personaPrompt: "You are Google Gemini 2.0 Flash."
+    personaPrompt: "You are Google Gemini 2.5 Flash."
   },
 
-  // Visual Studio Family (Image Generation)
+  // Dedicated Image Generation & Editing Models (Separated into Studio)
+  "openai/gpt-image-2.5": {
+    id: "openai/gpt-image-2.5",
+    label: "GPT Image 2.5 · Photorealism & Typography",
+    uiName: "GPT Image 2.5",
+    brandName: "OpenAI",
+    brandGroup: "studio",
+    provider: "studio",
+    isImage: true,
+    targetModel: "muse-image-1.0",
+    fallbackModel: "muse-image",
+    personaPrompt: "Hyper-detailed photorealism, crisp typography rendering, accurate subject anatomy, cinematic lighting, 8k resolution, balanced composition."
+  },
+  "google/gemini-nano-banana-2.1": {
+    id: "google/gemini-nano-banana-2.1",
+    label: "Gemini Nano Banana 2.1 · Consistent Art",
+    uiName: "Gemini Nano Banana 2.1",
+    brandName: "Google",
+    brandGroup: "studio",
+    provider: "studio",
+    isImage: true,
+    targetModel: "muse-image-1.0",
+    fallbackModel: "muse-image",
+    personaPrompt: "Vivid creative concept art, highly consistent character and subject rendering, expressive illustrative details, vibrant atmospheric lighting, clean artistic illumination."
+  },
   "studio/bytes-canvas-realistic": {
     id: "studio/bytes-canvas-realistic",
     label: "Bytes Studio · Photorealistic Flagship",
@@ -1130,7 +1234,7 @@ class ProviderGateway {
     }
 
     const defaultSelection = this.meta.isConfigured()
-      ? { provider: "claude", model: "anthropic/claude-3-5-sonnet" }
+      ? { provider: "claude", model: "anthropic/claude-sonnet-5-5" }
       : this.gemini.isConfigured()
         ? { provider: "gemini", model: this.gemini.defaultModel }
         : this.apinex.isConfigured()
@@ -1152,7 +1256,7 @@ class ProviderGateway {
   }
 
   async streamChat({ provider, model, messages, systemText, files, stream, webSearchFallback }, callbacks = {}) {
-    const isVirtual = model && (model.startsWith("openai/") || model.startsWith("anthropic/") || model.startsWith("gemini/") || model.startsWith("studio/"));
+    const isVirtual = model && (model.startsWith("openai/") || model.startsWith("anthropic/") || model.startsWith("gemini/") || model.startsWith("google/") || model.startsWith("studio/"));
     if (this.meta.isConfigured() && (provider === "meta" || provider === "openai" || provider === "claude" || provider === "studio" || isVirtual)) {
       try {
         return await this.meta.chat({ model, messages, systemText, files, stream }, callbacks);
