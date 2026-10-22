@@ -2916,10 +2916,20 @@ function updateGreeting() {
   $('#greetingHeadline').innerHTML = timeStr + ',<br><em>what are we exploring today?</em>';
 }
 
+// Model Selection Matching Helper
+function isModelSelected(itemVal, currentVal) {
+  if (itemVal === currentVal) return true;
+  if (!itemVal || !currentVal) return false;
+  const cleanItem = itemVal.includes('|') ? itemVal.split('|')[1] : itemVal;
+  const cleanCurrent = currentVal.includes('|') ? currentVal.split('|')[1] : currentVal;
+  return cleanItem === cleanCurrent;
+}
+
 // Update Active Model UI Everywhere
 function updateActiveModelDisplay(val) {
   selectedModel = val || 'auto';
-  const meta = getModelMeta(selectedModel);
+  const cleanId = selectedModel.includes('|') ? selectedModel.split('|')[1] : selectedModel;
+  const meta = getModelMeta(cleanId);
 
   // Topbar Trigger Button
   const iconBadge = $('#modelPickerIconBadge');
@@ -2950,7 +2960,7 @@ function updateActiveModelDisplay(val) {
 
   // Mark active item in dropdown
   $$('.model-option-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.value === selectedModel);
+    el.classList.toggle('active', isModelSelected(el.dataset.value, selectedModel));
   });
 }
 
@@ -3000,7 +3010,7 @@ function renderModelDropdown(catalog) {
 
     group.models.forEach(item => {
       const optEl = document.createElement('div');
-      optEl.className = 'model-option-item' + (item.value === selectedModel ? ' active' : '');
+      optEl.className = 'model-option-item' + (isModelSelected(item.value, selectedModel) ? ' active' : '');
       optEl.dataset.value = item.value;
       optEl.dataset.search = (item.meta.displayName + ' ' + item.meta.brand + ' ' + item.meta.desc).toLowerCase();
       optEl.tabIndex = 0;
@@ -3111,64 +3121,94 @@ document.addEventListener('keydown', e => {
 
 // Model Catalog Loading
 async function loadModelCatalog() {
+  const curatedCatalog = {
+    providers: [
+      {
+        id: 'openai',
+        label: 'OpenAI',
+        models: [
+          { id: 'openai/gpt-6-astra', label: 'GPT-6 Astra · Frontier Flagship' },
+          { id: 'openai/gpt-6.1-sol', label: 'GPT-6.1 Sol · Production Workhorse' }
+        ]
+      },
+      {
+        id: 'claude',
+        label: 'Anthropic Claude',
+        models: [
+          { id: 'anthropic/claude-opus-5-5', label: 'Claude Opus 5.5 · Frontier Reasoning' },
+          { id: 'anthropic/claude-sonnet-5-5', label: 'Claude Sonnet 5.5 · Premier Engineering' }
+        ]
+      },
+      {
+        id: 'gemini',
+        label: 'Google Gemini',
+        models: [
+          { id: 'google/gemini-4-argon', label: 'Gemini 4 Argon · Multimodal Flagship' },
+          { id: 'google/gemini-3.8-flash', label: 'Gemini 3.8 Flash · Next-Gen Speed' }
+        ]
+      },
+      {
+        id: 'studio',
+        label: 'Visual Studio',
+        models: [
+          { id: 'openai/gpt-image-2.5', label: 'GPT Image 2.5 · Photorealism & Typography', isImage: true },
+          { id: 'google/gemini-nano-banana-2.1', label: 'Gemini Nano Banana 2.1 · Consistent Art', isImage: true },
+          { id: 'studio/bytes-canvas-realistic', label: 'Bytes Studio · Photorealistic Flagship', isImage: true },
+          { id: 'studio/bytes-canvas-creative', label: 'Bytes Canvas · Stylized Art & Concept', isImage: true }
+        ]
+      }
+    ],
+    configured: {},
+    errors: {}
+  };
+
+  modelCatalog = curatedCatalog;
+
   try {
     const res = await bytesFetch(apiUrl('/api/models'), { cache: 'no-store', signal: AbortSignal.timeout(6000) });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    modelCatalog = data && typeof data === 'object' ? data : modelCatalog;
-  } catch (err) {
-    modelCatalog = {
-      providers: [
-        {
-          id: 'openai',
-          label: 'OpenAI',
-          models: [
-            { id: 'openai/gpt-6-astra', label: 'GPT-6 Astra · Frontier Flagship' },
-            { id: 'openai/gpt-6.1-sol', label: 'GPT-6.1 Sol · Production Workhorse' }
-          ]
-        },
-        {
-          id: 'claude',
-          label: 'Anthropic Claude',
-          models: [
-            { id: 'anthropic/claude-opus-5-5', label: 'Claude Opus 5.5 · Frontier Reasoning' },
-            { id: 'anthropic/claude-sonnet-5-5', label: 'Claude Sonnet 5.5 · Premier Engineering' }
-          ]
-        },
-        {
-          id: 'gemini',
-          label: 'Google Gemini',
-          models: [
-            { id: 'google/gemini-4-argon', label: 'Gemini 4 Argon · Multimodal Flagship' },
-            { id: 'google/gemini-3.8-flash', label: 'Gemini 3.8 Flash · Next-Gen Speed' }
-          ]
-        },
-        {
-          id: 'studio',
-          label: 'Visual Studio',
-          models: [
-            { id: 'openai/gpt-image-2.5', label: 'GPT Image 2.5 · Photorealism & Typography', isImage: true },
-            { id: 'google/gemini-nano-banana-2.1', label: 'Gemini Nano Banana 2.1 · Consistent Art', isImage: true },
-            { id: 'studio/bytes-canvas-realistic', label: 'Bytes Studio · Photorealistic Flagship', isImage: true },
-            { id: 'studio/bytes-canvas-creative', label: 'Bytes Canvas · Stylized Art & Concept', isImage: true }
-          ]
-        }
-      ],
-      configured: {},
-      errors: {}
-    };
+    if (res.ok) {
+      const data = await res.json();
+      const hasCurated = data && Array.isArray(data.providers) && data.providers.some(p => p.id === 'openai' || p.id === 'claude');
+      if (hasCurated) {
+        modelCatalog = data;
+      }
+    }
+  } catch (_) {}
+
+  try {
+    const stored = localStorage.getItem('bytes.model-selection.v1');
+    const validKeys = ['auto'];
+    (modelCatalog.providers || []).forEach(p => {
+      (p.models || []).forEach(m => {
+        validKeys.push(m.id);
+        validKeys.push(p.id + '|' + m.id);
+      });
+    });
+    if (stored && validKeys.includes(stored)) {
+      selectedModel = stored;
+    } else {
+      selectedModel = 'claude|anthropic/claude-sonnet-5-5';
+    }
+  } catch (_) {
+    selectedModel = 'claude|anthropic/claude-sonnet-5-5';
   }
 
-  try { selectedModel = localStorage.getItem('bytes.model-selection.v1') || 'auto'; } catch (_) { selectedModel = 'auto'; }
   renderModelDropdown(modelCatalog);
   updateActiveModelDisplay(selectedModel);
   $('#modelIndicator').className = 'model-indicator';
 }
 
 function modelRequest() {
-  if (selectedModel === 'auto') return { provider: 'auto', model: '' };
+  if (!selectedModel || selectedModel === 'auto') return { provider: 'auto', model: '' };
   const split = selectedModel.indexOf('|');
-  return split < 0 ? { provider: 'auto', model: '' } : { provider: selectedModel.slice(0, split), model: selectedModel.slice(split + 1) };
+  if (split >= 0) {
+    return { provider: selectedModel.slice(0, split), model: selectedModel.slice(split + 1) };
+  }
+  if (selectedModel.startsWith('openai/')) return { provider: 'openai', model: selectedModel };
+  if (selectedModel.startsWith('anthropic/') || selectedModel.startsWith('claude/')) return { provider: 'claude', model: selectedModel };
+  if (selectedModel.startsWith('google/') || selectedModel.startsWith('gemini/')) return { provider: 'gemini', model: selectedModel };
+  if (selectedModel.startsWith('studio/')) return { provider: 'studio', model: selectedModel };
+  return { provider: 'auto', model: selectedModel };
 }
 
 // Storage Persistence
