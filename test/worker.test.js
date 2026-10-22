@@ -26,6 +26,40 @@ test("Cloudflare Worker: handles CORS preflight OPTIONS request", async () => {
   assert.match(response.headers.get("access-control-allow-methods"), /GET, POST, OPTIONS/);
 });
 
+test("Cloudflare Worker: GET / serves Bytes frontend HTML directly", async () => {
+  const workerModule = await import("../worker.mjs");
+  const worker = workerModule.default;
+
+  const request = new Request("https://bytes.wariots40.workers.dev/", {
+    method: "GET"
+  });
+
+  const response = await worker.fetch(request, {});
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /text\/html/);
+  const text = await response.text();
+  assert.ok(text.includes("<title>Bytes — Thoughtful AI Workspace</title>"));
+});
+
+test("Cloudflare Worker: GET /runtime-config.js serves self-origin configuration", async () => {
+  const workerModule = await import("../worker.mjs");
+  const worker = workerModule.default;
+
+  const request = new Request("https://bytes.wariots40.workers.dev/runtime-config.js", {
+    method: "GET"
+  });
+
+  const response = await worker.fetch(request, {
+    SUPABASE_URL: "https://example.supabase.co",
+    SUPABASE_ANON_KEY: "anon-key-123"
+  });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /javascript/);
+  const text = await response.text();
+  assert.ok(text.includes('"API_BASE_URL":""'));
+  assert.ok(text.includes("https://example.supabase.co"));
+});
+
 test("Cloudflare Worker: GET /api/health returns worker runtime info", async () => {
   const workerModule = await import("../worker.mjs");
   const worker = workerModule.default;

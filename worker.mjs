@@ -6,6 +6,7 @@
 import { createProviderGateway, ProviderError } from "./services/provider-gateway.js";
 import { checkFiles } from "./services/file-intake.js";
 import { searchProviderRunner } from "./search-resilience.js";
+import { INDEX_HTML, FAVICON_SVG, LOGO_SVG, LOGO_MARK_SVG } from "./services/embedded-html.mjs";
 
 // Cached gateway per worker isolate
 let cachedGateway = null;
@@ -207,8 +208,75 @@ export default {
     const gateway = getProviderGateway(env);
 
     try {
-      // Root / Health
-      if (pathname === "/" || pathname === "/api/health") {
+      // Static Asset Serving (Frontend UI directly on Cloudflare)
+      if (!pathname.startsWith("/api/")) {
+        // 1. If Cloudflare Workers Static Assets binding is active, delegate to edge CDN
+        if (env.ASSETS && typeof env.ASSETS.fetch === "function") {
+          const assetRes = await env.ASSETS.fetch(request);
+          if (assetRes.status !== 404) return assetRes;
+        }
+
+        // 2. Direct embedded frontend fallback (self-contained single deployment)
+        if (pathname === "/" || pathname === "/index.html") {
+          return new Response(INDEX_HTML, {
+            headers: {
+              "Content-Type": "text/html; charset=utf-8",
+              "Cache-Control": "public, max-age=3600",
+              ...corsHeaders
+            }
+          });
+        }
+
+        if (pathname === "/runtime-config.js") {
+          const runtime = {
+            API_BASE_URL: "",
+            SUPABASE_URL: String(env.SUPABASE_URL || "").trim(),
+            SUPABASE_ANON_KEY: String(env.SUPABASE_ANON_KEY || env.SUPABASE_PUBLISHABLE_KEY || "").trim()
+          };
+          return new Response(
+            `window.BYTES_CONFIG = Object.freeze(${JSON.stringify(runtime)});\n`,
+            {
+              headers: {
+                "Content-Type": "application/javascript; charset=utf-8",
+                "Cache-Control": "public, max-age=60",
+                ...corsHeaders
+              }
+            }
+          );
+        }
+
+        if (pathname === "/favicon.svg") {
+          return new Response(FAVICON_SVG, {
+            headers: { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=86400" }
+          });
+        }
+
+        if (pathname === "/logo.svg") {
+          return new Response(LOGO_SVG, {
+            headers: { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=86400" }
+          });
+        }
+
+        if (pathname === "/logo-mark.svg") {
+          return new Response(LOGO_MARK_SVG, {
+            headers: { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=86400" }
+          });
+        }
+
+        // SPA fallback for client-side routing
+        if (!pathname.includes(".")) {
+          return new Response(INDEX_HTML, {
+            headers: {
+              "Content-Type": "text/html; charset=utf-8",
+              "Cache-Control": "public, max-age=3600",
+              ...corsHeaders
+            }
+          });
+        }
+      }
+
+      // Health
+      if (pathname === "/api/health") {
         return Response.json({
           ok: true,
           runtime: "cloudflare-workers",

@@ -10,6 +10,7 @@
     "test": "node --test",
     "deploy:worker": "wrangler deploy",
     "dev:worker": "wrangler dev",
+    "build:cloudflare": "node scripts/build-cloudflare.js",
     "build:netlify": "node scripts/build-netlify.js"
   },
   "engines": {
