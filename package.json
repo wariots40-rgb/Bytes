@@ -8,6 +8,8 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "node --test",
+    "deploy:worker": "wrangler deploy",
+    "dev:worker": "wrangler dev",
     "build:netlify": "node scripts/build-netlify.js"
   },
   "engines": {

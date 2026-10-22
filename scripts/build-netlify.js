@@ -6,7 +6,7 @@ const dist = path.join(root, "dist");
 const apiUrl = String(process.env.BYTES_API_URL || "").trim().replace(/\/+$/, "");
 
 if (!apiUrl) {
-  console.error("Missing BYTES_API_URL. Set it in Netlify to your Railway API base URL, e.g. https://your-service.up.railway.app");
+  console.error("Missing BYTES_API_URL. Set it in Netlify to your backend API base URL (e.g. your Cloudflare Worker URL https://bytes-api.<subdomain>.workers.dev)");
   process.exit(1);
 }
 let parsed;
@@ -38,4 +38,4 @@ const runtime = {
   SUPABASE_ANON_KEY: String(process.env.SUPABASE_ANON_KEY || "").trim()
 };
 fs.writeFileSync(path.join(dist, "runtime-config.js"), "window.BYTES_CONFIG = Object.freeze(" + JSON.stringify(runtime) + ");\n");
-console.log("Built Bytes frontend into dist/ (Railway API URL configured; Supabase public config " + (runtime.SUPABASE_URL && runtime.SUPABASE_ANON_KEY ? "present" : "not set yet") + ").");
+console.log("Built Bytes frontend into dist/ (API URL configured; Supabase public config " + (runtime.SUPABASE_URL && runtime.SUPABASE_ANON_KEY ? "present" : "not set yet") + ").");

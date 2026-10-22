@@ -92,21 +92,37 @@ After deployment, open the service URL and test a chat message. The health endpo
 Gemini usage, models, quotas, and charges are controlled by Google AI Studio / Google Cloud. APInex usage and billing follow the APInex account. Image generation and PDF analysis currently use Gemini; APInex chat supports text and compatible image inputs. Voice features vary by browser.
 
 
-## Netlify frontend + Railway API
+## Netlify frontend + Cloudflare Workers API
 
-Bytes can run as a split deployment: Netlify publishes only the static frontend from `dist/`, while the Express API and AI/search provider keys stay on Railway.
+Bytes is designed for a modern edge deployment: Netlify publishes the static frontend from `dist/`, while the API runs serverless on Cloudflare Workers (or Node/Express).
+
+### Cloudflare Workers setup (Recommended)
+1. Install Wrangler or use `npx wrangler`:
+   ```bash
+   npx wrangler login
+   ```
+2. Deploy the Worker:
+   ```bash
+   npm run deploy:worker
+   # or: npx wrangler deploy
+   ```
+3. Set your production secrets in Cloudflare Workers using the dashboard or CLI:
+   ```bash
+   npx wrangler secret put META_API_KEY_1
+   npx wrangler secret put META_API_KEY_2
+   # ... up to META_API_KEY_10
+   ```
+4. Copy the assigned worker URL (e.g. `https://bytes-api.<your-subdomain>.workers.dev`).
 
 ### Netlify setup
 1. Import this GitHub repository into Netlify.
-2. Set the build command to `npm run build:netlify` and the publish directory to `dist` (also defined in `netlify.toml`).
-3. Add the environment variable `BYTES_API_URL` with the public HTTPS base URL of your Railway service, without a trailing slash, e.g. `https://your-service.up.railway.app`.
+2. Set the build command to `npm run build:netlify` and publish directory to `dist` (configured in `netlify.toml`).
+3. Set the environment variable `BYTES_API_URL` to your Cloudflare Worker URL, e.g. `https://bytes-api.<subdomain>.workers.dev` (without a trailing slash).
 4. Once Supabase Auth is configured, set `SUPABASE_URL` and `SUPABASE_ANON_KEY` in Netlify. These are public frontend settings; never put a Supabase service-role key in Netlify.
 
-### Railway setup
-- Keep `npm start` as the start command and use Railway's assigned `PORT`.
-- Set `FRONTEND_URL` to the exact Netlify site origin (for example `https://your-bytes-site.netlify.app`). For multiple approved origins, use a comma-separated list.
-- Keep `GEMINI_API_KEY` and `APINEX_API_KEY` only in Railway variables. Do not add provider secrets to Netlify.
-- The API uses explicit CORS origin allowlisting in production. CORS is not a substitute for authentication.
+### Alternative Node/Express backend (Railway)
+- Run `npm start` to serve via standard Node.js on Railway or VPS.
+- Set `FRONTEND_URL` to your Netlify origin and configure provider keys in the server environment.
 
 ### Local development
 Running `npm start` continues to serve the frontend and API from the same origin, so `BYTES_API_URL` is not needed locally.
