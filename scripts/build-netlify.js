@@ -3,11 +3,16 @@ const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
 const dist = path.join(root, "dist");
-const apiUrl = String(process.env.BYTES_API_URL || "").trim().replace(/\/+$/, "");
+let apiUrl = String(process.env.BYTES_API_URL || "").trim().replace(/\/+$/, "");
 
 if (!apiUrl) {
-  console.error("Missing BYTES_API_URL. Set it in Netlify to your backend API base URL (e.g. your Cloudflare Worker URL https://bytes-api.<subdomain>.workers.dev)");
+  console.error("Missing BYTES_API_URL. Set it in Netlify to your backend API base URL (e.g. your Cloudflare Worker URL https://bytes.wariots40.workers.dev)");
   process.exit(1);
+}
+
+// Automatically add https:// if the user provided the domain without protocol
+if (!/^https?:\/\//i.test(apiUrl)) {
+  apiUrl = "https://" + apiUrl;
 }
 let parsed;
 try { parsed = new URL(apiUrl); } catch {
