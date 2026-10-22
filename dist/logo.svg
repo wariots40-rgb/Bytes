@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <defs>
+    <linearGradient id="bytesBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141824"/>
+      <stop offset="100%" stop-color="#0a0c12"/>
+    </linearGradient>
+    <linearGradient id="bytesBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.22)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.04)"/>
+    </linearGradient>
+    <linearGradient id="bytesGlyph" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="45%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="bytesAmber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="40%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <filter id="bytesGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="64" height="64" rx="16" fill="url(#bytesBg)"/>
+  <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="15.25" fill="none" stroke="url(#bytesBorder)" stroke-width="1.5"/>
+
+  <!-- Radiant ambient core glow -->
+  <circle cx="32" cy="37.5" r="14" fill="rgba(245, 158, 11, 0.1)"/>
+
+  <!-- Unified "b" Glyph -->
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M 18 13 A 4 4 0 0 0 14 17 L 14 47 A 4 4 0 0 0 18 51 L 22 51 C 26 51 32 51 37 51 C 45 51 50.5 45.5 50.5 37.5 C 50.5 29.5 45 23 37 23 C 32 23 26 23.5 22 24 L 22 17 A 4 4 0 0 0 18 13 Z M 22 31.5 L 34 31.5 C 38 31.5 41.5 34 41.5 37.5 C 41.5 41 38 43.5 34 43.5 L 22 43.5 Z" fill="url(#bytesGlyph)"/>
+
+  <!-- Amber Core Crystal inside Bowl -->
+  <rect x="29.2" y="34.7" width="5.6" height="5.6" rx="1.4" transform="rotate(45 32 37.5)" fill="url(#bytesAmber)" filter="url(#bytesGlow)"/>
+
+  <!-- Editorial Dot / Satellite Bit -->
+  <circle cx="47" cy="16" r="6" fill="rgba(245, 158, 11, 0.22)"/>
+  <circle cx="47" cy="16" r="3.5" fill="url(#bytesAmber)"/>
+  <circle cx="47" cy="16" r="1.2" fill="#ffffff"/>
+</svg>

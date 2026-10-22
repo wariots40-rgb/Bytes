@@ -11,55 +11,97 @@ import { INDEX_HTML, FAVICON_SVG, LOGO_SVG, LOGO_MARK_SVG } from "./services/emb
 // Cached gateway per worker isolate
 let cachedGateway = null;
 let lastConfigSig = "";
+let lastGatewayInfo = null;
 
 function getProviderGateway(env) {
-  const metaKeys = [];
-  for (let i = 1; i <= 10; i++) {
-    const k = env[`META_API_KEY_${i}`];
-    if (k && k.trim()) metaKeys[i - 1] = k.trim();
+  const combined = { ...(globalThis.process?.env || {}), ...(env || {}) };
+  const keysByIndex = [];
+  const extraKeys = [];
+  const detectedVarNames = [];
+  const allFoundVars = [];
+
+  for (const [rawKey, rawVal] of Object.entries(combined)) {
+    if (!rawKey) continue;
+    if (!rawKey.startsWith("CF_") && !rawKey.startsWith("__") && !rawKey.startsWith("npm_")) {
+      allFoundVars.push(rawKey);
+    }
+    if (!rawVal || typeof rawVal !== "string") continue;
+    const val = rawVal.trim().replace(/^['"]|['"]$/g, "");
+    if (!val) continue;
+
+    const k = rawKey.trim().toUpperCase();
+
+    // 1. Indexed format: META_API_KEY_1..10, META_API_KEY1..10, META_KEY_1..10, API_KEY_1..10, KEY_1..10
+    const idxMatch = k.match(/^(?:META_)?(?:API_)?KEY_?([1-9]|10)$/);
+    if (idxMatch) {
+      const idx = parseInt(idxMatch[1], 10) - 1;
+      keysByIndex[idx] = val;
+      detectedVarNames.push(rawKey);
+      continue;
+    }
+
+    // 2. Plural list: META_API_KEYS, META_KEYS, API_KEYS, MODEL_KEYS
+    if (/^(?:META_|MODEL_)?(?:API_)?KEYS$/.test(k)) {
+      const list = val.split(/[,;\n\r\t]+/).map(s => s.trim().replace(/^['"]|['"]$/g, "")).filter(Boolean);
+      extraKeys.push(...list);
+      detectedVarNames.push(rawKey);
+      continue;
+    }
+
+    // 3. Single key: META_API_KEY, META_KEY, MODEL_API_KEY, MODEL_KEY
+    if (/^(?:META_|MODEL_)(?:API_)?KEY$/.test(k)) {
+      if (!keysByIndex[0]) keysByIndex[0] = val;
+      else extraKeys.push(val);
+      detectedVarNames.push(rawKey);
+    }
   }
-  if (env.META_API_KEYS) {
-    const list = String(env.META_API_KEYS).split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
-    list.forEach((k, idx) => {
-      if (!metaKeys[idx]) metaKeys[idx] = k;
-      else if (!metaKeys.includes(k)) metaKeys.push(k);
-    });
+
+  // Fill any gaps 0..9 with extra keys
+  for (let i = 0; i < 10; i++) {
+    if (!keysByIndex[i] && extraKeys.length > 0) {
+      keysByIndex[i] = extraKeys.shift();
+    }
   }
-  if (env.META_API_KEY && env.META_API_KEY.trim()) {
-    const single = env.META_API_KEY.trim();
-    if (!metaKeys[0]) metaKeys[0] = single;
-    else if (!metaKeys.includes(single)) metaKeys.push(single);
+  if (extraKeys.length > 0) {
+    keysByIndex.push(...extraKeys);
   }
-  if (env.MODEL_API_KEY && env.MODEL_API_KEY.trim()) {
-    const single = env.MODEL_API_KEY.trim();
-    if (!metaKeys[0]) metaKeys[0] = single;
-    else if (!metaKeys.includes(single)) metaKeys.push(single);
-  }
-  const uniqueMetaKeys = metaKeys.filter(Boolean);
+
+  const uniqueMetaKeys = keysByIndex.filter(Boolean);
 
   const sig = [
     uniqueMetaKeys.join(","),
-    env.GEMINI_API_KEY,
-    env.APINEX_API_KEY,
-    env.META_BASE_URL,
-    env.APINEX_BASE_URL
+    combined.GEMINI_API_KEY,
+    combined.APINEX_API_KEY,
+    combined.META_BASE_URL,
+    combined.APINEX_BASE_URL
   ].join("::");
 
   if (!cachedGateway || lastConfigSig !== sig) {
     cachedGateway = createProviderGateway({
-      geminiApiKey: env.GEMINI_API_KEY,
-      geminiModel: env.GEMINI_MODEL || "gemini-3.5-flash",
-      geminiImageModel: env.GEMINI_IMAGE_MODEL || "gemini-nano-banana-2.1",
-      apinexApiKey: env.APINEX_API_KEY,
-      apinexBaseUrl: env.APINEX_BASE_URL || "https://api.apinex.bond/v1",
-      apinexModel: env.APINEX_MODEL || "free/gemini-3.8-flash",
+      geminiApiKey: combined.GEMINI_API_KEY,
+      geminiModel: combined.GEMINI_MODEL || "gemini-3.5-flash",
+      geminiImageModel: combined.GEMINI_IMAGE_MODEL || "gemini-nano-banana-2.1",
+      apinexApiKey: combined.APINEX_API_KEY,
+      apinexBaseUrl: combined.APINEX_BASE_URL || "https://api.apinex.bond/v1",
+      apinexModel: combined.APINEX_MODEL || "free/gemini-3.8-flash",
       metaApiKeys: uniqueMetaKeys,
-      metaBaseUrl: env.META_BASE_URL || "https://api.meta.ai/v1",
-      metaModel: env.META_MODEL || "llama-3.3-70b-instruct"
+      metaBaseUrl: combined.META_BASE_URL || "https://api.meta.ai/v1",
+      metaModel: combined.META_MODEL || "llama-3.3-70b-instruct"
     });
     lastConfigSig = sig;
+    lastGatewayInfo = {
+      metaKeyCount: uniqueMetaKeys.length,
+      detectedVarNames,
+      allFoundVars
+    };
   }
-  return cachedGateway;
+
+  return {
+    gateway: cachedGateway,
+    metaKeyCount: lastGatewayInfo?.metaKeyCount || uniqueMetaKeys.length,
+    detectedVarNames: lastGatewayInfo?.detectedVarNames || detectedVarNames,
+    allFoundVars: lastGatewayInfo?.allFoundVars || allFoundVars
+  };
 }
 
 function getCorsHeaders(request, env) {
@@ -205,7 +247,7 @@ export default {
 
     const url = new URL(request.url);
     const pathname = url.pathname;
-    const gateway = getProviderGateway(env);
+    const { gateway, metaKeyCount, detectedVarNames, allFoundVars } = getProviderGateway(env);
 
     try {
       // Static Asset Serving (Frontend UI directly on Cloudflare)
@@ -286,8 +328,11 @@ export default {
             apinex: gateway.apinex.isConfigured(),
             meta: gateway.meta.isConfigured()
           },
+          metaKeyCount,
+          detectedKeyVariables: detectedVarNames,
+          allAvailableEnvKeys: allFoundVars,
           search: {
-            searxngConfigured: Boolean(env.SEARXNG_URL),
+            searxngConfigured: Boolean(env?.SEARXNG_URL || globalThis.process?.env?.SEARXNG_URL),
             generalProviders: ["FreeSerp"],
             newsProviders: ["FreeNewsAPI"]
           }

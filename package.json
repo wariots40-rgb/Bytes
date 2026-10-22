@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "build": "node scripts/build-cloudflare.js",
     "test": "node --test",
     "deploy:worker": "wrangler deploy",
     "dev:worker": "wrangler dev",
