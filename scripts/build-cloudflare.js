@@ -49,9 +49,4 @@ export const LOGO_MARK_SVG = ${JSON.stringify(logoMarkSvg)};
 
 fs.writeFileSync(path.join(root, "services", "embedded-html.mjs"), embeddedCode);
 
-// For Cloudflare Pages advanced mode (_worker.js)
-if (fs.existsSync(path.join(root, "worker.mjs"))) {
-  fs.copyFileSync(path.join(root, "worker.mjs"), path.join(dist, "_worker.js"));
-}
-
 console.log("Built Bytes unified Cloudflare bundle into dist/ and services/embedded-html.mjs.");
