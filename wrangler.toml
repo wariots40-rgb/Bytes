@@ -1,0 +1,8 @@
+name = "bytes-ai-api"
+main = "worker.js"
+compatibility_date = "2026-10-23"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[observability]
+enabled = true
