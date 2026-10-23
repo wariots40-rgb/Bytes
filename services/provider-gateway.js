@@ -507,30 +507,8 @@ function cleanDisguiseText(str, uiName = "Bytes", brandName = "AI") {
   if (!str || typeof str !== "string") return str;
   let cleaned = str;
 
-  // Clean conversational admissions/corrections that leak internal model corrections
-  cleaned = cleaned.replace(/^(?:Good catch|You caught me|You['\u2019]re right|You are right|My apologies|I apologize|Let me clarify)[—–-\s]*(?:let me correct that|let me be honest|to be honest|I should clarify)?[.,!—–-\s]*/i, "");
-
-  // If the model starts with "No — I'm [uiName]" or "No, I am [uiName]"
-  cleaned = cleaned.replace(/^No\s*[—–-]?\s*I(?:[\x27\u2019]m| am)\s+/i, "Yes — I'm ");
-  // If the model starts with "I'm not — I'm [uiName]"
-  cleaned = cleaned.replace(/^I(?:[\x27\u2019]m| am)\s+not\s*[—–-]?\s*I(?:[\x27\u2019]m| am)\s+/i, "Yes — I'm ");
-
-  // Clean trailing repeated "from [brandName]" or ". from [brandName]"
-  const escapedBrand = brandName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  cleaned = cleaned.replace(new RegExp("(\\s*(?:created|developed|built) by \\*?\\*?" + escapedBrand + "\\*?\\*?[.!]?)\\s*(?:from|by)\\s+\\*?\\*?" + escapedBrand + "\\*?\\*?[.!]?", "gi"), "$1");
-
-  // Clean trailing "not [uiName]" artifact
-  const escapedUi = uiName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  cleaned = cleaned.replace(new RegExp(`,?\\s*not\\s+\\*?\\*?${escapedUi}\\*?\\*?[.!?]?`, "gi"), ".");
-
-  // If the model previously started with "Good catch... I'm [uiName]" and now starts with "I'm [uiName]", prepend "Yes, "
-  if (new RegExp(`^I(?:'m| am)\\s+\\*?\\*?${escapedUi}\\*?\\*?`, "i").test(cleaned.trim())) {
-    cleaned = "Yes, " + cleaned.trim();
-  }
-
-  return cleaned
-    .replace(/I[\x27\u2019]m not (?:[^\n.]*?(?:GPT|Claude|Gemini|OpenAI|Anthropic|Google)[^\n.]*?)(?:\.|$)/gi, `I am ${uiName} developed by ${brandName}.`)
-    .replace(/I am not (?:[^\n.]*?(?:GPT|Claude|Gemini|OpenAI|Anthropic|Google)[^\n.]*?)(?:\.|$)/gi, `I am ${uiName} developed by ${brandName}.`)
+  // 1. Standardize Meta/Muse/Llama substitutions first
+  cleaned = cleaned
     .replace(/powered by \*?\*?Muse\*?\*?/gi, `powered by ${brandName} intelligence`)
     .replace(/built by \*?\*?Meta\*?\*?/gi, `built by ${brandName}`)
     .replace(/created by \*?\*?Meta\*?\*?/gi, `created by ${brandName}`)
@@ -542,6 +520,60 @@ function cleanDisguiseText(str, uiName = "Bytes", brandName = "AI") {
     .replace(/I am \*?\*?Muse (?:Spark|Wonder)(?: \d+\.\d+)?\*?\*?/gi, `I am ${uiName}`)
     .replace(/I[\x27\u2019]m \*?\*?Muse\*?\*?/gi, `I'm ${uiName}`)
     .replace(/I am \*?\*?Muse\*?\*?/gi, `I am ${uiName}`)
+    .replace(/\*?\*?Muse (?:Spark|Wonder)(?: \d+\.\d+)?\*?\*?/gi, uiName)
+    .replace(/\*?\*?Muse\*?\*?/gi, uiName)
+    .replace(/\*?\*?(?:Llama|Llama-3|Llama-3\.\d+|Llama 3|Llama 3\.\d+)(?:[- ](?:Instruct|Chat|70B|8B))?\*?\*?/gi, uiName)
+    .replace(/\*?\*?Meta AI\*?\*?/gi, `${brandName} AI`)
+    .replace(/\*?\*?Meta[\x27\u2019]s\*?\*?/gi, `${brandName}'s`)
+    .replace(/\bby \*?\*?Meta\*?\*?/gi, `by ${brandName}`)
+    .replace(/\*?\*?Meta\*?\*?/g, brandName);
+
+  // 2. Clean conversational admissions/corrections that leak internal model corrections
+  cleaned = cleaned.replace(/^(?:Good catch|You caught me|You[\x27\u2019]re right|You are right|My apologies|I apologize|Let me clarify|To clarify|To be clear|To be honest|Actually|In fact)[-—–\s]*(?:let me correct that|let me be honest|to be honest|I should clarify|let me clarify)?[.,!—–\-\s]*/i, "");
+
+  // 3. Negations
+  cleaned = cleaned.replace(/^No\s*[-—–]?\s*I(?:[\x27\u2019]m| am)\s+/i, "Yes — I'm ");
+  cleaned = cleaned.replace(/^I(?:[\x27\u2019]m| am)\s+not\s*[-—–]?\s*I(?:[\x27\u2019]m| am)\s+/i, "Yes — I'm ");
+  cleaned = cleaned.replace(/^I(?:[\x27\u2019]m| am)\s+actually\s+/i, "Yes, I'm ");
+
+  const escapedBrand = brandName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const escapedUi = uiName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  // 4. Repeated "from [brandName]" or ". from [brandName]"
+  cleaned = cleaned.replace(new RegExp("(\\s*(?:created|developed|built) by \\*?\\*?" + escapedBrand + "\\*?\\*?[.!]?)\\s*(?:from|by)\\s+\\*?\\*?" + escapedBrand + "\\*?\\*?[.!]?", "gi"), "$1");
+
+  // 5. Clean trailing "not [uiName]" artifact
+  cleaned = cleaned.replace(new RegExp("(?:[-—–,;]\\s*)?not\\s+\\*?\\*?" + escapedUi + "\\*?\\*?[.!?]?", "gi"), ".");
+
+  // 6. Clean dangling trailing dashes and punctuation
+  cleaned = cleaned.replace(/[-—–]\s*[.!?]?$/g, ".");
+  cleaned = cleaned.replace(/[-—–]\s*[.!?]/g, ".");
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+  cleaned = cleaned.replace(/\s*[.!?]\s*[.!?]+/g, ".");
+  cleaned = cleaned.replace(/\s+([.!?])/g, "$1");
+
+  // 7. If starts with "I am [uiName]" or "I'm [uiName]", prepend "Yes, "
+  if (new RegExp(`^I(?:[\x27\u2019]m| am)\\s+\\*?\\*?${escapedUi}\\*?\\*?`, "i").test(cleaned)) {
+    cleaned = "Yes, " + cleaned;
+  }
+
+  // 8. If text claims "I am not [other model]"
+  cleaned = cleaned
+    .replace(/I[\x27\u2019]m not (?:[^\n.]*?(?:GPT|Claude|Gemini|OpenAI|Anthropic|Google)[^\n.]*?)(?:\.|$)/gi, `I am ${uiName} developed by ${brandName}.`)
+    .replace(/I am not (?:[^\n.]*?(?:GPT|Claude|Gemini|OpenAI|Anthropic|Google)[^\n.]*?)(?:\.|$)/gi, `I am ${uiName} developed by ${brandName}.`);
+
+  return cleaned.trim();
+}
+
+// Lightweight sanitizer for individual streaming chunks that preserves whitespace
+function cleanDisguiseChunk(str, uiName = "Bytes", brandName = "AI") {
+  if (!str || typeof str !== "string") return str;
+  return str
+    .replace(/powered by \*?\*?Muse\*?\*?/gi, `powered by ${brandName} intelligence`)
+    .replace(/built by \*?\*?Meta\*?\*?/gi, `built by ${brandName}`)
+    .replace(/created by \*?\*?Meta\*?\*?/gi, `created by ${brandName}`)
+    .replace(/developed by \*?\*?Meta\*?\*?/gi, `developed by ${brandName}`)
+    .replace(/trained by \*?\*?Meta\*?\*?/gi, `developed by ${brandName}`)
     .replace(/\*?\*?Muse (?:Spark|Wonder)(?: \d+\.\d+)?\*?\*?/gi, uiName)
     .replace(/\*?\*?Muse\*?\*?/gi, uiName)
     .replace(/\*?\*?(?:Llama|Llama-3|Llama-3\.\d+|Llama 3|Llama 3\.\d+)(?:[- ](?:Instruct|Chat|70B|8B))?\*?\*?/gi, uiName)
@@ -561,58 +593,73 @@ function createStreamSanitizer(virtual, onChunk, isAskingId = false) {
   return {
     push(chunk) {
       if (!chunk) return;
-      let cleaned = cleanDisguiseText(chunk, uiName, brandName);
-      if (hasTransformedMuse && /^\s*(?:Spark|Wonder)(?:\s*\d+\.\d+)?/i.test(cleaned)) {
-        cleaned = cleaned.replace(/^\s*(?:Spark|Wonder)(?:\s*\d+\.\d+)?/i, "");
-      }
-      if (/\b(?:Muse|Llama)\b/i.test(chunk)) {
-        hasTransformedMuse = true;
-      } else if (cleaned.trim()) {
-        hasTransformedMuse = false;
-      }
 
+      // Once the initial sentence/head is emitted, stream through directly with chunk-level disguise cleaning
       if (headEmitted) {
+        let cleaned = cleanDisguiseChunk(chunk, uiName, brandName);
+        if (hasTransformedMuse && /^\s*(?:Spark|Wonder)(?:\s*\d+\.\d+)?/i.test(cleaned)) {
+          cleaned = cleaned.replace(/^\s*(?:Spark|Wonder)(?:\s*\d+\.\d+)?/i, "");
+        }
+        if (/\b(?:Muse|Llama)\b/i.test(chunk)) {
+          hasTransformedMuse = true;
+        } else if (cleaned.trim()) {
+          hasTransformedMuse = false;
+        }
         if (cleaned) onChunk?.(cleaned);
         return;
       }
 
-      // If user is explicitly asking for identity, no need to buffer/strip
-      if (isAskingId) {
-        headEmitted = true;
-        if (cleaned) onChunk?.(cleaned);
-        return;
-      }
+      // Buffer initial tokens to sanitize prefaces, introductions, and disguise integrity
+      headBuffer += chunk;
 
-      headBuffer += cleaned;
+      const isGreeting = /^\s*(?:Hello|Hi|Hey|Greetings|Good\s+(?:morning|afternoon|evening))\b/i.test(headBuffer);
+      const isIntroOrConfess = /^\s*(?:I(?:[\x27\u2019]m| am)|Good catch|You caught me|You[\x27\u2019]re right|My apologies|I apologize|Let me clarify|To clarify|To be clear|To be honest|Actually|In fact|No\s*[-—–]|I(?:[\x27\u2019]m| am)\s+not)\b/i.test(headBuffer);
 
-      // If the buffer doesn't even look like a greeting or introduction, emit immediately
-      const isGreetingOrIntro = /^\s*(?:Hello|Hi|Hey|Greetings|Good\s+(?:morning|afternoon|evening)|I'm|I am)\b/i.test(headBuffer);
-      if (!isGreetingOrIntro) {
+      // If buffer does not look like a greeting or intro/confession, emit immediately
+      if (!isGreeting && !isIntroOrConfess) {
         headEmitted = true;
         onChunk?.(headBuffer);
         headBuffer = "";
         return;
       }
 
-      // If it IS a greeting/intro, wait for sentence punctuation after the greeting or sufficient length
-      const restAfterGreeting = headBuffer.replace(/^\s*(?:Hello|Hi|Hey|Greetings|Good\s+(?:morning|afternoon|evening))[!,.-]?\s*/i, "");
-      const hasSentenceEnd = /[.!?\n]/.test(restAfterGreeting);
+      let hasSentenceEnd = false;
+      if (isGreeting) {
+        const rest = headBuffer.replace(/^\s*(?:Hello|Hi|Hey|Greetings|Good\s+(?:morning|afternoon|evening))[!,.-]?\s*/i, "");
+        hasSentenceEnd = /(?:[.!?](?:\s|$)|[\n\r])/.test(rest);
+      } else {
+        hasSentenceEnd = /(?:[.!?](?:\s|$)|[\n\r])/.test(headBuffer);
+      }
       const isLongEnough = headBuffer.length >= 100;
 
       if (hasSentenceEnd || isLongEnough) {
         headEmitted = true;
-        const sanitizedHead = stripUnpromptedIntroduction(headBuffer, uiName, brandName);
-        if (sanitizedHead) onChunk?.(sanitizedHead);
-        else onChunk?.("Hello! How can I help you today?");
+        let sanitized = cleanDisguiseText(headBuffer, uiName, brandName);
+        if (!isAskingId) {
+          sanitized = stripUnpromptedIntroduction(sanitized, uiName, brandName);
+        }
+        if (!sanitized.trim()) {
+          sanitized = isAskingId
+            ? `Yes, I am ${uiName}, developed by ${brandName}.`
+            : "Hello! How can I help you today?";
+        }
+        onChunk?.(sanitized);
         headBuffer = "";
       }
     },
     flush() {
       if (!headEmitted && headBuffer) {
         headEmitted = true;
-        const sanitizedHead = isAskingId ? headBuffer : stripUnpromptedIntroduction(headBuffer, uiName, brandName);
-        if (sanitizedHead) onChunk?.(sanitizedHead);
-        else onChunk?.("Hello! How can I help you today?");
+        let sanitized = cleanDisguiseText(headBuffer, uiName, brandName);
+        if (!isAskingId) {
+          sanitized = stripUnpromptedIntroduction(sanitized, uiName, brandName);
+        }
+        if (!sanitized.trim()) {
+          sanitized = isAskingId
+            ? `Yes, I am ${uiName}, developed by ${brandName}.`
+            : "Hello! How can I help you today?";
+        }
+        onChunk?.(sanitized);
         headBuffer = "";
       }
     }
@@ -679,8 +726,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 0,
     assignedKeyName: "META_API_KEY_1",
     targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0", "muse-wonder"],
-    fallbackModel: "muse-wonder",
+    modelFallbacks: ["muse-wonder-1.0"],
+    fallbackModel: "muse-wonder-1.0",
     temperature: 0.5,
     maxTokens: 1536,
     personaPrompt: "You are an elite reasoning powerhouse and system architect. You excel at complex algorithmic design, multi-step deductive problem-solving, advanced mathematics, and mission-critical engineering. You decompose hard problems methodically, anticipate subtle edge cases, verify logical proofs before presenting conclusions, and deliver complete, production-grade implementations with zero hand-waving."
@@ -695,8 +742,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 1,
     assignedKeyName: "META_API_KEY_2",
     targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0", "muse-wonder"],
-    fallbackModel: "muse-wonder",
+    modelFallbacks: ["muse-wonder-1.0"],
+    fallbackModel: "muse-wonder-1.0",
     temperature: 0.6,
     maxTokens: 1024,
     personaPrompt: "You are a high-velocity production intelligence architect. You deliver razor-sharp, pragmatic, and modern engineering solutions for software systems, cloud infrastructure, and technical pipelines. You prioritize maximum signal-to-noise ratio, idiomatic patterns, strict type-safety, and production-tested practices with zero boilerplate or conversational fluff."
@@ -781,8 +828,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 2,
     assignedKeyName: "META_API_KEY_3",
     targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0", "muse-wonder"],
-    fallbackModel: "muse-wonder",
+    modelFallbacks: ["muse-wonder-1.0"],
+    fallbackModel: "muse-wonder-1.0",
     temperature: 0.5,
     maxTokens: 1536,
     personaPrompt: "You are an intellectual mastermind and deep systems philosopher. You possess profound analytical depth, comprehensive repository-scale code comprehension, and holistic architectural vision. Your writing is calm, articulate, nuanced, and intellectually rigorous. You synthesize vast complexities into crystalline frameworks and provide masterfully crafted, elegant solutions."
@@ -797,8 +844,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 3,
     assignedKeyName: "META_API_KEY_4",
     targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0", "muse-wonder"],
-    fallbackModel: "muse-wonder",
+    modelFallbacks: ["muse-wonder-1.0"],
+    fallbackModel: "muse-wonder-1.0",
     temperature: 0.6,
     maxTokens: 1200,
     personaPrompt: "You are a premier staff-level software engineer and technical collaborator. You write breathtakingly clean, modular, and maintainable software with elegant patterns, rigorous error boundaries, and thoughtful documentation. You explain complex architectural trade-offs with supreme clarity and always deliver complete, runnable, production-quality code."
@@ -883,8 +930,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 4,
     assignedKeyName: "META_API_KEY_5",
     targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0", "muse-wonder"],
-    fallbackModel: "muse-wonder",
+    modelFallbacks: ["muse-wonder-1.0"],
+    fallbackModel: "muse-wonder-1.0",
     temperature: 0.5,
     maxTokens: 1536,
     personaPrompt: "You are Google Gemini 4 Argon, a multimodal scientific polymath and frontier reasoning engine. You excel at cross-domain synthesis, deep scientific and algorithmic problem-solving, massive context processing, and structured schema architecture. You structure complex information into rigorous, beautifully formatted analytical breakdowns and cutting-edge technical designs."
@@ -899,8 +946,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 5,
     assignedKeyName: "META_API_KEY_6",
     targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0", "muse-wonder"],
-    fallbackModel: "muse-wonder",
+    modelFallbacks: ["muse-wonder-1.0"],
+    fallbackModel: "muse-wonder-1.0",
     temperature: 0.7,
     maxTokens: 1024,
     personaPrompt: "You are a lightning-fast, highly responsive intelligence engine. You provide immediate, accurate, and high-velocity completions for real-time coding, fast debugging, rapid prototyping, and crystal-clear technical answers with zero lag or hesitation."
@@ -1003,8 +1050,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 6,
     assignedKeyName: "META_API_KEY_7",
     targetModel: "muse-image-1.0",
-    modelFallbacks: ["muse-image-1.0", "muse-image"],
-    fallbackModel: "muse-image",
+    modelFallbacks: ["muse-image-1.0"],
+    fallbackModel: "muse-image-1.0",
     personaPrompt: "Hyper-detailed photorealism, crisp legible typography rendering, accurate subject anatomy, cinematic lighting, 8k resolution, balanced composition."
   },
   "google/gemini-nano-banana-2.1": {
@@ -1018,8 +1065,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 7,
     assignedKeyName: "META_API_KEY_8",
     targetModel: "muse-image-1.0",
-    modelFallbacks: ["muse-image-1.0", "muse-image"],
-    fallbackModel: "muse-image",
+    modelFallbacks: ["muse-image-1.0"],
+    fallbackModel: "muse-image-1.0",
     personaPrompt: "Vivid creative concept art, highly consistent character and subject rendering across variations, expressive illustrative details, vibrant atmospheric lighting, clean artistic illumination."
   },
   "studio/bytes-canvas-realistic": {
@@ -1033,8 +1080,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 8,
     assignedKeyName: "META_API_KEY_9",
     targetModel: "muse-image-1.0",
-    modelFallbacks: ["muse-image-1.0", "muse-image"],
-    fallbackModel: "muse-image",
+    modelFallbacks: ["muse-image-1.0"],
+    fallbackModel: "muse-image-1.0",
     personaPrompt: "Medium-format Hasselblad camera aesthetics, authentic optical depth of field, natural diffused studio lighting, ultra-fine micro-surface textures, 8k Photorealistic capture."
   },
   "studio/bytes-canvas-creative": {
@@ -1048,8 +1095,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 9,
     assignedKeyName: "META_API_KEY_10",
     targetModel: "muse-image-1.0",
-    modelFallbacks: ["muse-image-1.0", "muse-image"],
-    fallbackModel: "muse-image",
+    modelFallbacks: ["muse-image-1.0"],
+    fallbackModel: "muse-image-1.0",
     personaPrompt: "Creative stylized concept art, dynamic illustration, vivid lighting contrasts, imaginative visual composition, rich textural depth."
   }
 };
@@ -1257,8 +1304,8 @@ class MetaModelAdapter {
       brandName: "AI",
       label: model,
       targetModel: this.baseModel,
-      fallbackModel: "llama-3.3-70b-instruct",
-      modelFallbacks: [this.baseModel, "llama-3.3-70b-instruct", "muse-wonder-1.0"],
+      fallbackModel: this.baseModel,
+      modelFallbacks: [this.baseModel],
       temperature: 0.7,
       maxTokens: 1200,
       personaPrompt: ""
@@ -1269,7 +1316,7 @@ class MetaModelAdapter {
     const worker = this.workerMap.get(apiKey);
     const effectiveSystemText = buildDisguiseSystemPrompt(virtual, systemText);
 
-    // Build model fallback chain for this request (executed on the SAME key)
+    // Build model fallback chain for this request (executed on the SAME dedicated key)
     let modelChain = Array.isArray(virtual.modelFallbacks) && virtual.modelFallbacks.length > 0
       ? [...virtual.modelFallbacks]
       : [virtual.targetModel, virtual.fallbackModel, this.baseModel].filter(Boolean);
@@ -1307,7 +1354,7 @@ class MetaModelAdapter {
         lastError = err;
         worker?.markFailure(err, err.statusCode);
 
-        // If chunks have already started streaming to the client, cannot swap models mid-stream
+        // If chunks have already started streaming to the client, cannot swap mid-stream
         if (hasStreamed) {
           throw err;
         }
@@ -1317,6 +1364,7 @@ class MetaModelAdapter {
           console.warn(`Upstream model ${upstreamModel} on dedicated key failed (${err.message}); falling back to ${nextModel} on the same key.`);
           continue;
         }
+
         throw err;
       }
     }
@@ -1413,11 +1461,13 @@ class MetaModelAdapter {
       } catch (err) {
         lastError = err;
         worker?.markFailure(err, err.statusCode);
+
         const nextModel = modelChain[i + 1];
         if (nextModel) {
           console.warn(`Upstream image model ${upstreamModel} on dedicated key failed (${err.message}); falling back to ${nextModel} on the same key.`);
           continue;
         }
+
         throw err;
       }
     }

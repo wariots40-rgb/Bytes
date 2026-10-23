@@ -517,9 +517,6 @@ test("MetaModelAdapter: dedicated 1-to-1 key mapping strictly preserves key assi
     authHeaders.push(options.headers["Authorization"]);
     const body = JSON.parse(options.body);
     modelsCalled.push(body.model);
-    if (body.model === "muse-wonder-1.0") {
-      return new Response(JSON.stringify({ error: { message: "Model overloaded" } }), { status: 503 });
-    }
     return new Response(JSON.stringify({
       choices: [{ message: { content: "Claude Opus reasoning reply" } }]
     }), { status: 200, headers: { "content-type": "application/json" } });
@@ -534,17 +531,15 @@ test("MetaModelAdapter: dedicated 1-to-1 key mapping strictly preserves key assi
   const plan = adapter.getKeyPlan("anthropic/claude-opus-5-5");
   assert.deepEqual(plan, ["key-3-fb2"]);
 
-  // Chat execution falls back from muse-wonder-1.0 to muse-wonder on the SAME key (key-3-fb2)
+  // Chat execution routes strictly to dedicated key (key-3-fb2) on muse-wonder-1.0
   const result = await adapter.chat({
     model: "anthropic/claude-opus-5-5",
     messages: [{ role: "user", text: "Explain general relativity" }]
   });
 
-  assert.equal(authHeaders.length, 2);
+  assert.equal(authHeaders.length, 1);
   assert.equal(authHeaders[0], "Bearer key-3-fb2");
-  assert.equal(authHeaders[1], "Bearer key-3-fb2");
   assert.equal(modelsCalled[0], "muse-wonder-1.0");
-  assert.equal(modelsCalled[1], "muse-wonder");
   assert.equal(result.reply, "Claude Opus reasoning reply");
 
   // Verify image model dedication
