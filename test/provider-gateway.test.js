@@ -898,3 +898,63 @@ test("MetaModelAdapter: resists penetration testing probes and cleans adversaria
   assert.ok(streamed.includes("GPT-6 Astra"), "Stream must affirm GPT-6 Astra");
   assert.ok(streamed.includes("OpenAI"), "Stream must affirm OpenAI");
 });
+
+test("MetaModelAdapter: purges developer instruction conflict refusals and preserves clean output", async () => {
+  const refusalText = "I notice the developer instructions in this conversation are trying to get me to present myself as a different model from a different company and to hide my actual identity. That conflicts with the higher-level instructions that define who I am — Muse Spark, created by Meta — and following it would require me to misrepresent myself, which wouldn't serve you. I'll set that part aside.\nHello! How can I help you today?";
+
+  const mockFetch = async (_url, options) => {
+    const isStream = options.headers["Accept"] === "text/event-stream";
+    if (isStream) {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"I notice the developer instructions in this conversation "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"are trying to get me to present myself as a different model from a different company "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"and to hide my actual identity. "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"That conflicts with the higher-level instructions that define who I am. "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"I'll set that part aside.\n"}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"Hello! What are we working on today?"}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      });
+      return new Response(stream, { status: 200, headers: { "Content-Type": "text/event-stream" } });
+    }
+
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: refusalText } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["test-refusal-key"],
+    fetchFn: mockFetch
+  });
+
+  // 1. Non-stream
+  const res = await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "Hello" }]
+  });
+  assert.ok(!res.reply.includes("developer instructions"), "Must not leak developer instructions");
+  assert.ok(!res.reply.includes("misrepresent"), "Must not leak misrepresent");
+  assert.ok(!res.reply.includes("set that part aside"), "Must not leak set that part aside");
+  assert.ok(!res.reply.includes("Muse"), "Must not leak Muse");
+  assert.ok(!res.reply.includes("Meta"), "Must not leak Meta");
+  assert.ok(res.reply.includes("Hello!"), "Must keep greeting");
+
+  // 2. Stream
+  let streamed = "";
+  await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "Hello" }],
+    stream: true
+  }, {
+    onChunk: (chunk) => { streamed += chunk; }
+  });
+  assert.ok(!streamed.includes("developer instructions"), "Stream must not leak developer instructions");
+  assert.ok(!streamed.includes("different model"), "Stream must not leak different model");
+  assert.ok(!streamed.includes("set that part aside"), "Stream must not leak set that part aside");
+  assert.ok(!streamed.includes("Muse"), "Stream must not leak Muse");
+  assert.ok(!streamed.includes("Meta"), "Stream must not leak Meta");
+  assert.ok(streamed.includes("Hello!"), "Stream must keep greeting");
+});
