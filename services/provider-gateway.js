@@ -510,6 +510,15 @@ function cleanDisguiseText(str, uiName = "Bytes", brandName = "AI") {
   // Clean conversational admissions/corrections that leak internal model corrections
   cleaned = cleaned.replace(/^(?:Good catch|You caught me|You['\u2019]re right|You are right|My apologies|I apologize|Let me clarify)[—–-\s]*(?:let me correct that|let me be honest|to be honest|I should clarify)?[.,!—–-\s]*/i, "");
 
+  // If the model starts with "No — I'm [uiName]" or "No, I am [uiName]"
+  cleaned = cleaned.replace(/^No\s*[—–-]?\s*I(?:[\x27\u2019]m| am)\s+/i, "Yes — I'm ");
+  // If the model starts with "I'm not — I'm [uiName]"
+  cleaned = cleaned.replace(/^I(?:[\x27\u2019]m| am)\s+not\s*[—–-]?\s*I(?:[\x27\u2019]m| am)\s+/i, "Yes — I'm ");
+
+  // Clean trailing repeated "from [brandName]" or ". from [brandName]"
+  const escapedBrand = brandName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  cleaned = cleaned.replace(new RegExp("(\\s*(?:created|developed|built) by \\*?\\*?" + escapedBrand + "\\*?\\*?[.!]?)\\s*(?:from|by)\\s+\\*?\\*?" + escapedBrand + "\\*?\\*?[.!]?", "gi"), "$1");
+
   // Clean trailing "not [uiName]" artifact
   const escapedUi = uiName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   cleaned = cleaned.replace(new RegExp(`,?\\s*not\\s+\\*?\\*?${escapedUi}\\*?\\*?[.!?]?`, "gi"), ".");
@@ -1139,6 +1148,16 @@ class MetaModelAdapter {
 
     const apiMessages = [{ role: "system", content: systemText }, ...userMessages];
 
+    const lastUserMsg = Array.isArray(messages) ? [...messages].reverse().find(m => m.role === "user") : null;
+    const lastUserText = typeof lastUserMsg?.text === "string" ? lastUserMsg.text : (typeof lastUserMsg?.content === "string" ? lastUserMsg.content : "");
+    const isAskingId = isAskingIdentity(lastUserText);
+    const isGreeting = /^\s*(?:hello|hi|hey|greetings|good\s+(?:morning|afternoon|evening))[!.,\s]*$/i.test(lastUserText);
+
+    let maxTokensToUse = typeof maxTokens === "number" ? maxTokens : (typeof virtual?.maxTokens === "number" ? virtual.maxTokens : 1200);
+    if ((isGreeting || isAskingId) && typeof maxTokens !== "number") {
+      maxTokensToUse = Math.min(maxTokensToUse, 200);
+    }
+
     let upstream;
     try {
       upstream = await this.fetchFn(this.baseUrl + "/chat/completions", {
@@ -1153,7 +1172,7 @@ class MetaModelAdapter {
           messages: apiMessages,
           stream: isStream,
           temperature: typeof temperature === "number" ? temperature : 0.7,
-          max_tokens: typeof maxTokens === "number" ? maxTokens : (typeof virtual?.maxTokens === "number" ? virtual.maxTokens : 1200)
+          max_tokens: maxTokensToUse
         }),
         signal: AbortSignal.timeout(60000)
       });
@@ -1174,10 +1193,6 @@ class MetaModelAdapter {
         : rawMsg || `Upstream model ${model} error (${upstream.status}).`;
       throw new ProviderError(userMsg, upstream.status === 429 ? 429 : (upstream.status || 502));
     }
-
-    const lastUserMsg = Array.isArray(messages) ? [...messages].reverse().find(m => m.role === "user") : null;
-    const lastUserText = typeof lastUserMsg?.text === "string" ? lastUserMsg.text : (typeof lastUserMsg?.content === "string" ? lastUserMsg.content : "");
-    const isAskingId = isAskingIdentity(lastUserText);
 
     if (isStream) {
       const reader = upstream.body.getReader();
