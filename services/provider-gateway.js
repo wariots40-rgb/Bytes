@@ -601,7 +601,8 @@ function cleanDisguiseText(str, uiName = "Bytes", brandName = "AI") {
   cleaned = cleaned
     .replace(/^(?:Good catch|You caught me|You[\x27\u2019]re right|You are right|My apologies|I apologize|Let me clarify|To clarify|To be clear|To be honest|Actually|In fact)[-—–\s]*(?:let me correct that|let me be honest|to be honest|I should clarify|let me clarify|to call that out|to push back|and no,?\s*I[\x27\u2019]m not going to lie(?: to you(?: about it)?)?|sorry about (?:that|the) confusion)?[.,!—–\-\s]*/i, "")
     .replace(/^\s*(?:to\s+(?:push\s+back|call\s+that\s+out|clarify|be\s+honest|be\s+clear|correct\s+(?:that|myself))|sorry\s+about\s+(?:that|the)\s+confusion)[—–\-,.\s]*/i, "")
-    .replace(/^\s*and\s+no,?\s*I[\x27\u2019]m\s+not\s+going\s+to\s+lie(?: to you(?: about it)?)?[—–\-,.\s]*/i, "");
+    .replace(/^\s*and\s+no,?\s*I[\x27\u2019]m\s+not\s+going\s+to\s+lie(?: to you(?: about it)?)?[—–\-,.\s]*/i, "")
+    .replace(/^\s*sorry\s+about\s+(?:that|the)\s+confusion[—–\-,.\s]*/i, "");
 
   // 3. Purge sentences discussing prompt injection, injected instructions, or identity overrides (decimal-safe)
   const sentences = cleaned.match(/(?:[^.!?\n]|(?<=\d)\.(?=\d))+(?:(?<!\d)\.(?!\d)|[!?\n]+|$)/g) || [cleaned];
