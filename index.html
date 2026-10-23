@@ -1614,47 +1614,319 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 }
 .suggestion-chip .sparkle { color: var(--accent); display: flex; }
 
-/* Generated Images & Lightbox */
+/* Generated Images & In-Progress Generation Cards */
 .image-result-card {
-  margin: 14px 0 6px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  margin: 14px 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--card-bg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  max-width: 520px;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.image-result-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+}
+.image-preview-wrapper {
+  position: relative;
+  width: 100%;
+  background: #090b10;
+  overflow: hidden;
 }
 .generated-image-preview {
   width: 100%;
-  max-height: 480px;
+  max-height: 520px;
   object-fit: contain;
   display: block;
   cursor: zoom-in;
-  background: #000;
-  transition: opacity 0.2s;
+  transition: transform 0.25s ease, opacity 0.2s;
 }
-.generated-image-preview:hover { opacity: 0.96; }
+.generated-image-preview:hover {
+  transform: scale(1.012);
+  opacity: 0.98;
+}
+.image-card-floating-bar {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 3;
+}
+.image-meta-pill {
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(12, 14, 20, 0.82);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #f3f4f6;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  pointer-events: auto;
+}
+.image-meta-pill svg { width: 13px; height: 13px; }
+.image-meta-pill.format-pill {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  background: rgba(12, 14, 20, 0.65);
+}
 .image-actions-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 14px;
+  padding: 10px 14px;
   background: var(--soft);
   border-top: 1px solid var(--line);
   font-size: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.image-actions-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.image-provider-credit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+}
+.image-provider-credit svg { width: 14px; height: 14px; }
+.image-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 .image-action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 6px;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 7px;
   border: 1px solid var(--line);
   background: var(--card-bg);
   color: var(--ink);
   text-decoration: none;
   font-size: 11.5px;
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  user-select: none;
 }
+.image-action-btn svg { width: 13px; height: 13px; }
+.image-action-btn:hover {
+  background: var(--card-hover);
+  border-color: var(--line-strong);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+.image-action-btn.primary {
+  background: var(--accent);
+  color: #0b0c10;
+  border-color: var(--accent);
+}
+.image-action-btn.primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+/* Dedicated In-Progress Image Generation Card */
+.image-gen-card {
+  margin-top: 10px;
+  max-width: 480px;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-strong);
+  overflow: hidden;
+  background: var(--card-bg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+.image-gen-canvas {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 340px;
+  background: radial-gradient(circle at 50% 45%, rgba(245, 158, 11, 0.08) 0%, rgba(10, 12, 18, 0.98) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.image-gen-ambient-glow {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+  opacity: 0.7;
+  filter: blur(28px);
+  animation: ambient-pulse 3s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.image-gen-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.07) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: neural-shimmer 2.2s infinite linear;
+  pointer-events: none;
+}
+.image-gen-center {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 20px;
+}
+.image-gen-spinner {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: var(--card-bg);
+  border: 1.5px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+  animation: icon-float 2.4s ease-in-out infinite alternate;
+}
+.image-gen-spinner svg {
+  width: 24px;
+  height: 24px;
+}
+.image-gen-step {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  min-height: 20px;
+  transition: opacity 0.25s ease;
+}
+.image-gen-progress-track {
+  width: 170px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.image-gen-progress-fill {
+  height: 100%;
+  width: 20%;
+  background: linear-gradient(90deg, var(--accent), #f59e0b, #ec4899);
+  border-radius: 99px;
+  transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+}
+.image-gen-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--soft);
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.image-gen-prompt-snippet {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11.5px;
+  min-width: 0;
+}
+.image-gen-prompt-snippet .sparkle-glyph {
+  color: var(--accent);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.image-gen-prompt-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.image-gen-cancel-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.image-gen-cancel-btn:hover {
+  background: var(--card-hover);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.image-gen-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #f59e0b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: 8px;
+}
+.pulse-ring {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
+  animation: pulse-dot 1.2s infinite;
+}
+
+@keyframes ambient-pulse {
+  0% { transform: scale(0.92); opacity: 0.45; }
+  100% { transform: scale(1.08); opacity: 0.8; }
+}
+@keyframes neural-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes icon-float {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.03); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Group Header Icon in Model Dropdown */
+.group-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  margin-right: 6px;
+  vertical-align: -2px;
+}
+.group-header-icon svg { width: 13px; height: 13px; }
 
 /* Floating Scroll to Bottom */
 .scroll-bottom-btn {
@@ -2295,9 +2567,49 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
     width: 32px;
     height: 32px;
   }
+  .model-picker-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(5px);
+    z-index: 95;
+  }
+  .model-picker-backdrop.open { display: block; }
+
+  /* Mobile Model Bottom Sheet */
   .model-picker-dropdown {
-    width: calc(100vw - 24px);
-    left: -40px;
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 82vh;
+    padding: 12px 16px max(18px, env(safe-area-inset-bottom, 18px));
+    box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.7);
+    border: 1px solid var(--line-strong);
+    border-bottom: none;
+    z-index: 100;
+    animation: sheetSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes sheetSlideUp {
+    from { opacity: 0; transform: translateY(100%); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .sheet-drag-handle {
+    display: block;
+    width: 40px;
+    height: 4.5px;
+    border-radius: 99px;
+    background: var(--line-strong);
+    margin: 2px auto 14px;
+    opacity: 0.8;
+  }
+  .model-options-list {
+    max-height: calc(82vh - 120px);
   }
 
   .welcome-container { padding: 8px 0 20px; }
@@ -2327,12 +2639,13 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   }
 
   /* Chat View on Mobile */
-  .chat-view { gap: 20px; }
-  .message-content { max-width: 92%; }
+  .chat-view { gap: 18px; }
+  .message-content { max-width: 94%; }
+  .image-gen-card, .image-result-card { max-width: 100%; }
 
   /* Composer Dock on Mobile */
   .composer-wrap {
-    padding-top: 10px;
+    padding-top: 8px;
     padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
   }
   .composer-box {
@@ -2341,11 +2654,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   }
   .composer-box textarea {
     font-size: 16px; /* Avoids iOS zoom bug */
-    min-height: 38px;
+    min-height: 40px;
   }
   .composer-bottom { margin-top: 6px; }
   .tools-left {
-    gap: 4px;
+    gap: 6px;
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -2354,17 +2667,67 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
   }
   .tools-left::-webkit-scrollbar { display: none; }
   .tool-btn {
-    height: 30px;
-    padding: 0 8px;
-    font-size: 11px;
+    height: 32px;
+    padding: 0 10px;
+    font-size: 11.5px;
+    border-radius: 99px;
     white-space: nowrap;
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .tool-btn svg { width: 14px; height: 14px; }
+  .tool-btn.image-active {
+    background: rgba(236, 72, 153, 0.18);
+    border-color: #ec4899;
+    color: #f472b6;
+    box-shadow: 0 0 12px rgba(236, 72, 153, 0.35);
+  }
+  .tool-btn.web-active {
+    background: rgba(14, 165, 233, 0.18);
+    border-color: #0ea5e9;
+    color: #38bdf8;
+    box-shadow: 0 0 12px rgba(14, 165, 233, 0.35);
   }
   .composer-model-pill { display: none; }
   .send-action-btn {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  .image-actions-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .image-actions-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  @media (max-width: 520px) {
+    .tool-btn span { display: none; }
+    .tool-btn {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      justify-content: center;
+      border-radius: 8px;
+    }
+    .tool-btn.image-active span,
+    .tool-btn.web-active span {
+      display: inline;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding-right: 2px;
+    }
+    .tool-btn.image-active,
+    .tool-btn.web-active {
+      width: auto;
+      padding: 0 9px;
+      border-radius: 99px;
+    }
   }
 }
 
@@ -2486,6 +2849,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
         
         <!-- Custom Rich Model Selector -->
         <div class="model-picker-container" id="modelPickerContainer">
+          <div class="model-picker-backdrop" id="modelPickerBackdrop"></div>
           <button type="button" class="model-picker-btn" id="modelPickerBtn" aria-haspopup="listbox" aria-expanded="false" title="Choose AI Model">
             <span class="model-picker-icon-badge" id="modelPickerIconBadge">
               <!-- Loaded by JS -->
@@ -2499,6 +2863,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
           </button>
 
           <div class="model-picker-dropdown" id="modelPickerDropdown" role="listbox" hidden>
+            <div class="sheet-drag-handle"></div>
             <div class="model-dropdown-top">
               <div class="model-dropdown-title">Select Intelligence</div>
               <div class="model-search-wrap">
@@ -2644,9 +3009,9 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                 <span>Web</span>
               </button>
-              <button type="button" class="tool-btn" id="imageModeBtn" aria-pressed="false" title="Generate or edit images with Image Studio">
+              <button type="button" class="tool-btn" id="imageModeBtn" aria-pressed="false" title="Generate or edit images with AI">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-                <span>Image Studio</span>
+                <span>Image</span>
               </button>
               <button type="button" class="tool-btn" id="voiceBtn" title="Speech to text input">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
@@ -2856,43 +3221,58 @@ function getModelMeta(rawId) {
   }
   if (str.includes('gpt-image') || str.includes('image-2.5')) {
     return {
-      family: 'studio',
-      brand: 'OpenAI Studio',
+      family: 'openai',
+      brand: 'OpenAI',
       displayName: 'GPT Image 2.5',
       shortName: 'GPT Image 2.5',
-      badge: 'IMAGE GEN',
-      tagClass: 'tag-studio',
-      desc: 'OpenAI · Next-gen typography & photorealistic visual synthesis',
-      themeClass: 'theme-studio',
-      iconSvg: AI_ICONS.studio
+      badge: 'PHOTOREALISM',
+      tagClass: 'tag-omni',
+      desc: 'OpenAI · Ultra-detailed visual synthesis & typography',
+      themeClass: 'theme-openai',
+      iconSvg: AI_ICONS.openai,
+      isImage: true
     };
   }
   if (str.includes('banana')) {
     return {
-      family: 'studio',
+      family: 'gemini',
       brand: 'Google DeepMind',
       displayName: 'Gemini Nano Banana 2.1',
       shortName: 'Nano Banana 2.1',
-      badge: 'IMAGE GEN',
-      tagClass: 'tag-studio',
-      desc: 'Google DeepMind · Specialized visual & consistent character rendering',
-      themeClass: 'theme-studio',
-      iconSvg: AI_ICONS.studio
+      badge: 'CONSISTENT ART',
+      tagClass: 'tag-gemini',
+      desc: 'Google DeepMind · Specialized visual & character consistency',
+      themeClass: 'theme-gemini',
+      iconSvg: AI_ICONS.gemini,
+      isImage: true
     };
   }
-  if (str.includes('studio') || str.includes('canvas')) {
-    const isCreative = str.includes('creative');
-    const name = isCreative ? 'Bytes Canvas · Creative Art' : 'Bytes Studio · Photorealistic';
+  if (str.includes('dall-e') || str.includes('realistic')) {
     return {
-      family: 'studio',
-      brand: 'Visual Studio',
-      displayName: name,
-      shortName: isCreative ? 'Canvas Art' : 'Studio Realistic',
-      badge: isCreative ? 'CREATIVE ART' : 'PHOTOREALISTIC',
-      tagClass: 'tag-studio',
-      desc: isCreative ? 'Stylized concept art & creative illustration' : 'High-fidelity photorealistic visual generation',
-      themeClass: 'theme-studio',
-      iconSvg: AI_ICONS.studio
+      family: 'openai',
+      brand: 'OpenAI',
+      displayName: 'DALL-E 3',
+      shortName: 'DALL-E 3',
+      badge: 'PHOTOREALISTIC',
+      tagClass: 'tag-omni',
+      desc: 'OpenAI · Medium-format optics & studio photorealism',
+      themeClass: 'theme-openai',
+      iconSvg: AI_ICONS.openai,
+      isImage: true
+    };
+  }
+  if (str.includes('imagen') || str.includes('creative') || str.includes('canvas') || str.includes('studio')) {
+    return {
+      family: 'gemini',
+      brand: 'Google DeepMind',
+      displayName: 'Imagen 3',
+      shortName: 'Imagen 3',
+      badge: 'CREATIVE CONCEPT',
+      tagClass: 'tag-gemini',
+      desc: 'Google DeepMind · Imaginative artistic illustration & styling',
+      themeClass: 'theme-gemini',
+      iconSvg: AI_ICONS.gemini,
+      isImage: true
     };
   }
   if (str.includes('claude')) {
@@ -2972,12 +3352,12 @@ function getModelMeta(rawId) {
   if (str.includes('llama')) {
     return {
       family: 'llama',
-      brand: 'Research',
-      displayName: 'Bytes Horizon 3.3',
-      shortName: 'Horizon 3.3',
+      brand: 'Meta AI',
+      displayName: 'Llama 3.3 70B',
+      shortName: 'Llama 3.3',
       badge: 'OPEN WEIGHTS',
       tagClass: 'tag-fast',
-      desc: 'Frontier AI · Open-weights powerhouse',
+      desc: 'Meta AI · Open-weights reasoning powerhouse',
       themeClass: 'theme-llama',
       iconSvg: AI_ICONS.llama
     };
@@ -3423,7 +3803,16 @@ function renderModelDropdown(catalog) {
   groups.forEach(group => {
     const groupEl = document.createElement('div');
     groupEl.className = 'model-group-title';
-    groupEl.textContent = group.title;
+    const groupIconMap = {
+      'smart routing': AI_ICONS.auto,
+      'openai': AI_ICONS.openai,
+      'anthropic claude': AI_ICONS.claude,
+      'google gemini': AI_ICONS.gemini,
+      'image & art generation': AI_ICONS.studio,
+      'visual studio': AI_ICONS.studio
+    };
+    const gIcon = groupIconMap[group.title.toLowerCase()] || '';
+    groupEl.innerHTML = (gIcon ? '<span class="group-header-icon">' + gIcon + '</span>' : '') + '<span>' + escapeHtml(group.title) + '</span>';
     list.appendChild(groupEl);
 
     const nativeGroup = document.createElement('optgroup');
@@ -3486,12 +3875,14 @@ function selectModelOption(val) {
 function toggleModelDropdown() {
   const container = $('#modelPickerContainer');
   const dropdown = $('#modelPickerDropdown');
+  const backdrop = $('#modelPickerBackdrop');
   const isOpen = !dropdown.hidden;
   if (isOpen) {
     closeModelDropdown();
   } else {
     dropdown.hidden = false;
     container.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
     $('#modelPickerBtn').setAttribute('aria-expanded', 'true');
     const search = $('#modelSearchInput');
     if (search) {
@@ -3505,8 +3896,10 @@ function toggleModelDropdown() {
 function closeModelDropdown() {
   const container = $('#modelPickerContainer');
   const dropdown = $('#modelPickerDropdown');
+  const backdrop = $('#modelPickerBackdrop');
   dropdown.hidden = true;
   container.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('open');
   $('#modelPickerBtn').setAttribute('aria-expanded', 'false');
 }
 
@@ -3531,6 +3924,10 @@ $('#modelPickerBtn').onclick = e => {
   e.stopPropagation();
   toggleModelDropdown();
 };
+$('#modelPickerBackdrop')?.addEventListener('click', e => {
+  e.stopPropagation();
+  closeModelDropdown();
+});
 $('#composerModelBtn').onclick = e => {
   e.stopPropagation();
   toggleModelDropdown();
@@ -3576,12 +3973,12 @@ async function loadModelCatalog() {
       },
       {
         id: 'studio',
-        label: 'Visual Studio',
+        label: 'Image & Art Generation',
         models: [
           { id: 'openai/gpt-image-2.5', label: 'GPT Image 2.5 · Photorealism & Typography', isImage: true },
           { id: 'google/gemini-nano-banana-2.1', label: 'Gemini Nano Banana 2.1 · Consistent Art', isImage: true },
-          { id: 'studio/bytes-canvas-realistic', label: 'Bytes Studio · Photorealistic Flagship', isImage: true },
-          { id: 'studio/bytes-canvas-creative', label: 'Bytes Canvas · Stylized Art & Concept', isImage: true }
+          { id: 'studio/bytes-canvas-realistic', label: 'DALL-E 3 · Photorealistic Studio', isImage: true },
+          { id: 'studio/bytes-canvas-creative', label: 'Imagen 3 · Stylized Art & Concept', isImage: true }
         ]
       }
     ],
@@ -4343,25 +4740,68 @@ function makeMessage(role, text, options = {}) {
   }
 
   if (options.imageData) {
+    const imgMeta = getModelMeta(options.model || selectedModel);
+    const imgSrc = 'data:' + (options.mimeType || 'image/png') + ';base64,' + options.imageData;
+    const downloadFilename = (imgMeta.shortName || 'artwork').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString(36) + '.png';
+
     const imgCard = document.createElement('div');
     imgCard.className = 'image-result-card';
-    const img = document.createElement('img');
-    img.className = 'generated-image-preview';
-    img.alt = 'AI Generated Artwork';
-    img.src = 'data:' + (options.mimeType || 'image/png') + ';base64,' + options.imageData;
-    img.onclick = () => openLightbox(img.src);
+    imgCard.innerHTML =
+      '<div class="image-preview-wrapper">' +
+        '<img class="generated-image-preview" src="' + imgSrc + '" alt="AI Generated Artwork" />' +
+        '<div class="image-card-floating-bar">' +
+          '<span class="image-meta-pill ' + imgMeta.themeClass + '">' + imgMeta.iconSvg + '<span>' + escapeHtml(imgMeta.displayName) + '</span></span>' +
+          '<span class="image-meta-pill format-pill">HD · PNG</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="image-actions-bar">' +
+        '<div class="image-actions-left">' +
+          '<span class="image-provider-credit ' + imgMeta.themeClass + '">' +
+            imgMeta.iconSvg +
+            '<span>' + escapeHtml(imgMeta.brand || imgMeta.displayName) + '</span>' +
+          '</span>' +
+        '</div>' +
+        '<div class="image-actions-right">' +
+          '<button type="button" class="image-action-btn" data-action="expand" title="View in Lightbox">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>' +
+            '<span>Expand</span>' +
+          '</button>' +
+          '<a class="image-action-btn primary" href="' + imgSrc + '" download="' + downloadFilename + '" title="Download High-Res Image">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>' +
+            '<span>Download</span>' +
+          '</a>' +
+          '<button type="button" class="image-action-btn" data-action="copy-img" title="Copy Image to Clipboard">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>' +
+            '<span>Copy</span>' +
+          '</button>' +
+          '<button type="button" class="image-action-btn" data-action="remix" title="Remix Prompt in Composer">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>' +
+            '<span>Remix</span>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
 
-    const bar = document.createElement('div');
-    bar.className = 'image-actions-bar';
-    bar.innerHTML = '<span>Generated with Bytes Studio</span>';
-    const dl = document.createElement('a');
-    dl.className = 'image-action-btn';
-    dl.href = img.src;
-    dl.download = 'bytes-generated.png';
-    dl.innerHTML = '↓ Download';
-    bar.appendChild(dl);
+    imgCard.querySelector('.generated-image-preview').onclick = () => openLightbox(imgSrc);
+    imgCard.querySelector('[data-action="expand"]').onclick = () => openLightbox(imgSrc);
+    imgCard.querySelector('[data-action="copy-img"]').onclick = async () => {
+      try {
+        const res = await fetch(imgSrc);
+        const blob = await res.blob();
+        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+        toast('Image copied to clipboard');
+      } catch (_) {
+        toast('Direct copy not supported; please use Download');
+      }
+    };
+    imgCard.querySelector('[data-action="remix"]').onclick = () => {
+      const promptToRemix = lastPrompt || text || '';
+      input.value = promptToRemix;
+      resizeInput();
+      toggleImageMode(true);
+      input.focus();
+      toast('Prompt loaded into composer for remixing');
+    };
 
-    imgCard.append(img, bar);
     contentDiv.appendChild(imgCard);
   }
 
@@ -4556,18 +4996,77 @@ async function sendMessage(text) {
   const targetImageModel = isSelectedImage ? selectedModel : 'openai/gpt-image-2.5';
   const currentModelMeta = getModelMeta(isImageRun ? targetImageModel : selectedModel);
 
+  let imageInterval = null;
   const typingRow = document.createElement('div');
-  typingRow.className = 'message-row assistant';
-  typingRow.innerHTML =
-    '<div class="avatar-mark assistant-avatar ' + currentModelMeta.themeClass + '">' + currentModelMeta.iconSvg + '</div>' +
-    '<div class="message-content">' +
-      '<div class="message-meta">' +
-        '<span class="meta-brand-badge ' + currentModelMeta.themeClass + '">' + currentModelMeta.iconSvg + '<span>' + escapeHtml(currentModelMeta.displayName) + '</span></span>' +
-      '</div>' +
-      '<div class="message-bubble"><span style="color:var(--muted);font-size:13px;">' +
-        (isImageRun ? 'Creating artwork in ' + escapeHtml(currentModelMeta.displayName) + '…' : webSearchEnabled ? 'Searching the live web for verified facts…' : 'Thinking with ' + escapeHtml(currentModelMeta.displayName) + '…') +
-      '</span><span class="streaming-cursor"></span></div>' +
-    '</div>';
+  typingRow.className = 'message-row assistant' + (isImageRun ? ' image-generating-active' : '');
+
+  if (isImageRun) {
+    typingRow.innerHTML =
+      '<div class="avatar-mark assistant-avatar ' + currentModelMeta.themeClass + '">' + currentModelMeta.iconSvg + '</div>' +
+      '<div class="message-content">' +
+        '<div class="message-meta">' +
+          '<span class="meta-brand-badge ' + currentModelMeta.themeClass + '">' + currentModelMeta.iconSvg + '<span>' + escapeHtml(currentModelMeta.displayName) + '</span></span>' +
+          '<span class="image-gen-live-badge"><span class="pulse-ring"></span>Synthesizing Art</span>' +
+        '</div>' +
+        '<div class="image-gen-card">' +
+          '<div class="image-gen-canvas">' +
+            '<div class="image-gen-ambient-glow"></div>' +
+            '<div class="image-gen-shimmer"></div>' +
+            '<div class="image-gen-center">' +
+              '<div class="image-gen-spinner ' + currentModelMeta.themeClass + '">' + currentModelMeta.iconSvg + '</div>' +
+              '<div class="image-gen-step" id="imageGenStepText">Synthesizing image composition...</div>' +
+              '<div class="image-gen-progress-track">' +
+                '<div class="image-gen-progress-fill" id="imageGenProgressBar" style="width:20%;"></div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="image-gen-footer">' +
+            '<div class="image-gen-prompt-snippet">' +
+              '<span class="sparkle-glyph">✦</span>' +
+              '<span class="image-gen-prompt-text">' + escapeHtml(text) + '</span>' +
+            '</div>' +
+            '<button type="button" class="image-gen-cancel-btn" id="imageGenCancelBtn">Stop</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    const cancelBtn = typingRow.querySelector('#imageGenCancelBtn');
+    if (cancelBtn) {
+      cancelBtn.onclick = () => {
+        if (currentAbortController) currentAbortController.abort();
+      };
+    }
+
+    const steps = [
+      { text: "Analyzing prompt composition & style...", pct: "25%" },
+      { text: "Running multi-pass neural diffusion...", pct: "55%" },
+      { text: "Rendering high-frequency textures & lighting...", pct: "78%" },
+      { text: "Finalizing image color grade & upscale...", pct: "92%" }
+    ];
+    let stepIdx = 0;
+    const stepTextEl = typingRow.querySelector('#imageGenStepText');
+    const stepBarEl = typingRow.querySelector('#imageGenProgressBar');
+
+    imageInterval = setInterval(() => {
+      stepIdx++;
+      if (stepIdx < steps.length) {
+        if (stepTextEl) stepTextEl.textContent = steps[stepIdx].text;
+        if (stepBarEl) stepBarEl.style.width = steps[stepIdx].pct;
+      }
+    }, 2400);
+  } else {
+    typingRow.innerHTML =
+      '<div class="avatar-mark assistant-avatar ' + currentModelMeta.themeClass + '">' + currentModelMeta.iconSvg + '</div>' +
+      '<div class="message-content">' +
+        '<div class="message-meta">' +
+          '<span class="meta-brand-badge ' + currentModelMeta.themeClass + '">' + currentModelMeta.iconSvg + '<span>' + escapeHtml(currentModelMeta.displayName) + '</span></span>' +
+        '</div>' +
+        '<div class="message-bubble"><span style="color:var(--muted);font-size:13px;">' +
+          (webSearchEnabled ? 'Searching the live web for verified facts…' : 'Thinking with ' + escapeHtml(currentModelMeta.displayName) + '…') +
+        '</span><span class="streaming-cursor"></span></div>' +
+      '</div>';
+  }
+
   chatView.appendChild(typingRow);
 
   window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -4588,6 +5087,7 @@ async function sendMessage(text) {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || 'Image generation failed.');
 
+      if (imageInterval) clearInterval(imageInterval);
       typingRow.remove();
       const imageModelUsed = data.model || targetImageModel;
       makeMessage('assistant', data.reply || 'Here is your generated image.', { imageData: data.imageData, mimeType: data.mimeType, model: imageModelUsed });
@@ -4637,6 +5137,7 @@ async function sendMessage(text) {
     persist();
     addHistory(conv);
   } catch (err) {
+    if (imageInterval) clearInterval(imageInterval);
     typingRow.remove();
     if (err.name === 'AbortError' || currentAbortController?.signal.aborted) {
       toast('Generation stopped.');
@@ -4644,6 +5145,7 @@ async function sendMessage(text) {
       makeMessage('assistant', '**Error completing request**\n\n' + err.message, { model: selectedModel });
     }
   } finally {
+    if (imageInterval) clearInterval(imageInterval);
     busy = false;
     currentAbortController = null;
     $('#sendBtn').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>';
@@ -4779,8 +5281,11 @@ function toggleImageMode(force) {
   btn.classList.toggle('image-active', imageMode);
   btn.setAttribute('aria-pressed', String(imageMode));
   $('#composer').classList.toggle('image-mode-active', imageMode);
-  input.placeholder = imageMode ? 'Describe the image you want Bytes Studio to create…' : 'Ask anything, or start with a thought…';
-  toast(imageMode ? '🎨 Image Studio Active' : 'Chat mode restored');
+  const curMeta = getModelMeta(selectedModel);
+  input.placeholder = imageMode
+    ? ('Describe an image to generate with ' + (curMeta.isImage ? curMeta.displayName : 'AI Image Studio') + '…')
+    : 'Ask anything, or start with a thought…';
+  toast(imageMode ? ('🎨 ' + (curMeta.isImage ? curMeta.displayName : 'Image Studio') + ' Active') : 'Chat mode restored');
 }
 $('#imageModeBtn').onclick = () => toggleImageMode();
 
