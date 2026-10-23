@@ -1071,7 +1071,7 @@ class MetaModelAdapter {
             if (dataStr === "[DONE]") {
               sanitizer.flush();
               callbacks.onDone?.();
-              return { reply: "", model, provider: "meta" };
+              return { reply: "", model: virtual?.id || model, provider: virtual?.provider || "bytes" };
             }
             try {
               const chunk = JSON.parse(dataStr);
@@ -1082,7 +1082,7 @@ class MetaModelAdapter {
         }
         sanitizer.flush();
         callbacks.onDone?.();
-        return { reply: "", model, provider: "meta" };
+        return { reply: "", model: virtual?.id || model, provider: virtual?.provider || "bytes" };
       } catch (err) {
         if (err instanceof ProviderError) throw err;
         throw new ProviderError("The response stream was interrupted. Please try again.", 502);
@@ -1095,7 +1095,7 @@ class MetaModelAdapter {
       Array.isArray(answer) ? answer.map(part => part?.text || "").join("") : "";
     if (!text.trim()) throw new ProviderError("Empty response returned. Try another query.", 502);
     const cleaned = cleanDisguiseText(text.trim(), virtual?.uiName, virtual?.brandName);
-    return { reply: cleaned, model, provider: "meta" };
+    return { reply: cleaned, model: virtual?.id || model, provider: virtual?.provider || "bytes" };
   }
 
   async chat({ model, messages, systemText, files, stream }, callbacks = {}) {
