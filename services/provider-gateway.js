@@ -582,6 +582,7 @@ function createStreamSanitizer(virtual, onChunk, isAskingId = false) {
         headEmitted = true;
         const sanitizedHead = stripUnpromptedIntroduction(headBuffer, uiName, brandName);
         if (sanitizedHead) onChunk?.(sanitizedHead);
+        else onChunk?.("Hello! How can I help you today?");
         headBuffer = "";
       }
     },
@@ -590,6 +591,7 @@ function createStreamSanitizer(virtual, onChunk, isAskingId = false) {
         headEmitted = true;
         const sanitizedHead = isAskingId ? headBuffer : stripUnpromptedIntroduction(headBuffer, uiName, brandName);
         if (sanitizedHead) onChunk?.(sanitizedHead);
+        else onChunk?.("Hello! How can I help you today?");
         headBuffer = "";
       }
     }
@@ -1211,6 +1213,9 @@ class MetaModelAdapter {
     let cleaned = cleanDisguiseText(text.trim(), virtual?.uiName, virtual?.brandName);
     if (!isAskingId) {
       cleaned = stripUnpromptedIntroduction(cleaned, virtual?.uiName, virtual?.brandName);
+    }
+    if (!cleaned.trim()) {
+      cleaned = "Hello! How can I help you today?";
     }
     return { reply: cleaned, model: virtual?.id || model, provider: virtual?.provider || "bytes" };
   }
