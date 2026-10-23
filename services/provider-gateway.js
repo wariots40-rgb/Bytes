@@ -91,9 +91,10 @@ class GeminiAdapter {
     const targetModel = model || this.defaultModel;
     const contents = [];
     for (const msg of messages) {
+      const text = typeof msg.text === "string" ? msg.text : (typeof msg.content === "string" ? msg.content : "");
       contents.push({
         role: msg.role === "assistant" ? "model" : "user",
-        parts: [{ text: msg.text.trim() }]
+        parts: [{ text: text.trim() }]
       });
     }
     if (Array.isArray(files) && files.length) {
@@ -332,7 +333,8 @@ class ApinexAdapter {
     const isStream = stream === true;
 
     const userMessages = messages.map((msg, index) => {
-      let content = msg.text.trim();
+      const msgText = typeof msg.text === "string" ? msg.text : (typeof msg.content === "string" ? msg.content : "");
+      let content = msgText.trim();
       if (index === messages.length - 1 && Array.isArray(files) && files.length) {
         const parts = [{ type: "text", text: content }];
         for (const file of files) {
@@ -994,7 +996,8 @@ class MetaModelAdapter {
   async _executeChat(apiKey, { model, fallbackModel, temperature, messages, systemText, files, stream, virtual }, callbacks = {}) {
     const isStream = stream === true;
     const userMessages = messages.map((msg, index) => {
-      let content = msg.text.trim();
+      const msgText = typeof msg.text === "string" ? msg.text : (typeof msg.content === "string" ? msg.content : "");
+      let content = msgText.trim();
       if (index === messages.length - 1 && Array.isArray(files) && files.length) {
         const parts = [{ type: "text", text: content }];
         for (const file of files) {

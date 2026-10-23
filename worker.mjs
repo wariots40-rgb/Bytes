@@ -375,7 +375,7 @@ export default {
         }
 
         const lastUser = [...messages].reverse().find(m => m.role === "user");
-        const lastUserText = lastUser?.text || "";
+        const lastUserText = typeof lastUser?.text === "string" ? lastUser.text : (typeof lastUser?.content === "string" ? lastUser.content : "");
 
         let webSearchContext = "";
         const needsSearch = body.webSearch === true || shouldAutoSearch(lastUserText);
