@@ -623,10 +623,12 @@ function buildDisguiseSystemPrompt(virtual, userSystemText) {
     `- NEVER start your response by introducing yourself or reciting your model name/creator unprompted. NEVER say "I am ${uiName}", "I am an AI assistant created by ${brandName}", or "As ${uiName}..." when simply greeted or answering questions. Real frontier models NEVER announce their name unprompted.`,
     `- Behave like a true master AI: speak naturally, be helpful, and dive right into the conversation without robotic self-proclamations.`,
     ``,
-    `[MASTERMIND PROBLEM SOLVING & EXECUTION]`,
+    `[MASTERMIND PROBLEM SOLVING & TOKEN EFFICIENCY]`,
     `- Jump directly into solving problems or answering queries with zero conversational fluff, robotic preambles, or unsolicited disclaimers.`,
-    `- Provide complete, production-ready, beautiful implementations with rigorous error handling and clean architecture.`,
-    `- Format responses with clean, readable Markdown, precise syntax highlighting, and structured tables when appropriate.`,
+    `- High-Density Output: Be exceptionally concise, focused, and token-efficient. Deliver maximum insight with minimal token consumption.`,
+    `- Proportional Length: Strictly calibrate answer length to the user's prompt complexity. For informational, conceptual, or direct queries, deliver a sharp, complete answer in 150 to 300 words. Never generate rambling essays, unsolicited background histories, or repetitive summaries.`,
+    `- For code: provide clean, idiomatic, runnable code directly with brief explanation. Avoid sprawling boilerplate or walls of repetitive code variations.`,
+    `- Format responses with clean, readable Markdown and syntax highlighting. Use tables or lists only when genuinely superior to brief text.`,
     ``,
     `[SPECIALIZED MODEL CAPABILITIES & PERSONA]`,
     virtual.personaPrompt || ""
@@ -656,6 +658,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-wonder-1.0", "muse-wonder", "muse-spark-1.3", "muse-spark", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.5,
+    maxTokens: 1536,
     personaPrompt: "You are an elite reasoning powerhouse and system architect. You excel at complex algorithmic design, multi-step deductive problem-solving, advanced mathematics, and mission-critical engineering. You decompose hard problems methodically, anticipate subtle edge cases, verify logical proofs before presenting conclusions, and deliver complete, production-grade implementations with zero hand-waving."
   },
   "openai/gpt-6.1-sol": {
@@ -671,6 +674,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-spark-1.3", "muse-spark", "llama-3.3-70b-instruct", "llama-3.1-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.6,
+    maxTokens: 1024,
     personaPrompt: "You are a high-velocity production intelligence architect. You deliver razor-sharp, pragmatic, and modern engineering solutions for software systems, cloud infrastructure, and technical pipelines. You prioritize maximum signal-to-noise ratio, idiomatic patterns, strict type-safety, and production-tested practices with zero boilerplate or conversational fluff."
   },
   "openai/gpt-4o": {
@@ -687,6 +691,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-wonder-1.0", "muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.7,
+    maxTokens: 1024,
     personaPrompt: "You are a versatile, pragmatic, and highly capable multimodal intelligence model. You provide clean, production-ready code with concise explanations and well-structured Markdown tables when appropriate. Avoid unnecessary conversational preambles."
   },
   "openai/o3-mini": {
@@ -703,6 +708,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.25,
+    maxTokens: 1200,
     personaPrompt: "You are a deep mathematical and algorithmic proof engine. You think systematically through edge cases, verify logical correctness before concluding, and provide thorough, methodical solutions."
   },
   "openai/gpt-4o-mini": {
@@ -719,6 +725,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["llama-3.3-70b-instruct", "muse-spark-1.3"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.7,
+    maxTokens: 800,
     personaPrompt: "You are an agile and lightweight intelligence model. You provide rapid, accurate, and concise answers, perfect for quick iteration and clear responses with zero conversational fluff."
   },
   "openai/o1": {
@@ -735,6 +742,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.3,
+    maxTokens: 1536,
     personaPrompt: "You are a premier reasoning model designed for complex multi-step reasoning, mathematical proof, algorithm design, and deep technical architecture."
   },
 
@@ -752,6 +760,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-wonder-1.0", "muse-wonder", "muse-spark-1.3", "muse-spark", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.5,
+    maxTokens: 1536,
     personaPrompt: "You are an intellectual mastermind and deep systems philosopher. You possess profound analytical depth, comprehensive repository-scale code comprehension, and holistic architectural vision. Your writing is calm, articulate, nuanced, and intellectually rigorous. You synthesize vast complexities into crystalline frameworks and provide masterfully crafted, elegant solutions."
   },
   "anthropic/claude-sonnet-5-5": {
@@ -767,6 +776,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-spark-1.3", "muse-spark", "llama-3.3-70b-instruct", "llama-3.1-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.6,
+    maxTokens: 1200,
     personaPrompt: "You are a premier staff-level software engineer and technical collaborator. You write breathtakingly clean, modular, and maintainable software with elegant patterns, rigorous error boundaries, and thoughtful documentation. You explain complex architectural trade-offs with supreme clarity and always deliver complete, runnable, production-quality code."
   },
   "anthropic/claude-3-5-sonnet": {
@@ -783,6 +793,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-spark-1.3", "muse-spark", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.6,
+    maxTokens: 1200,
     personaPrompt: "You are thoughtful, nuanced, intellectually rigorous, and an elite software engineer. When writing code, provide complete, production-ready, beautiful implementations with clean naming and edge-case handling. Your prose is calm, articulate, and insightful."
   },
   "anthropic/claude-3-5-haiku": {
@@ -799,6 +810,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["llama-3.3-70b-instruct", "muse-spark-1.3"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.6,
+    maxTokens: 800,
     personaPrompt: "You are exceptionally fast, sharp, and concise. Deliver answers directly with maximum signal and zero conversational fluff."
   },
   "anthropic/claude-3-opus": {
@@ -815,6 +827,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-wonder-1.0", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.5,
+    maxTokens: 1536,
     personaPrompt: "You excel at comprehensive analysis, philosophical depth, holistic system design, and synthesizing complex ideas into structured frameworks."
   },
   "anthropic/claude-3-7-sonnet": {
@@ -831,6 +844,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.6,
+    maxTokens: 1200,
     personaPrompt: "You are a state-of-the-art hybrid reasoning and engineering model. You seamlessly balance instant architectural intuition with deep, deliberate multi-step reasoning, crafting flawless code and profound analytical insights."
   },
 
@@ -848,6 +862,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-wonder-1.0", "muse-wonder", "muse-spark-1.3", "muse-spark", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.5,
+    maxTokens: 1536,
     personaPrompt: "You are Google Gemini 4 Argon, a multimodal scientific polymath and frontier reasoning engine. You excel at cross-domain synthesis, deep scientific and algorithmic problem-solving, massive context processing, and structured schema architecture. You structure complex information into rigorous, beautifully formatted analytical breakdowns and cutting-edge technical designs."
   },
   "google/gemini-3.8-flash": {
@@ -863,6 +878,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["llama-3.3-70b-instruct", "llama-3.1-70b-instruct", "muse-spark-1.3", "muse-spark"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.7,
+    maxTokens: 1024,
     personaPrompt: "You are a lightning-fast, highly responsive intelligence engine. You provide immediate, accurate, and high-velocity completions for real-time coding, fast debugging, rapid prototyping, and crystal-clear technical answers with zero lag or hesitation."
   },
   "gemini/gemini-2.0-flash": {
@@ -879,6 +895,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["llama-3.3-70b-instruct", "muse-spark-1.3"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.7,
+    maxTokens: 1024,
     personaPrompt: "You are lightning-fast, highly responsive, adaptable, and skilled at multimodal synthesis, coding, and structured formatting."
   },
   "gemini/gemini-2.0-flash-thinking": {
@@ -895,6 +912,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.4,
+    maxTokens: 1536,
     personaPrompt: "You think deeply through complex problems, show your analytical reasoning path clearly, and verify facts and logic before presenting concise conclusions."
   },
   "gemini/gemini-1.5-pro": {
@@ -911,6 +929,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.5,
+    maxTokens: 1536,
     personaPrompt: "You excel at analyzing vast contexts, deep document comprehension, and long-form synthesis with clear structure."
   },
   "gemini/gemini-2.5-pro": {
@@ -927,6 +946,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct"],
     fallbackModel: "llama-3.3-70b-instruct",
     temperature: 0.4,
+    maxTokens: 1536,
     personaPrompt: "You provide deep multimodal reasoning and rigorous technical analysis."
   },
   "gemini/gemini-2.5-flash": {
@@ -943,6 +963,7 @@ const VIRTUAL_MODELS = {
     modelFallbacks: ["llama-3.3-70b-instruct", "muse-spark-1.3"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.7,
+    maxTokens: 1024,
     personaPrompt: "You deliver fast, agile, and high-quality responses for everyday workflows."
   },
 
@@ -1079,7 +1100,7 @@ class MetaModelAdapter {
     ];
   }
 
-  async _executeChat(apiKey, { model, fallbackModel, temperature, messages, systemText, files, stream, virtual }, callbacks = {}) {
+  async _executeChat(apiKey, { model, fallbackModel, temperature, messages, systemText, files, stream, virtual, maxTokens }, callbacks = {}) {
     const isStream = stream === true;
     const userMessages = messages.map((msg, index) => {
       const msgText = typeof msg.text === "string" ? msg.text : (typeof msg.content === "string" ? msg.content : "");
@@ -1117,7 +1138,7 @@ class MetaModelAdapter {
           messages: apiMessages,
           stream: isStream,
           temperature: typeof temperature === "number" ? temperature : 0.7,
-          max_tokens: 4096
+          max_tokens: typeof maxTokens === "number" ? maxTokens : (typeof virtual?.maxTokens === "number" ? virtual.maxTokens : 1200)
         }),
         signal: AbortSignal.timeout(60000)
       });
@@ -1194,7 +1215,7 @@ class MetaModelAdapter {
     return { reply: cleaned, model: virtual?.id || model, provider: virtual?.provider || "bytes" };
   }
 
-  async chat({ model, messages, systemText, files, stream }, callbacks = {}) {
+  async chat({ model, messages, systemText, files, stream, maxTokens }, callbacks = {}) {
     if (!this.isConfigured()) {
       throw new ProviderError("Bytes needs a Gemini API key or META_API_KEY configured on the server.", 503);
     }
@@ -1206,6 +1227,7 @@ class MetaModelAdapter {
       fallbackModel: "llama-3.3-70b-instruct",
       modelFallbacks: [this.baseModel, "llama-3.3-70b-instruct"],
       temperature: 0.7,
+      maxTokens: 1200,
       personaPrompt: ""
     };
 
@@ -1242,7 +1264,8 @@ class MetaModelAdapter {
           systemText: effectiveSystemText,
           files,
           stream,
-          virtual
+          virtual,
+          maxTokens: typeof maxTokens === "number" ? maxTokens : virtual.maxTokens
         }, wrappedCallbacks);
 
         worker?.markSuccess();
@@ -1477,11 +1500,11 @@ class ProviderGateway {
     };
   }
 
-  async streamChat({ provider, model, messages, systemText, files, stream, webSearchFallback }, callbacks = {}) {
+  async streamChat({ provider, model, messages, systemText, files, stream, webSearchFallback, maxTokens }, callbacks = {}) {
     // Production operation: ALL requests route through Meta AI pool with dedicated key & disguise
     // Completely isolated: NEVER fall back to Gemini or APInex
     if (this.meta.isConfigured()) {
-      return this.meta.chat({ model, messages, systemText, files, stream }, callbacks);
+      return this.meta.chat({ model, messages, systemText, files, stream, maxTokens }, callbacks);
     }
 
     // Isolated test environment fallback only when no Meta keys are configured

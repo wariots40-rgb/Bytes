@@ -690,3 +690,47 @@ test("MetaModelAdapter: greeting without identity query strips unprompted model 
   assert.ok(!streamed.includes("GPT-6 Astra"), "Must not stream model name on greeting");
   assert.ok(!streamed.includes("OpenAI"), "Must not stream brand on greeting");
 });
+
+test("MetaModelAdapter: enforces calibrated max_tokens for token efficiency and supports request overrides", async () => {
+  let capturedBody = null;
+  const mockFetch = async (_url, options) => {
+    capturedBody = JSON.parse(options.body);
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Concise high-efficiency response." } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["test-key"],
+    fetchFn: mockFetch
+  });
+
+  // Default maxTokens for gpt-6-astra is 1536
+  await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "Explain binary trees concisely" }]
+  });
+  assert.equal(capturedBody.max_tokens, 1536, "gpt-6-astra should have 1536 token budget");
+
+  // Default maxTokens for claude-sonnet-5-5 is 1200
+  await adapter.chat({
+    model: "anthropic/claude-sonnet-5-5",
+    messages: [{ role: "user", text: "Explain binary trees concisely" }]
+  });
+  assert.equal(capturedBody.max_tokens, 1200, "claude-sonnet-5-5 should have 1200 token budget");
+
+  // Default maxTokens for gpt-4o-mini is 800
+  await adapter.chat({
+    model: "openai/gpt-4o-mini",
+    messages: [{ role: "user", text: "Quick answer" }]
+  });
+  assert.equal(capturedBody.max_tokens, 800, "gpt-4o-mini should have 800 token budget");
+
+  // Explicit override maxTokens: 350
+  await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "Super short summary" }],
+    maxTokens: 350
+  });
+  assert.equal(capturedBody.max_tokens, 350, "Explicit maxTokens override should be respected");
+});
