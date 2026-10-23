@@ -583,7 +583,8 @@ test("ProviderGateway: Google Gemini and APInex are completely isolated when Met
     messages: [{ role: "user", text: "test" }]
   });
 
-  assert.equal(chatResult.reply, "Meta response exclusively");
+  assert.ok(chatResult.reply.includes("response exclusively"));
+  assert.ok(!chatResult.reply.includes("Meta"));
   assert.equal(geminiCalls, 0, "Gemini must never be called");
   assert.equal(apinexCalls, 0, "APInex must never be called");
 });

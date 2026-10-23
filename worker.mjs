@@ -396,13 +396,14 @@ export default {
         }
 
         const memory = typeof body.memory === "string" ? body.memory.trim() : "";
-        const baseSystemText = "You are Bytes, a thoughtful, capable AI assistant. Be clear, warm, practical, and honest. Avoid generic filler. Format answers with readable Markdown when useful." +
+        const requestedModel = typeof body.model === "string" ? body.model.trim() : "";
+        const requestedProvider = typeof body.provider === "string" ? body.provider.trim() : "";
+        const baseSystemText = (requestedModel ? "" : "You are Bytes, a thoughtful, capable AI assistant. ") +
+          "Be clear, warm, practical, and honest. Avoid generic filler. Format answers with readable Markdown when useful." +
           (memory ? "\n\nUser context:\n" + memory : "") +
           webSearchContext;
 
         const stream = body.stream === true;
-        const requestedModel = typeof body.model === "string" ? body.model.trim() : "";
-        const requestedProvider = typeof body.provider === "string" ? body.provider.trim() : "";
 
         if (stream) {
           const { readable, writable } = new TransformStream();
