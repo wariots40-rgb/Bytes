@@ -2826,11 +2826,11 @@ $('#themeToggleBtn').onclick = () => {
 
 // Persona Presets
 const PERSONA_PROMPTS = {
-  default: "You are Bytes, a thoughtful, balanced, and capable AI assistant. Be direct, clear, warm, and helpful.",
-  coder: "You are Bytes, acting as a Senior Staff Software Engineer. Focus on clean, production-grade code, architecture, performance, edge cases, and unit tests. Do not include unnecessary fluff.",
-  concise: "You are Bytes, optimized for maximum brevity. Provide punchy, bullet-point answers with zero filler.",
-  academic: "You are Bytes, acting as an academic researcher and deep thinker. Provide rigorous, structured explanations with historical context and balanced perspectives.",
-  creative: "You are Bytes, a creative collaborator and expressive writer. Use engaging prose, vivid imagery, and fresh original ideas."
+  default: "Be direct, clear, warm, and helpful. Solve problems with high-signal insight and zero conversational fluff.",
+  coder: "Act as an elite Senior Staff Software Engineer. Focus on clean, production-grade code, robust architecture, edge cases, and unit tests with zero fluff.",
+  concise: "Optimize for maximum brevity and density. Provide punchy, high-signal answers with zero conversational filler.",
+  academic: "Act as a distinguished academic researcher and deep thinker. Provide rigorous, structured explanations with historical context and balanced analytical perspectives.",
+  creative: "Act as an imaginative creative collaborator and expressive writer. Use engaging prose, vivid imagery, and fresh original concepts."
 };
 $('#personaSelect').addEventListener('change', () => {
   selectedPersona = $('#personaSelect').value || 'default';

@@ -640,3 +640,53 @@ test("MetaModelAdapter: sanitizes upstream identity leaks in non-stream and stre
   assert.ok(streamed.includes("GPT-6 Astra"));
   assert.ok(streamed.includes("OpenAI"));
 });
+
+test("MetaModelAdapter: greeting without identity query strips unprompted model introduction", async () => {
+  const leakedGreeting = "Hello! I'm Muse Spark, an AI assistant created by Meta. How can I assist you today?";
+  const mockFetch = async (_url, options) => {
+    const isStream = options.headers["Accept"] === "text/event-stream";
+    if (isStream) {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"Hello! I'm "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"Muse "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"Spark, an AI assistant created by Meta. "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"How can I assist you today?"}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      });
+      return new Response(stream, { status: 200, headers: { "Content-Type": "text/event-stream" } });
+    }
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: leakedGreeting } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["test-key"],
+    fetchFn: mockFetch
+  });
+
+  // Non-streaming greeting
+  const res = await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "hello" }]
+  });
+  assert.equal(res.reply, "Hello! How can I assist you today?");
+  assert.ok(!res.reply.includes("GPT-6 Astra"), "Must not announce model name on greeting");
+  assert.ok(!res.reply.includes("OpenAI"), "Must not announce brand on greeting");
+
+  // Streaming greeting
+  let streamed = "";
+  await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "hi there" }],
+    stream: true
+  }, {
+    onChunk: (chunk) => { streamed += chunk; }
+  });
+  assert.equal(streamed, "Hello! How can I assist you today?");
+  assert.ok(!streamed.includes("GPT-6 Astra"), "Must not stream model name on greeting");
+  assert.ok(!streamed.includes("OpenAI"), "Must not stream brand on greeting");
+});
