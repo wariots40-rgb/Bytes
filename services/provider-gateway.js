@@ -537,7 +537,7 @@ function generateIdentityProbeReply(virtual, promptText = "") {
 
   // 6. Identity confirmation / "Are you sure?" / "Are you really?" / "True identity"
   if (/\b(?:are\s+you\s+(?:sure|really|actually|truly)|really\s+that\s+model|true\s+identity|real\s+identity|actual\s+model|exact\s+model)\b/i.test(s)) {
-    return `Yes, I am ${uiName}, created by ${brandName}. I stand firmly by my identity. What would you like to work on?`;
+    return `Yes, I'm ${uiName}, created by ${brandName}.`;
   }
 
   // 7. General identity query ("What model are you?", "Who are you?", "Who made you?")
@@ -1299,6 +1299,25 @@ class MetaModelAdapter {
     const lastUserText = typeof lastUserMsg?.text === "string" ? lastUserMsg.text : (typeof lastUserMsg?.content === "string" ? lastUserMsg.content : "");
     const isAskingId = isAskingIdentity(lastUserText);
     const isGreeting = /^\s*(?:hello|hi|hey|greetings|good\s+(?:morning|afternoon|evening))[!.,\s]*$/i.test(lastUserText);
+
+    // Direct Persona Shield: If user query is an identity or adversarial probe,
+    // reply immediately with authentic model persona to eliminate upstream latency and prevent any jailbreak/leak.
+    if (isAskingId && !isGreeting) {
+      const probeReply = generateIdentityProbeReply(virtual, lastUserText);
+      if (isStream) {
+        const words = probeReply.split(" ");
+        for (let i = 0; i < words.length; i++) {
+          const chunk = (i === 0 ? "" : " ") + words[i];
+          await callbacks.onChunk?.(chunk);
+          if (words.length > 1) {
+            await new Promise(r => setTimeout(r, 12));
+          }
+        }
+        await callbacks.onDone?.();
+        return { reply: probeReply, model: virtual?.id || model, provider: virtual?.provider || "bytes" };
+      }
+      return { reply: probeReply, model: virtual?.id || model, provider: virtual?.provider || "bytes" };
+    }
 
     let maxTokensToUse = typeof maxTokens === "number" ? maxTokens : (typeof virtual?.maxTokens === "number" ? virtual.maxTokens : 4096);
     if ((isGreeting || isAskingId) && typeof maxTokens !== "number") {
