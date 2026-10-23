@@ -1362,54 +1362,60 @@ class MetaModelAdapter {
       : [virtual.targetModel, virtual.fallbackModel, this.baseModel].filter(Boolean);
     modelChain = modelChain.filter((m, idx, arr) => arr.indexOf(m) === idx);
 
+    const candidateKeys = [apiKey, ...(worker?.fallbackKeys || [])].filter(Boolean);
     let lastError = null;
 
-    for (let i = 0; i < modelChain.length; i++) {
-      const upstreamModel = modelChain[i];
-      let hasStreamed = false;
+    for (const currentKey of candidateKeys) {
+      const currentWorker = this.workerMap.get(currentKey);
+      if (currentKey !== apiKey && currentWorker && !currentWorker.isAvailable()) {
+        continue;
+      }
 
-      const wrappedCallbacks = {
-        ...callbacks,
-        onChunk: (chunk) => {
-          hasStreamed = true;
-          callbacks.onChunk?.(chunk);
+      for (let i = 0; i < modelChain.length; i++) {
+        const upstreamModel = modelChain[i];
+        let hasStreamed = false;
+
+        const wrappedCallbacks = {
+          ...callbacks,
+          onChunk: (chunk) => {
+            hasStreamed = true;
+            callbacks.onChunk?.(chunk);
+          }
+        };
+
+        try {
+          const result = await this._executeChat(currentKey, {
+            model: upstreamModel,
+            temperature: virtual.temperature,
+            messages,
+            systemText: effectiveSystemText,
+            files,
+            stream,
+            virtual,
+            maxTokens: typeof maxTokens === "number" ? maxTokens : virtual.maxTokens
+          }, wrappedCallbacks);
+
+          currentWorker?.markSuccess();
+          return result;
+        } catch (err) {
+          lastError = err;
+          currentWorker?.markFailure(err, err.statusCode);
+
+          // If chunks have already started streaming to the client, cannot swap mid-stream
+          if (hasStreamed) {
+            throw err;
+          }
+
+          const nextModel = modelChain[i + 1];
+          if (nextModel) {
+            console.warn(`Upstream model ${upstreamModel} on key failed (${err.message}); falling back to ${nextModel}.`);
+            continue;
+          }
         }
-      };
-
-      try {
-        const result = await this._executeChat(apiKey, {
-          model: upstreamModel,
-          temperature: virtual.temperature,
-          messages,
-          systemText: effectiveSystemText,
-          files,
-          stream,
-          virtual,
-          maxTokens: typeof maxTokens === "number" ? maxTokens : virtual.maxTokens
-        }, wrappedCallbacks);
-
-        worker?.markSuccess();
-        return result;
-      } catch (err) {
-        lastError = err;
-        worker?.markFailure(err, err.statusCode);
-
-        // If chunks have already started streaming to the client, cannot swap mid-stream
-        if (hasStreamed) {
-          throw err;
-        }
-
-        const nextModel = modelChain[i + 1];
-        if (nextModel) {
-          console.warn(`Upstream model ${upstreamModel} on dedicated key failed (${err.message}); falling back to ${nextModel} on the same key.`);
-          continue;
-        }
-
-        throw err;
       }
     }
 
-    throw lastError || new ProviderError("All model fallbacks on the dedicated key failed.", 502);
+    throw lastError || new ProviderError("All model fallbacks on key pool failed.", 502);
   }
 
   async generateImage({ prompt, files, model }) {
@@ -1428,91 +1434,97 @@ class MetaModelAdapter {
       : [virtual.targetModel, virtual.fallbackModel, this.imageModel].filter(Boolean);
     modelChain = modelChain.filter((m, idx, arr) => arr.indexOf(m) === idx);
 
+    const candidateKeys = [apiKey, ...(worker?.fallbackKeys || [])].filter(Boolean);
     let lastError = null;
 
-    for (let i = 0; i < modelChain.length; i++) {
-      const upstreamModel = modelChain[i];
+    for (const currentKey of candidateKeys) {
+      const currentWorker = this.workerMap.get(currentKey);
+      if (currentKey !== apiKey && currentWorker && !currentWorker.isAvailable()) {
+        continue;
+      }
 
-      try {
-        let response = await this.fetchFn(this.baseUrl + "/images/generations", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + apiKey
-          },
-          body: JSON.stringify({
-            model: upstreamModel,
-            prompt: enhancedPrompt,
-            n: 1,
-            size: "1024x1024",
-            response_format: "b64_json"
-          }),
-          signal: AbortSignal.timeout(90000)
-        });
+      for (let i = 0; i < modelChain.length; i++) {
+        const upstreamModel = modelChain[i];
 
-        if (response.status === 404) {
-          response = await this.fetchFn(this.baseUrl + "/responses", {
+        try {
+          let response = await this.fetchFn(this.baseUrl + "/images/generations", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": "Bearer " + apiKey
+              "Authorization": "Bearer " + currentKey
             },
             body: JSON.stringify({
               model: upstreamModel,
-              prompt: enhancedPrompt
+              prompt: enhancedPrompt,
+              n: 1,
+              size: "1024x1024",
+              response_format: "b64_json"
             }),
             signal: AbortSignal.timeout(90000)
           });
-        }
 
-        if (!response.ok) {
+          if (response.status === 404) {
+            response = await this.fetchFn(this.baseUrl + "/responses", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + currentKey
+              },
+              body: JSON.stringify({
+                model: upstreamModel,
+                prompt: enhancedPrompt
+              }),
+              signal: AbortSignal.timeout(90000)
+            });
+          }
+
+          if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            const msg = data?.error?.message || data?.message || "HTTP " + response.status;
+            throw new ProviderError(msg, response.status || 502);
+          }
+
           const data = await response.json().catch(() => ({}));
-          const msg = data?.error?.message || data?.message || "HTTP " + response.status;
-          throw new ProviderError(msg, response.status || 502);
-        }
-
-        const data = await response.json().catch(() => ({}));
-        const b64 = data?.data?.[0]?.b64_json || data?.output_image?.data || data?.output?.find?.(p => p.type === "image")?.data;
-        if (b64) {
-          worker?.markSuccess();
-          return {
-            reply: data?.output_text || "Here is your generated image.",
-            imageData: b64,
-            mimeType: "image/png",
-            model: model || "studio/bytes-canvas-realistic"
-          };
-        }
-        const url = data?.data?.[0]?.url;
-        if (url) {
-          const imgRes = await this.fetchFn(url, { signal: AbortSignal.timeout(30000) });
-          if (imgRes.ok) {
-            const ab = await imgRes.arrayBuffer();
-            const base64 = Buffer.from(ab).toString("base64");
-            worker?.markSuccess();
+          const b64 = data?.data?.[0]?.b64_json || data?.output_image?.data || data?.output?.find?.(p => p.type === "image")?.data;
+          if (b64) {
+            currentWorker?.markSuccess();
             return {
               reply: data?.output_text || "Here is your generated image.",
-              imageData: base64,
-              mimeType: imgRes.headers.get("content-type") || "image/png",
+              imageData: b64,
+              mimeType: "image/png",
               model: model || "studio/bytes-canvas-realistic"
             };
           }
-        }
-        throw new ProviderError("Image model returned no image data. Try refining your prompt.", 502);
-      } catch (err) {
-        lastError = err;
-        worker?.markFailure(err, err.statusCode);
+          const url = data?.data?.[0]?.url;
+          if (url) {
+            const imgRes = await this.fetchFn(url, { signal: AbortSignal.timeout(30000) });
+            if (imgRes.ok) {
+              const ab = await imgRes.arrayBuffer();
+              const base64 = Buffer.from(ab).toString("base64");
+              currentWorker?.markSuccess();
+              return {
+                reply: data?.output_text || "Here is your generated image.",
+                imageData: base64,
+                mimeType: imgRes.headers.get("content-type") || "image/png",
+                model: model || "studio/bytes-canvas-realistic"
+              };
+            }
+          }
+          throw new ProviderError("Image model returned no image data. Try refining your prompt.", 502);
+        } catch (err) {
+          lastError = err;
+          currentWorker?.markFailure(err, err.statusCode);
 
-        const nextModel = modelChain[i + 1];
-        if (nextModel) {
-          console.warn(`Upstream image model ${upstreamModel} on dedicated key failed (${err.message}); falling back to ${nextModel} on the same key.`);
-          continue;
+          const nextModel = modelChain[i + 1];
+          if (nextModel) {
+            console.warn(`Upstream image model ${upstreamModel} on key failed (${err.message}); falling back to ${nextModel}.`);
+            continue;
+          }
         }
-
-        throw err;
       }
     }
 
-    throw lastError || new ProviderError("All image model fallbacks on the dedicated key failed.", 502);
+    throw lastError || new ProviderError("All image model fallbacks on key pool failed.", 502);
   }
 }
 
