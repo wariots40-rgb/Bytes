@@ -4624,7 +4624,7 @@ async function sendMessage(text) {
       }, currentAbortController.signal);
 
       typingRow.remove();
-      const finalReply = (answer && answer.trim()) ? answer : 'Hello! I am ready to help. What would you like to explore or build?';
+      const finalReply = (answer && answer.trim()) ? answer : 'Hello! What are we working on today?';
       if (!assistantWrap) {
         assistantWrap = makeMessage('assistant', finalReply, { model: selectedModel });
       } else {
