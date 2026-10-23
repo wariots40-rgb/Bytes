@@ -76,7 +76,7 @@ function getProviderGateway(env) {
       apinexModel: combined.APINEX_MODEL || "free/gemini-3.8-flash",
       metaApiKeys: uniqueMetaKeys,
       metaBaseUrl: combined.META_BASE_URL || "https://api.meta.ai/v1",
-      metaModel: combined.META_MODEL || "llama-3.3-70b-instruct"
+      metaModel: combined.META_MODEL || "muse-wonder-1.0"
     });
     lastConfigSig = sig;
   }

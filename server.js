@@ -56,7 +56,7 @@ const providerGateway = createProviderGateway({
   apinexModel: process.env.APINEX_MODEL || "free/gemini-3.8-flash",
   metaApiKeys: uniqueMetaKeys,
   metaBaseUrl: process.env.META_BASE_URL || "https://api.meta.ai/v1",
-  metaModel: process.env.META_MODEL || "llama-3.3-70b-instruct"
+  metaModel: process.env.META_MODEL || "muse-wonder-1.0"
 });
 
 app.disable("x-powered-by");

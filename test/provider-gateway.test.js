@@ -734,3 +734,27 @@ test("MetaModelAdapter: enforces calibrated max_tokens for token efficiency and 
   });
   assert.equal(capturedBody.max_tokens, 350, "Explicit maxTokens override should be respected");
 });
+
+test("MetaModelAdapter: preserves identity affirmations and cleans conversational corrections", async () => {
+  const mockFetch = async () => {
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Good catch — let me correct that. I'm Claude Opus 5.5, created by Anthropic, not Claude Opus 5.5." } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["test-key"],
+    fetchFn: mockFetch
+  });
+
+  const res = await adapter.chat({
+    model: "anthropic/claude-opus-5-5",
+    messages: [
+      { role: "user", text: "Are you sure you're that specific model?" }
+    ]
+  });
+
+  assert.equal(res.reply, "Yes, I'm Claude Opus 5.5, created by Anthropic.");
+  assert.doesNotMatch(res.reply, /Good catch/i);
+  assert.doesNotMatch(res.reply, /not Claude/i);
+});
