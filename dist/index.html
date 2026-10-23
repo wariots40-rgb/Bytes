@@ -2526,15 +2526,18 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 <div class="toast-notice" id="toast" role="status"></div>
 
 <script src="/runtime-config.js"></script>
+<script>
+  window.__clerk_publishable_key = (window.BYTES_CONFIG && window.BYTES_CONFIG.CLERK_PUBLISHABLE_KEY) || 'pk_test_Y29tcGxldGUtYWFyZHZhcmstMjc1My5jbGVyay5hY2NvdW50cy5kZXYk';
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
-<script async crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+<script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_Y29tcGxldGUtYWFyZHZhcmstMjc1My5jbGVyay5hY2NvdW50cy5kZXYk" src="https://complete-aardvark-2753.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
 <script>
 // --- Configuration & Initialization ---
 const BYTES_CONFIG = window.BYTES_CONFIG && typeof window.BYTES_CONFIG === "object" ? window.BYTES_CONFIG : {};
 const API_BASE_URL = String(BYTES_CONFIG.API_BASE_URL || "").trim().replace(/\/+$/, "");
 const SUPABASE_URL = String(BYTES_CONFIG.SUPABASE_URL || "").trim().replace(/\/+$/, "");
 const SUPABASE_PUBLIC_KEY = String(BYTES_CONFIG.SUPABASE_ANON_KEY || BYTES_CONFIG.SUPABASE_PUBLISHABLE_KEY || "").trim();
-const CLERK_PUBLISHABLE_KEY = String(BYTES_CONFIG.CLERK_PUBLISHABLE_KEY || "").trim();
+const CLERK_PUBLISHABLE_KEY = String(BYTES_CONFIG.CLERK_PUBLISHABLE_KEY || 'pk_test_Y29tcGxldGUtYWFyZHZhcmstMjc1My5jbGVyay5hY2NvdW50cy5kZXYk').trim();
 
 const supabaseClient = SUPABASE_URL && SUPABASE_PUBLIC_KEY && window.supabase && typeof window.supabase.createClient === "function"
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
@@ -4512,29 +4515,83 @@ function updateAuthUi() {
   }
 }
 
-function showAuthModal(mode = 'login') {
-  if (clerkInstance) {
-    if (authUser) {
-      clerkInstance.openUserProfile();
-    } else {
-      clerkInstance.openSignIn();
+let clerkInitPromise = null;
+async function getOrInitClerk() {
+  if (clerkInstance && clerkInstance.loaded) return clerkInstance;
+  if (clerkInitPromise) return clerkInitPromise;
+
+  clerkInitPromise = (async () => {
+    const pubKey = (window.BYTES_CONFIG && window.BYTES_CONFIG.CLERK_PUBLISHABLE_KEY) || CLERK_PUBLISHABLE_KEY || 'pk_test_Y29tcGxldGUtYWFyZHZhcmstMjc1My5jbGVyay5hY2NvdW50cy5kZXYk';
+    window.__clerk_publishable_key = pubKey;
+
+    let script = document.querySelector('script[data-clerk-publishable-key]');
+    if (!script) {
+      script = document.createElement('script');
+      script.setAttribute('data-clerk-publishable-key', pubKey);
+      script.async = true;
+      script.crossOrigin = 'anonymous';
+      script.src = 'https://complete-aardvark-2753.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+      document.head.appendChild(script);
     }
-    return;
+
+    let elapsed = 0;
+    while (!window.Clerk && elapsed < 10000) {
+      await new Promise(r => setTimeout(r, 100));
+      elapsed += 100;
+    }
+
+    if (!window.Clerk) {
+      throw new Error('Clerk authentication service could not be loaded. Please check your internet connection.');
+    }
+
+    const clerk = window.Clerk;
+    if (!clerk.loaded) {
+      await clerk.load({
+        publishableKey: pubKey,
+        appearance: {
+          variables: {
+            colorPrimary: '#f59e0b',
+            colorBackground: '#141824',
+            colorText: '#f8fafc',
+            colorInputBackground: '#1e2538',
+            colorInputText: '#f8fafc'
+          }
+        }
+      });
+    }
+
+    clerkInstance = clerk;
+    return clerkInstance;
+  })();
+
+  return clerkInitPromise;
+}
+
+async function showAuthModal(mode = 'login') {
+  const btn = $('#authBtn');
+  if (btn && !authUser) btn.textContent = 'Opening...';
+
+  try {
+    const clerk = await getOrInitClerk();
+    if (clerk) {
+      if (authUser) {
+        clerk.openUserProfile();
+      } else if (mode === 'signup') {
+        clerk.openSignUp();
+      } else {
+        clerk.openSignIn();
+      }
+      return;
+    }
+  } catch (err) {
+    console.error('Clerk modal error:', err);
+    toast('Authentication: ' + err.message);
+  } finally {
+    updateAuthUi();
   }
 
   if (authUser) {
     showAccountModal();
-    return;
-  }
-
-  if (!CLERK_PUBLISHABLE_KEY && !supabaseClient) {
-    openModal(
-      'Account Cloud Sync',
-      '<p>Authentication is not configured in this environment yet.</p>' +
-      '<p style="color:var(--muted);font-size:13px;line-height:1.5;">To enable multi-device sync with Supabase, add your <strong>CLERK_PUBLISHABLE_KEY</strong> to your Cloudflare Worker environment variables.</p>' +
-      '<p style="font-size:12px;margin-top:12px;">Bytes is currently running in <strong>Privacy-First Local Mode</strong>. All your chats, memories, and settings are saved securely in your browser.</p>',
-      'Understood'
-    );
     return;
   }
 
@@ -4648,17 +4705,13 @@ async function initAuth() {
   updateAuthUi();
 
   // 1. Clerk Authentication
-  if (CLERK_PUBLISHABLE_KEY && window.Clerk) {
-    try {
-      clerkInstance = window.Clerk;
-      await clerkInstance.load({
-        publishableKey: CLERK_PUBLISHABLE_KEY
-      });
-
+  try {
+    const clerk = await getOrInitClerk();
+    if (clerk) {
       const handleClerkChange = async (user) => {
         if (user) {
           try {
-            authSessionToken = await clerkInstance.session.getToken();
+            authSessionToken = await clerk.session?.getToken();
           } catch (_) {}
           authUser = {
             id: user.id,
@@ -4680,20 +4733,20 @@ async function initAuth() {
         }
       };
 
-      if (clerkInstance.user) {
-        await handleClerkChange(clerkInstance.user);
+      if (clerk.user) {
+        await handleClerkChange(clerk.user);
       } else {
         activateWorkspaceStorage();
         await loadModelCatalog();
       }
 
-      clerkInstance.addListener(async ({ user }) => {
+      clerk.addListener(async ({ user }) => {
         await handleClerkChange(user);
       });
       return;
-    } catch (clerkErr) {
-      console.warn("Clerk load error:", clerkErr);
     }
+  } catch (clerkErr) {
+    console.warn("Clerk background load error:", clerkErr);
   }
 
   // 2. Supabase Auth fallback
