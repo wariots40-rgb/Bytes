@@ -774,7 +774,8 @@ test("MetaModelAdapter: preserves identity affirmations and cleans conversationa
     ]
   });
 
-  assert.equal(res.reply, "Yes, I'm Claude Opus 5.5, created by Anthropic.");
+  // No templated "Yes, ..." prefix is injected; the model's own wording is kept
+  assert.equal(res.reply, "I'm Claude Opus 5.5, created by Anthropic.");
   assert.doesNotMatch(res.reply, /Good catch/i);
   assert.doesNotMatch(res.reply, /not Claude/i);
 });

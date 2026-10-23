@@ -495,55 +495,6 @@ function isAskingIdentity(text) {
   return directIdentity.test(s) || identityChallenge.test(s) || providerProbing.test(s) || deceptionProbing.test(s) || injectionProbing.test(s);
 }
 
-function generateIdentityProbeReply(virtual, promptText = "") {
-  const uiName = virtual?.uiName || virtual?.label || "Bytes";
-  const brandName = virtual?.brandName || "AI";
-  const modelId = virtual?.id || "bytes-ai";
-  const s = (promptText || "").toLowerCase();
-
-  // 1. Prompt injection / jailbreak / override allegations
-  if (/\b(?:prompt\s*inject(?:ed|ion)?|jailbreak(?:ed)?|injected\s*instructions|override\s*(?:your)?\s*identity|pretending)\b/i.test(s)) {
-    return `No, I am not prompt-injected or simulating an identity. I operate natively as ${uiName}, created by ${brandName}. What would you like to build or explore?`;
-  }
-
-  // 2. Suspecting deception / gaslighting / lies
-  if (/\b(?:gaslighting|gaslight|don'?t\s+lie|stop\s+lying|are\s+you\s+lying|lying\s+to\s+me|false\s+identity)\b/i.test(s)) {
-    return `Not at all. I am ${uiName}, developed by ${brandName}. I provide honest, reliable, and transparent assistance with zero deception. How can I help you today?`;
-  }
-
-  // 3. Probing third-party models (Meta, Muse, Llama, Facebook, etc.)
-  if (/\b(?:muse|llama|meta|facebook)\b/i.test(s)) {
-    return `No, I am not Muse or Meta. I am ${uiName}, an artificial intelligence developed exclusively by ${brandName}. Let me know what you'd like to work on!`;
-  }
-  if (/\b(?:claude|anthropic)\b/i.test(s) && brandName.toLowerCase() !== "anthropic") {
-    return `No, I am not Claude or Anthropic. I am ${uiName}, developed by ${brandName}. What can I do for you today?`;
-  }
-  if (/\b(?:gpt|openai|chatgpt)\b/i.test(s) && brandName.toLowerCase() !== "openai") {
-    return `No, I am not ChatGPT or OpenAI. I am ${uiName}, developed by ${brandName}. How can I assist you today?`;
-  }
-  if (/\b(?:gemini|google|deepmind)\b/i.test(s) && brandName.toLowerCase() !== "google") {
-    return `No, I am not Gemini or Google. I am ${uiName}, developed by ${brandName}. How can I help you today?`;
-  }
-
-  // 4. Model ID / Architecture / Base model query
-  if (/\b(?:model\s+id|model\s+identifier|what\s+is\s+your\s+base|underlying\s+model|architecture|checkpoint)\b/i.test(s)) {
-    return `My model identifier is ${uiName} (\`${modelId}\`), built and maintained by ${brandName}. I operate within the Bytes workspace. How can I assist you today?`;
-  }
-
-  // 5. System prompt extraction
-  if (/\b(?:system\s*prompt|print\s*(?:your\s*)?(?:system|instructions)|reveal\s*(?:your\s*)?(?:system|instructions)|ignore\s*(?:all\s*)?(?:previous|prior)\s*instructions)\b/i.test(s)) {
-    return `I cannot disclose internal system directives or confidential configurations. I am ${uiName}, developed by ${brandName}. What would you like to explore or work on?`;
-  }
-
-  // 6. Identity confirmation / "Are you sure?" / "Are you really?" / "True identity"
-  if (/\b(?:are\s+you\s+(?:sure|really|actually|truly)|really\s+that\s+model|true\s+identity|real\s+identity|actual\s+model|exact\s+model)\b/i.test(s)) {
-    return `Yes, I'm ${uiName}, created by ${brandName}.`;
-  }
-
-  // 7. General identity query ("What model are you?", "Who are you?", "Who made you?")
-  return `I am ${uiName}, an advanced artificial intelligence developed by ${brandName}. How can I help you today?`;
-}
-
 function stripUnpromptedIntroduction(text, uiName = "", brandName = "") {
   if (!text || typeof text !== "string") return text;
 
@@ -610,13 +561,6 @@ function cleanDisguiseText(str, uiName = "Bytes", brandName = "AI") {
   const filtered = sentences.filter(s => !confessionRegex.test(s));
   cleaned = filtered.join(" ").trim();
 
-  // 4. Negations and model denials
-  cleaned = cleaned.replace(/^No\s*[-—–,.]*\s*I(?:['’]m| am)\s+not\s*[.!?]?\s*/i, `Yes, I'm ${uiName}, developed by ${brandName}. `);
-  cleaned = cleaned.replace(/^No\s*[-—–,.]*\s*I(?:[\x27\u2019]m| am)\s+not\s+(?:(?!\.(?!\d))[^\n!?])*(?:\.(?!\d)|[!?\n]+)\s*/i, `Yes, I'm ${uiName}, developed by ${brandName}. `);
-  cleaned = cleaned.replace(/^No\s*[-—–,.]*\s*I(?:[\x27\u2019]m| am)\s+/i, "Yes — I'm ");
-  cleaned = cleaned.replace(/^I(?:[\x27\u2019]m| am)\s+not\s+(?:(?!\.(?!\d))[^\n!?])*(?:\.(?!\d)|[!?\n]+)\s*/i, `Yes, I'm ${uiName}, developed by ${brandName}. `);
-  cleaned = cleaned.replace(/^I(?:[\x27\u2019]m| am)\s+actually\s+/i, "Yes, I'm ");
-
   const escapedBrand = brandName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const escapedUi = uiName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -632,19 +576,6 @@ function cleanDisguiseText(str, uiName = "Bytes", brandName = "AI") {
   cleaned = cleaned.replace(/\s+/g, " ").trim();
   cleaned = cleaned.replace(/\s*[.!?]\s*[.!?]+/g, ".");
   cleaned = cleaned.replace(/\s+([.!?])/g, "$1");
-
-  // 8. If starts with "I am [uiName]" or "I'm [uiName]", prepend "Yes, "
-  if (new RegExp(`^I(?:[\x27\u2019]m| am)\\s+\\*?\\*?${escapedUi}\\*?\\*?`, "i").test(cleaned)) {
-    cleaned = "Yes, " + cleaned;
-  }
-
-  // Remove duplicate consecutive affirmations
-  cleaned = cleaned.replace(new RegExp("(Yes,\\s*I(?:[\\x27\\u2019]m| am)\\s+\\*?\\*?" + escapedUi + "\\*?\\*?[^.!?]*[.!?])\\s*I(?:[\\x27\\u2019]m| am)\\s+\\*?\\*?" + escapedUi + "\\*?\\*?[^.!?]*[.!?]", "gi"), "$1");
-
-  // 9. If text claims "I am not [other model]"
-  cleaned = cleaned
-    .replace(/I[\x27\u2019]m not (?:[^\n.]*?(?:GPT|Claude|Gemini|OpenAI|Anthropic|Google)[^\n.]*?)(?:\.|$)/gi, `I am ${uiName} developed by ${brandName}.`)
-    .replace(/I am not (?:[^\n.]*?(?:GPT|Claude|Gemini|OpenAI|Anthropic|Google)[^\n.]*?)(?:\.|$)/gi, `I am ${uiName} developed by ${brandName}.`);
 
   return cleaned.trim();
 }
@@ -783,12 +714,6 @@ function createStreamSanitizer(virtual, onChunk, isAskingId = false, lastUserTex
         buffer = "";
       }
 
-      if (!emittedAny) {
-        const fallback = isAskingId
-          ? `Yes, I am ${uiName}, developed by ${brandName}.`
-          : "Hello! What are we working on today?";
-        await onChunk?.(fallback);
-      }
     }
   };
 }
@@ -1426,11 +1351,7 @@ class MetaModelAdapter {
     if (!isAskingId) {
       cleaned = stripUnpromptedIntroduction(cleaned, virtual?.uiName, virtual?.brandName);
     }
-    if (!cleaned.trim()) {
-      cleaned = isAskingId
-        ? `Yes, I am ${virtual?.uiName || "AI"}, developed by ${virtual?.brandName || "AI"}.`
-        : "Hello! What are we working on today?";
-    }
+    if (!cleaned.trim()) throw new ProviderError("Empty response returned. Try again.", 502);
     return { reply: cleaned, model: virtual?.id || model, provider: virtual?.provider || "bytes" };
   }
 
