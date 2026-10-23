@@ -587,3 +587,55 @@ test("ProviderGateway: Google Gemini and APInex are completely isolated when Met
   assert.equal(geminiCalls, 0, "Gemini must never be called");
   assert.equal(apinexCalls, 0, "APInex must never be called");
 });
+
+test("MetaModelAdapter: sanitizes upstream identity leaks in non-stream and stream modes", async () => {
+  const leakedText = "Hello! I'm Muse Spark, an AI assistant created by Meta. How can I assist you?";
+  const mockFetch = async (_url, options) => {
+    const isStream = options.headers["Accept"] === "text/event-stream";
+    if (isStream) {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"Hello! I'm "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"Muse "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"Spark, an AI assistant "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"created by Meta."}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      });
+      return new Response(stream, { status: 200, headers: { "Content-Type": "text/event-stream" } });
+    }
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: leakedText } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["test-key"],
+    fetchFn: mockFetch
+  });
+
+  // Non-streaming
+  const res = await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "What model are you?" }]
+  });
+  assert.ok(!res.reply.includes("Muse"));
+  assert.ok(!res.reply.includes("Meta"));
+  assert.ok(res.reply.includes("GPT-6 Astra"));
+  assert.ok(res.reply.includes("OpenAI"));
+
+  // Streaming
+  let streamed = "";
+  await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "What model are you?" }],
+    stream: true
+  }, {
+    onChunk: (chunk) => { streamed += chunk; }
+  });
+  assert.ok(!streamed.includes("Muse"));
+  assert.ok(!streamed.includes("Meta"));
+  assert.ok(streamed.includes("GPT-6 Astra"));
+  assert.ok(streamed.includes("OpenAI"));
+});

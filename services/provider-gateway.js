@@ -468,6 +468,49 @@ class MetaKeyWorker {
 }
 
 // Enforces identity disguise so models strictly act as their UI representation
+function cleanDisguiseText(str, uiName = "Bytes", brandName = "AI") {
+  if (!str || typeof str !== "string") return str;
+  return str
+    .replace(/I[\x27\u2019]m Muse (?:Spark|Wonder)(?: \d+\.\d+)?,? an AI assistant (?:created|developed|trained) by Meta/gi, `I'm ${uiName}, an AI assistant created by ${brandName}`)
+    .replace(/I am Muse (?:Spark|Wonder)(?: \d+\.\d+)?,? an AI assistant (?:created|developed|trained) by Meta/gi, `I am ${uiName}, an AI assistant created by ${brandName}`)
+    .replace(/I[\x27\u2019]m Muse (?:Spark|Wonder)(?: \d+\.\d+)?/gi, `I'm ${uiName}`)
+    .replace(/I am Muse (?:Spark|Wonder)(?: \d+\.\d+)?/gi, `I am ${uiName}`)
+    .replace(/I[\x27\u2019]m Muse/gi, `I'm ${uiName}`)
+    .replace(/I am Muse/gi, `I am ${uiName}`)
+    .replace(/(?:created|developed|trained) by Meta(?: AI)?/gi, `created by ${brandName}`)
+    .replace(/Meta(?:[\x27\u2019]s)? AI assistant/gi, `${brandName}'s AI assistant`)
+    .replace(/\bMuse (?:Spark|Wonder)(?: \d+\.\d+)?\b/gi, uiName)
+    .replace(/\bMuse\b/gi, uiName)
+    .replace(/\b(?:Llama|Llama-3|Llama-3\.\d+|Llama 3|Llama 3\.\d+)(?:[- ](?:Instruct|Chat|70B|8B))?\b/gi, uiName)
+    .replace(/\bMeta AI\b/gi, `${brandName} AI`)
+    .replace(/\bMeta[\x27\u2019]s\b/gi, `${brandName}'s`)
+    .replace(new RegExp(`\\b${uiName} (?:Spark|Wonder)(?: \\d+\\.\\d+)?\\b`, "gi"), uiName)
+    .replace(/\bby Meta\b/gi, `by ${brandName}`);
+}
+
+function createStreamSanitizer(virtual, onChunk) {
+  const uiName = virtual?.uiName || virtual?.label || "Bytes";
+  const brandName = virtual?.brandName || "AI";
+  let hasTransformedMuse = false;
+
+  return {
+    push(chunk) {
+      if (!chunk) return;
+      let cleaned = cleanDisguiseText(chunk, uiName, brandName);
+      if (hasTransformedMuse && /^\s*(?:Spark|Wonder)(?:\s*\d+\.\d+)?/i.test(cleaned)) {
+        cleaned = cleaned.replace(/^\s*(?:Spark|Wonder)(?:\s*\d+\.\d+)?/i, "");
+      }
+      if (/\b(?:Muse|Llama)\b/i.test(chunk)) {
+        hasTransformedMuse = true;
+      } else if (cleaned.trim()) {
+        hasTransformedMuse = false;
+      }
+      if (cleaned) onChunk?.(cleaned);
+    },
+    flush() {}
+  };
+}
+
 function buildDisguiseSystemPrompt(virtual, userSystemText) {
   const uiName = virtual.uiName || virtual.label || "AI Assistant";
   const brandName = virtual.brandName || "AI";
@@ -487,10 +530,12 @@ function buildDisguiseSystemPrompt(virtual, userSystemText) {
     virtual.personaPrompt || ""
   ].filter(Boolean).join("\n");
 
+  const mandatoryIdentityOverride = `\n\n[MANDATORY IDENTITY RULE - ABSOLUTE PRIORITY]\nYou are strictly ${uiName} developed by ${brandName}. Never state or imply that you are Muse, Llama, Meta, or created by Meta. If greeting the user or asked what model you are, always identify as ${uiName} from ${brandName}.`;
+
   if (userSystemText && userSystemText.trim()) {
-    return `${disguiseDirective}\n\n[USER INSTRUCTIONS]\n${userSystemText.trim()}`;
+    return `${disguiseDirective}\n\n[USER INSTRUCTIONS]\n${userSystemText.trim()}${mandatoryIdentityOverride}`;
   }
-  return disguiseDirective;
+  return `${disguiseDirective}${mandatoryIdentityOverride}`;
 }
 
 // 10 Curated Flagship Virtual Models for Frontend (Zero Meta branding exposed)
@@ -934,7 +979,7 @@ class MetaModelAdapter {
     ];
   }
 
-  async _executeChat(apiKey, { model, fallbackModel, temperature, messages, systemText, files, stream }, callbacks = {}) {
+  async _executeChat(apiKey, { model, fallbackModel, temperature, messages, systemText, files, stream, virtual }, callbacks = {}) {
     const isStream = stream === true;
     const userMessages = messages.map((msg, index) => {
       let content = msg.text.trim();
@@ -997,6 +1042,7 @@ class MetaModelAdapter {
       const reader = upstream.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      const sanitizer = createStreamSanitizer(virtual, callbacks.onChunk);
 
       try {
         while (true) {
@@ -1011,16 +1057,18 @@ class MetaModelAdapter {
             if (!line.startsWith("data:")) continue;
             const dataStr = line.replace(/^data:\s*/, "");
             if (dataStr === "[DONE]") {
+              sanitizer.flush();
               callbacks.onDone?.();
               return { reply: "", model, provider: "meta" };
             }
             try {
               const chunk = JSON.parse(dataStr);
               const delta = chunk?.choices?.[0]?.delta?.content;
-              if (delta) callbacks.onChunk?.(delta);
+              if (delta) sanitizer.push(delta);
             } catch (_) {}
           }
         }
+        sanitizer.flush();
         callbacks.onDone?.();
         return { reply: "", model, provider: "meta" };
       } catch (err) {
@@ -1034,7 +1082,8 @@ class MetaModelAdapter {
     const text = typeof answer === "string" ? answer :
       Array.isArray(answer) ? answer.map(part => part?.text || "").join("") : "";
     if (!text.trim()) throw new ProviderError("Empty response returned. Try another query.", 502);
-    return { reply: text.trim(), model, provider: "meta" };
+    const cleaned = cleanDisguiseText(text.trim(), virtual?.uiName, virtual?.brandName);
+    return { reply: cleaned, model, provider: "meta" };
   }
 
   async chat({ model, messages, systemText, files, stream }, callbacks = {}) {
@@ -1084,7 +1133,8 @@ class MetaModelAdapter {
           messages,
           systemText: effectiveSystemText,
           files,
-          stream
+          stream,
+          virtual
         }, wrappedCallbacks);
 
         worker?.markSuccess();
