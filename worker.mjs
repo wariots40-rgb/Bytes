@@ -522,17 +522,25 @@ export default {
               }
             }, 8000);
 
-            const safeWrite = async (data) => {
-              if (isClosed) return;
-              try {
-                await writer.write(encoder.encode(data));
-              } catch (_) {
-                isClosed = true;
-                clearInterval(keepAliveTimer);
-              }
+            let writeChain = Promise.resolve();
+
+            const safeWrite = (data) => {
+              writeChain = writeChain.then(async () => {
+                if (isClosed) return;
+                try {
+                  await writer.write(encoder.encode(data));
+                } catch (_) {
+                  isClosed = true;
+                  clearInterval(keepAliveTimer);
+                }
+              });
+              return writeChain;
             };
 
             const safeClose = async () => {
+              try {
+                await writeChain;
+              } catch (_) {}
               if (isClosed) return;
               isClosed = true;
               clearInterval(keepAliveTimer);

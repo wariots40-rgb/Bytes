@@ -591,7 +591,7 @@ function createStreamSanitizer(virtual, onChunk, isAskingId = false) {
   let headEmitted = false;
 
   return {
-    push(chunk) {
+    async push(chunk) {
       if (!chunk) return;
 
       // Once the initial sentence/head is emitted, stream through directly with chunk-level disguise cleaning
@@ -605,7 +605,7 @@ function createStreamSanitizer(virtual, onChunk, isAskingId = false) {
         } else if (cleaned.trim()) {
           hasTransformedMuse = false;
         }
-        if (cleaned) onChunk?.(cleaned);
+        if (cleaned) await onChunk?.(cleaned);
         return;
       }
 
@@ -618,7 +618,7 @@ function createStreamSanitizer(virtual, onChunk, isAskingId = false) {
       // If buffer does not look like a greeting or intro/confession, emit immediately
       if (!isGreeting && !isIntroOrConfess) {
         headEmitted = true;
-        onChunk?.(headBuffer);
+        await onChunk?.(headBuffer);
         headBuffer = "";
         return;
       }
@@ -643,11 +643,11 @@ function createStreamSanitizer(virtual, onChunk, isAskingId = false) {
             ? `Yes, I am ${uiName}, developed by ${brandName}.`
             : "Hello! How can I help you today?";
         }
-        onChunk?.(sanitized);
+        await onChunk?.(sanitized);
         headBuffer = "";
       }
     },
-    flush() {
+    async flush() {
       if (!headEmitted && headBuffer) {
         headEmitted = true;
         let sanitized = cleanDisguiseText(headBuffer, uiName, brandName);
@@ -659,7 +659,7 @@ function createStreamSanitizer(virtual, onChunk, isAskingId = false) {
             ? `Yes, I am ${uiName}, developed by ${brandName}.`
             : "Hello! How can I help you today?";
         }
-        onChunk?.(sanitized);
+        await onChunk?.(sanitized);
         headBuffer = "";
       }
     }
@@ -1272,27 +1272,27 @@ class MetaModelAdapter {
             if (!line.startsWith("data:")) continue;
             const dataStr = line.replace(/^data:\s*/, "");
             if (dataStr === "[DONE]") {
-              sanitizer.flush();
-              callbacks.onDone?.();
+              await sanitizer.flush();
+              await callbacks.onDone?.();
               return { reply: "", model: virtual?.id || model, provider: virtual?.provider || "bytes" };
             }
             try {
               const chunk = JSON.parse(dataStr);
               const delta = chunk?.choices?.[0]?.delta?.content;
-              if (delta) sanitizer.push(delta);
+              if (delta) await sanitizer.push(delta);
             } catch (_) {}
           }
         }
-        sanitizer.flush();
-        callbacks.onDone?.();
+        await sanitizer.flush();
+        await callbacks.onDone?.();
         return { reply: "", model: virtual?.id || model, provider: virtual?.provider || "bytes" };
       } catch (err) {
         if (err instanceof ProviderError) throw err;
         // If stream received tokens before stalling, flush received text gracefully so user keeps the generation
         if (hasReceivedAnyChunk) {
           try {
-            sanitizer.flush();
-            callbacks.onDone?.();
+            await sanitizer.flush();
+            await callbacks.onDone?.();
             return { reply: "", model: virtual?.id || model, provider: virtual?.provider || "bytes" };
           } catch (_) {}
         }
@@ -1377,9 +1377,9 @@ class MetaModelAdapter {
 
         const wrappedCallbacks = {
           ...callbacks,
-          onChunk: (chunk) => {
+          onChunk: async (chunk) => {
             hasStreamed = true;
-            callbacks.onChunk?.(chunk);
+            await callbacks.onChunk?.(chunk);
           }
         };
 
