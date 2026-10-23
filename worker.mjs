@@ -383,7 +383,7 @@ export default {
           return new Response(INDEX_HTML, {
             headers: {
               "Content-Type": "text/html; charset=utf-8",
-              "Cache-Control": "public, max-age=3600",
+              "Cache-Control": "public, max-age=60, s-maxage=60",
               ...corsHeaders
             }
           });
@@ -412,7 +412,7 @@ export default {
           return new Response(INDEX_HTML, {
             headers: {
               "Content-Type": "text/html; charset=utf-8",
-              "Cache-Control": "public, max-age=3600",
+              "Cache-Control": "public, max-age=60, s-maxage=60",
               ...corsHeaders
             }
           });
