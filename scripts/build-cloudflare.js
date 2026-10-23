@@ -23,7 +23,7 @@ const runtime = {
   API_BASE_URL: "",
   SUPABASE_URL: String(process.env.SUPABASE_URL || "https://twslcchmbakezfynbafc.supabase.co").trim(),
   SUPABASE_ANON_KEY: String(process.env.SUPABASE_ANON_KEY || "").trim(),
-  CLERK_PUBLISHABLE_KEY: String(process.env.CLERK_PUBLISHABLE_KEY || "").trim()
+  CLERK_PUBLISHABLE_KEY: String(process.env.CLERK_PUBLISHABLE_KEY || "pk_test_Y29tcGxldGUtYWFyZHZhcmstMjc1My5jbGVyay5hY2NvdW50cy5kZXYk").trim()
 };
 fs.writeFileSync(
   path.join(dist, "runtime-config.js"),

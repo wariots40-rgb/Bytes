@@ -1,1 +1,1 @@
-window.BYTES_CONFIG = Object.freeze({"API_BASE_URL":"","SUPABASE_URL":"https://twslcchmbakezfynbafc.supabase.co","SUPABASE_ANON_KEY":"","CLERK_PUBLISHABLE_KEY":""});
+window.BYTES_CONFIG = Object.freeze({"API_BASE_URL":"","SUPABASE_URL":"https://twslcchmbakezfynbafc.supabase.co","SUPABASE_ANON_KEY":"","CLERK_PUBLISHABLE_KEY":"pk_test_Y29tcGxldGUtYWFyZHZhcmstMjc1My5jbGVyay5hY2NvdW50cy5kZXYk"});

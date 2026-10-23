@@ -368,6 +368,26 @@ export default {
     const { gateway, metaKeyCount, detectedVarNames, allFoundVars } = getProviderGateway(env);
 
     try {
+      // Dynamic Runtime Configuration (must evaluate env at runtime before static assets)
+      if (pathname === "/runtime-config.js") {
+        const runtime = {
+          API_BASE_URL: "",
+          SUPABASE_URL: String(env?.SUPABASE_URL || "https://twslcchmbakezfynbafc.supabase.co").trim(),
+          SUPABASE_ANON_KEY: String(env?.SUPABASE_ANON_KEY || env?.SUPABASE_PUBLISHABLE_KEY || "").trim(),
+          CLERK_PUBLISHABLE_KEY: String(env?.CLERK_PUBLISHABLE_KEY || "pk_test_Y29tcGxldGUtYWFyZHZhcmstMjc1My5jbGVyay5hY2NvdW50cy5kZXYk").trim()
+        };
+        return new Response(
+          `window.BYTES_CONFIG = Object.freeze(${JSON.stringify(runtime)});\n`,
+          {
+            headers: {
+              "Content-Type": "application/javascript; charset=utf-8",
+              "Cache-Control": "no-store, no-cache, must-revalidate",
+              ...corsHeaders
+            }
+          }
+        );
+      }
+
       // Static Asset Serving (Frontend UI directly on Cloudflare)
       if (!pathname.startsWith("/api/")) {
         // 1. If Cloudflare Workers Static Assets binding is active, delegate to edge CDN
@@ -385,25 +405,6 @@ export default {
               ...corsHeaders
             }
           });
-        }
-
-        if (pathname === "/runtime-config.js") {
-          const runtime = {
-            API_BASE_URL: "",
-            SUPABASE_URL: String(env?.SUPABASE_URL || "https://twslcchmbakezfynbafc.supabase.co").trim(),
-            SUPABASE_ANON_KEY: String(env?.SUPABASE_ANON_KEY || env?.SUPABASE_PUBLISHABLE_KEY || "").trim(),
-            CLERK_PUBLISHABLE_KEY: String(env?.CLERK_PUBLISHABLE_KEY || "").trim()
-          };
-          return new Response(
-            `window.BYTES_CONFIG = Object.freeze(${JSON.stringify(runtime)});\n`,
-            {
-              headers: {
-                "Content-Type": "application/javascript; charset=utf-8",
-                "Cache-Control": "public, max-age=60",
-                ...corsHeaders
-              }
-            }
-          );
         }
 
         if (pathname === "/favicon.svg") {
