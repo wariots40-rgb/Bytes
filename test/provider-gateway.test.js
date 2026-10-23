@@ -436,6 +436,31 @@ test("MetaModelAdapter: dedicated image generators (gpt-image-2.5 & gemini-nano-
   assert.match(imageBodies[1].prompt, /character.*rendering/i);
 });
 
+test("MetaModelAdapter: chat() with image model seamlessly generates artwork instead of rejecting request", async () => {
+  let endpointCalled = null;
+  const mockFetch = async (url, options) => {
+    endpointCalled = url;
+    return new Response(JSON.stringify({
+      data: [{ b64_json: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["img-key"],
+    fetchFn: mockFetch
+  });
+
+  const res = await adapter.chat({
+    model: "openai/gpt-image-2.5",
+    messages: [{ role: "user", text: "Generate me an anime character" }]
+  });
+
+  assert.ok(endpointCalled.includes("/images/generations") || endpointCalled.includes("/responses"));
+  assert.ok(res.imageData);
+  assert.equal(res.model, "openai/gpt-image-2.5");
+  assert.equal(res.provider, "studio");
+});
+
 test("MetaModelAdapter: dedicated 1-to-1 key mapping routes each UI model to its specific API key in the pool", async () => {
   const tenKeys = [
     "meta-key-1-astra",

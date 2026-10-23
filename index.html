@@ -3038,6 +3038,12 @@ function selectModelOption(val) {
   updateActiveModelDisplay(selectedModel);
   closeModelDropdown();
   const meta = getModelMeta(selectedModel);
+  const isImg = meta?.isImage || selectedModel.startsWith('studio/') || selectedModel.includes('gpt-image') || selectedModel.includes('banana') || selectedModel.includes('canvas');
+  if (isImg && !imageMode) {
+    toggleImageMode(true);
+  } else if (!isImg && imageMode) {
+    toggleImageMode(false);
+  }
   toast('Switched to ' + meta.displayName);
 }
 
@@ -4076,9 +4082,11 @@ async function sendMessage(text) {
     selectedModel === 'openai/gpt-image-2.5' ||
     selectedModel === 'google/gemini-nano-banana-2.1' ||
     selectedModel.includes('banana') ||
-    selectedModel.includes('gpt-image');
+    selectedModel.includes('gpt-image') ||
+    selectedModel.includes('canvas');
+  const isImageRun = imageMode || isSelectedImage;
   const targetImageModel = isSelectedImage ? selectedModel : 'openai/gpt-image-2.5';
-  const currentModelMeta = getModelMeta(imageMode ? targetImageModel : selectedModel);
+  const currentModelMeta = getModelMeta(isImageRun ? targetImageModel : selectedModel);
 
   const typingRow = document.createElement('div');
   typingRow.className = 'message-row assistant';
@@ -4089,7 +4097,7 @@ async function sendMessage(text) {
         '<span class="meta-brand-badge ' + currentModelMeta.themeClass + '">' + currentModelMeta.iconSvg + '<span>' + escapeHtml(currentModelMeta.displayName) + '</span></span>' +
       '</div>' +
       '<div class="message-bubble"><span style="color:var(--muted);font-size:13px;">' +
-        (imageMode ? 'Creating artwork in ' + escapeHtml(currentModelMeta.displayName) + '…' : webSearchEnabled ? 'Searching the live web for verified facts…' : 'Thinking with ' + escapeHtml(currentModelMeta.displayName) + '…') +
+        (isImageRun ? 'Creating artwork in ' + escapeHtml(currentModelMeta.displayName) + '…' : webSearchEnabled ? 'Searching the live web for verified facts…' : 'Thinking with ' + escapeHtml(currentModelMeta.displayName) + '…') +
       '</span><span class="streaming-cursor"></span></div>' +
     '</div>';
   chatView.appendChild(typingRow);
@@ -4098,7 +4106,7 @@ async function sendMessage(text) {
   let assistantWrap = null;
 
   try {
-    if (imageMode) {
+    if (isImageRun) {
       const response = await bytesFetch(apiUrl('/api/image'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4115,7 +4123,7 @@ async function sendMessage(text) {
       typingRow.remove();
       const imageModelUsed = data.model || targetImageModel;
       makeMessage('assistant', data.reply || 'Here is your generated image.', { imageData: data.imageData, mimeType: data.mimeType, model: imageModelUsed });
-      conv.messages.push({ role: 'assistant', text: data.reply || 'Image generated.', generatedImage: true, model: imageModelUsed });
+      conv.messages.push({ role: 'assistant', text: data.reply || 'Image generated.', generatedImage: true, model: imageModelUsed, imageData: data.imageData, mimeType: data.mimeType });
     } else {
       const personaPrompt = PERSONA_PROMPTS[selectedPersona] || PERSONA_PROMPTS.default;
       const combinedMemory = (memoryText ? memoryText + '\n\n' : '') + '[Assistant Persona Directive]: ' + personaPrompt;

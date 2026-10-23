@@ -1311,6 +1311,26 @@ class MetaModelAdapter {
       personaPrompt: ""
     };
 
+    // If an image model was sent to chat(), seamlessly generate the image instead of failing with
+    // "image models are only supported on the /v1/responses API"
+    if (virtual.isImage) {
+      const lastUserMsg = Array.isArray(messages) ? [...messages].reverse().find(m => m.role === "user") : null;
+      const prompt = typeof lastUserMsg?.text === "string" ? lastUserMsg.text : (typeof lastUserMsg?.content === "string" ? lastUserMsg.content : "Create an image.");
+      const imgRes = await this.generateImage({ prompt, files, model });
+      const imgReply = imgRes.reply || "Here is your generated image.";
+      if (stream) {
+        callbacks.onChunk?.(imgReply);
+        callbacks.onDone?.();
+      }
+      return {
+        reply: imgReply,
+        imageData: imgRes.imageData,
+        mimeType: imgRes.mimeType,
+        model: virtual?.id || model,
+        provider: "studio"
+      };
+    }
+
     // Strictly route to the single dedicated API key assigned to this UI model
     const apiKey = this.getKeyForModel(model);
     const worker = this.workerMap.get(apiKey);
