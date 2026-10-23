@@ -714,29 +714,40 @@ export default {
         const user = await verifyUserSession(request, env, true);
         const body = await request.json().catch(() => ({}));
         const convs = Array.isArray(body.conversations) ? body.conversations : [];
+        if (!convs.length) {
+          return Response.json({ ok: true, synced: 0 }, { headers: corsHeaders });
+        }
+
+        const payloads = convs.slice(0, 100).filter(c => c && c.id).map(c => ({
+          id: String(c.id),
+          user_id: user.id,
+          title: String(c.title || "New Conversation").slice(0, 160),
+          messages: Array.isArray(c.messages) ? c.messages : [],
+          pinned: Boolean(c.pinned),
+          updated_at: c.updated_at || new Date().toISOString()
+        }));
+
+        if (!payloads.length) {
+          return Response.json({ ok: true, synced: 0 }, { headers: corsHeaders });
+        }
+
         const headers = {
           ...getSupabaseHeaders(env),
-          Prefer: "resolution=merge-duplicates"
+          Prefer: "resolution=merge-duplicates,return=representation"
         };
-        let synced = 0;
-        for (const c of convs.slice(0, 100)) {
-          if (!c?.id) continue;
-          const payload = {
-            id: String(c.id),
-            user_id: user.id,
-            title: String(c.title || "New Conversation").slice(0, 160),
-            messages: Array.isArray(c.messages) ? c.messages : [],
-            pinned: Boolean(c.pinned),
-            updated_at: c.updated_at || new Date().toISOString()
-          };
-          const res = await fetch(`${getSupabaseUrl(env)}/rest/v1/conversations`, {
-            method: "POST",
-            headers,
-            body: JSON.stringify(payload)
-          });
-          if (res.ok) synced++;
+        const res = await fetch(`${getSupabaseUrl(env)}/rest/v1/conversations`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(payloads)
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          return Response.json({ error: "Failed to bulk sync conversations: " + errText }, { status: res.status, headers: corsHeaders });
         }
-        return Response.json({ ok: true, synced }, { headers: corsHeaders });
+
+        const syncedRows = await res.json().catch(() => []);
+        return Response.json({ ok: true, synced: Array.isArray(syncedRows) ? syncedRows.length : payloads.length }, { headers: corsHeaders });
       }
 
       // 404 Route Not Found

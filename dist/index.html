@@ -3257,6 +3257,128 @@ function triggerMemorySync(text) {
   }).catch(err => console.warn('Cloud memory sync error:', err));
 }
 
+async function shipBrowserHistoryToAccount() {
+  if (!authUser || !authSessionToken) return;
+
+  // 1. Collect all local guest conversations from browser storage & memory
+  let guestConversations = [];
+  try {
+    const rawGuest = localStorage.getItem(STORAGE_KEY_BASE);
+    if (rawGuest) {
+      const parsed = JSON.parse(rawGuest);
+      if (Array.isArray(parsed)) guestConversations = parsed;
+    }
+  } catch (_) {}
+
+  // Also include currently loaded in-memory conversations
+  if (Array.isArray(conversations) && conversations.length > 0) {
+    for (const c of conversations) {
+      if (c && c.id && !guestConversations.some(g => g.id === c.id)) {
+        guestConversations.push(c);
+      }
+    }
+  }
+
+  // Filter valid conversations with messages
+  guestConversations = guestConversations.filter(c => c && typeof c.id === 'string' && Array.isArray(c.messages) && c.messages.length > 0);
+
+  // 2. Fetch existing cloud conversations from Supabase
+  let cloudConversations = [];
+  try {
+    const res = await bytesFetch(apiUrl('/api/conversations'));
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) cloudConversations = data;
+    }
+  } catch (err) {
+    console.warn('Could not fetch cloud conversations:', err);
+  }
+
+  // 3. Intelligently merge guest chats with cloud chats
+  const cloudMap = new Map(cloudConversations.map(c => [c.id, c]));
+  const toShipToCloud = [];
+
+  for (const guest of guestConversations) {
+    const existingCloud = cloudMap.get(guest.id);
+    if (!existingCloud) {
+      toShipToCloud.push(guest);
+      cloudMap.set(guest.id, guest);
+    } else {
+      const guestMsgCount = Array.isArray(guest.messages) ? guest.messages.length : 0;
+      const cloudMsgCount = Array.isArray(existingCloud.messages) ? existingCloud.messages.length : 0;
+      if (guestMsgCount > cloudMsgCount) {
+        toShipToCloud.push(guest);
+        cloudMap.set(guest.id, guest);
+      }
+    }
+  }
+
+  // 4. Ship guest chats to Supabase account in one fast bulk request
+  let shippedCount = 0;
+  if (toShipToCloud.length > 0) {
+    try {
+      const syncRes = await bytesFetch(apiUrl('/api/sync'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversations: toShipToCloud })
+      });
+      if (syncRes.ok) {
+        const syncData = await syncRes.json();
+        shippedCount = syncData.synced || toShipToCloud.length;
+      }
+    } catch (syncErr) {
+      console.warn('Failed to ship conversations to account:', syncErr);
+    }
+  }
+
+  // 5. Handle user memory sync
+  let guestMemory = '';
+  try { guestMemory = (localStorage.getItem(MEMORY_KEY_BASE) || memoryText || '').trim(); } catch (_) {}
+  if (guestMemory) {
+    try {
+      const memRes = await bytesFetch(apiUrl('/api/memory'));
+      const memData = memRes.ok ? await memRes.json() : {};
+      const cloudMemory = String(memData?.content || '').trim();
+      if (!cloudMemory && guestMemory) {
+        await triggerMemorySync(guestMemory);
+        memoryText = guestMemory;
+      } else if (cloudMemory) {
+        memoryText = cloudMemory;
+      }
+    } catch (_) {}
+  } else {
+    await loadCloudMemory();
+  }
+
+  // 6. Switch to user-scoped storage key
+  STORAGE_KEY = STORAGE_KEY_BASE + '.user.' + authUser.id;
+  MEMORY_KEY = MEMORY_KEY_BASE + '.user.' + authUser.id;
+  workspaceLoaded = true;
+
+  // Set merged conversations and save to user's local storage
+  conversations = Array.from(cloudMap.values());
+  persist(true);
+
+  // Clear guest storage slot
+  try {
+    localStorage.removeItem(STORAGE_KEY_BASE);
+    localStorage.removeItem(MEMORY_KEY_BASE);
+  } catch (_) {}
+
+  // 7. Update UI: If user had an active chat open, keep it open on screen!
+  if (currentId && conversations.some(c => c.id === currentId)) {
+    loadConversation(currentId);
+  } else {
+    renderHistoryList();
+  }
+
+  if (shippedCount > 0) {
+    toast(`Shipped ${shippedCount} browser chat${shippedCount > 1 ? 's' : ''} to your account!`);
+  } else {
+    toast(`Welcome back, ${authUser.name || authUser.email}`);
+  }
+}
+
 async function loadCloudConversations() {
   if (!authUser) return;
   try {
@@ -4669,6 +4791,14 @@ function showAccountModal() {
       authSession = null;
       authSessionToken = null;
       authUser = null;
+      STORAGE_KEY = STORAGE_KEY_BASE;
+      MEMORY_KEY = MEMORY_KEY_BASE;
+      workspaceLoaded = false;
+      conversations = [];
+      currentId = null;
+      chatView.innerHTML = '';
+      content.classList.remove('chat-mode');
+      memoryText = '';
       updateAuthUi();
       activateWorkspaceStorage();
       $('#modalBackdrop').classList.remove('open');
@@ -4695,9 +4825,10 @@ function activateWorkspaceStorage() {
     conversations = Array.isArray(saved) ? saved.filter(c => c && typeof c.id === 'string' && Array.isArray(c.messages)).slice(0, 100) : [];
   } catch (_) { conversations = []; }
 
-  currentId = null;
-  chatView.innerHTML = '';
-  content.classList.remove('chat-mode');
+  if (!currentId) {
+    chatView.innerHTML = '';
+    content.classList.remove('chat-mode');
+  }
   renderHistoryList();
 }
 
@@ -4720,13 +4851,19 @@ async function initAuth() {
             imageUrl: user.imageUrl || ''
           };
           updateAuthUi();
-          activateWorkspaceStorage();
-          await loadCloudConversations();
-          await loadCloudMemory();
+          await shipBrowserHistoryToAccount();
           await loadModelCatalog();
         } else {
           authSessionToken = null;
           authUser = null;
+          STORAGE_KEY = STORAGE_KEY_BASE;
+          MEMORY_KEY = MEMORY_KEY_BASE;
+          workspaceLoaded = false;
+          conversations = [];
+          currentId = null;
+          chatView.innerHTML = '';
+          content.classList.remove('chat-mode');
+          memoryText = '';
           updateAuthUi();
           activateWorkspaceStorage();
           await loadModelCatalog();

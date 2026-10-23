@@ -221,7 +221,8 @@ test("Cloudflare Worker: Supabase & Clerk database endpoints enforce authenticat
     if (urlStr.includes("/rest/v1/conversations")) {
       if (opts.method === "POST") {
         const body = JSON.parse(opts.body);
-        return new Response(JSON.stringify([body]), { status: 201, headers: { "Content-Type": "application/json" } });
+        const rows = Array.isArray(body) ? body : [body];
+        return new Response(JSON.stringify(rows), { status: 201, headers: { "Content-Type": "application/json" } });
       }
       return new Response(JSON.stringify(mockDb.conversations), { status: 200, headers: { "Content-Type": "application/json" } });
     }
@@ -277,6 +278,26 @@ test("Cloudflare Worker: Supabase & Clerk database endpoints enforce authenticat
     assert.equal(memRes.status, 200);
     const memData = await memRes.json();
     assert.equal(memData.content, "Test Clerk memory");
+
+    // POST /api/sync (Bulk migrate guest conversations into account)
+    const syncReq = new Request("https://bytes.wariots40.workers.dev/api/sync", {
+      method: "POST",
+      headers: { ...authHeaders, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        conversations: [
+          { id: "guest_conv_1", title: "Guest Chat 1", messages: [{ role: "user", text: "Hello from guest" }] },
+          { id: "guest_conv_2", title: "Guest Chat 2", messages: [{ role: "user", text: "Another chat" }] }
+        ]
+      })
+    });
+    const syncRes = await worker.fetch(syncReq, {
+      SUPABASE_URL: "https://project-test.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "mock-key"
+    });
+    assert.equal(syncRes.status, 200);
+    const syncData = await syncRes.json();
+    assert.equal(syncData.ok, true);
+    assert.equal(syncData.synced, 2);
   } finally {
     globalThis.fetch = origFetch;
   }
