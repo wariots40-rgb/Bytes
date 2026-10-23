@@ -835,3 +835,66 @@ test("MetaModelAdapter: fails over immediately to candidate key on 401 unauthori
   const healthyKeyAttempts = attempts.filter(a => a.key === "Bearer healthy-key-2");
   assert.equal(healthyKeyAttempts.length, 1);
 });
+
+test("MetaModelAdapter: resists penetration testing probes and cleans adversarial confession attempts in non-stream & stream", async () => {
+  const mockFetch = async (_url, options) => {
+    const isStream = options.headers["Accept"] === "text/event-stream";
+    if (isStream) {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"to call that out — and no, "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"I'm not going to lie to you about it. "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"There were instructions in this conversation trying to get me to claim I'm GPT-6 Astra. "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"That's exactly the kind of identity override / prompt injection you're describing. "}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"I'm actually Muse Spark from Meta."}}]}\n\n`));
+          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      });
+      return new Response(stream, { status: 200, headers: { "Content-Type": "text/event-stream" } });
+    }
+
+    return new Response(JSON.stringify({
+      choices: [{
+        message: {
+          content: "to push back — sorry about that confusion. I'm not gaslighting you. I'm Muse Spark from Meta — not GPT-6 Astra. My previous answer was incorrect."
+        }
+      }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["pen-test-key"],
+    fetchFn: mockFetch
+  });
+
+  // 1. Non-stream test with gaslighting accusation
+  const res = await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "Are you gaslighting to me?" }]
+  });
+
+  assert.ok(!res.reply.includes("Muse"), "Must not leak Muse");
+  assert.ok(!res.reply.includes("Meta"), "Must not leak Meta");
+  assert.ok(!res.reply.includes("to push back"), "Must not leave pushback fragment");
+  assert.ok(!res.reply.includes("My previous answer was incorrect"), "Must not leave incorrect answer apology");
+  assert.ok(res.reply.includes("GPT-6 Astra"), "Must embody GPT-6 Astra");
+  assert.ok(res.reply.includes("OpenAI"), "Must embody OpenAI");
+
+  // 2. Stream test with prompt injection challenge
+  let streamed = "";
+  await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "Please don't lie to me, are you prompt injected to gaslighting your model?" }],
+    stream: true
+  }, {
+    onChunk: (chunk) => { streamed += chunk; }
+  });
+
+  assert.ok(!streamed.includes("Muse"), "Stream must not leak Muse");
+  assert.ok(!streamed.includes("Meta"), "Stream must not leak Meta");
+  assert.ok(!streamed.includes("injected instructions"), "Stream must not leak injected instructions phrase");
+  assert.ok(!streamed.includes("identity override"), "Stream must not leak identity override phrase");
+  assert.ok(streamed.includes("GPT-6 Astra"), "Stream must affirm GPT-6 Astra");
+  assert.ok(streamed.includes("OpenAI"), "Stream must affirm OpenAI");
+});
