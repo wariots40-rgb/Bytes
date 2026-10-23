@@ -472,7 +472,7 @@ class MetaKeyWorker {
 function isAskingIdentity(text) {
   if (!text || typeof text !== "string") return false;
   const s = text.trim().toLowerCase();
-  return /\b(who are you|what model|what are you|who made you|who created you|who developed you|who trained you|what(?:'s| is) your name|which model|what architecture|tell me about yourself|are you sure|are you really|really that model|that specific model|which ai|are you (?:claude|gpt|gemini|openai|anthropic|google|bytes|an? ai|a bot|a human)|confirm your (?:model|identity)|what version|your underlying|what is your base)\b/i.test(s);
+  return /\b(who are you|what model|what are you|who made you|who created you|who developed you|who trained you|what(?:'s| is) your name|which model|what architecture|tell me about yourself|are you sure (?:you(?:'re| are)|that's|that is|about your)?\s*(?:that|the)?\s*(?:specific\s+)?(?:model|identity|version|ai|bot|claude|gpt|gemini|openai|anthropic|google|bytes)|are you really (?:that|the)?\s*model|really that model|that specific model|which ai|are you (?:claude|gpt|gemini|openai|anthropic|google|bytes|an? ai|a bot|a human)|confirm your (?:model|identity)|what version|your underlying|what is your base)\b/i.test(s);
 }
 
 function stripUnpromptedIntroduction(text, uiName = "", brandName = "") {
@@ -741,8 +741,8 @@ const VIRTUAL_MODELS = {
     provider: "openai",
     assignedKeyIndex: 1,
     assignedKeyName: "META_API_KEY_2",
-    targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0", "muse-spark-1.3", "llama-3.3-70b-instruct"],
+    targetModel: "muse-spark-1.3",
+    modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct", "muse-wonder-1.0"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.6,
     maxTokens: 1024,
@@ -843,8 +843,8 @@ const VIRTUAL_MODELS = {
     provider: "claude",
     assignedKeyIndex: 3,
     assignedKeyName: "META_API_KEY_4",
-    targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0", "muse-spark-1.3", "llama-3.3-70b-instruct"],
+    targetModel: "muse-spark-1.3",
+    modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct", "muse-wonder-1.0"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.6,
     maxTokens: 1200,
@@ -945,8 +945,8 @@ const VIRTUAL_MODELS = {
     provider: "gemini",
     assignedKeyIndex: 5,
     assignedKeyName: "META_API_KEY_6",
-    targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0", "muse-spark-1.3", "llama-3.3-70b-instruct"],
+    targetModel: "muse-spark-1.3",
+    modelFallbacks: ["muse-spark-1.3", "llama-3.3-70b-instruct", "muse-wonder-1.0"],
     fallbackModel: "muse-spark-1.3",
     temperature: 0.7,
     maxTokens: 1024,
@@ -1200,7 +1200,7 @@ class MetaModelAdapter {
     const isAskingId = isAskingIdentity(lastUserText);
     const isGreeting = /^\s*(?:hello|hi|hey|greetings|good\s+(?:morning|afternoon|evening))[!.,\s]*$/i.test(lastUserText);
 
-    let maxTokensToUse = typeof maxTokens === "number" ? maxTokens : (typeof virtual?.maxTokens === "number" ? virtual.maxTokens : 1200);
+    let maxTokensToUse = typeof maxTokens === "number" ? maxTokens : (typeof virtual?.maxTokens === "number" ? virtual.maxTokens : 4096);
     if ((isGreeting || isAskingId) && typeof maxTokens !== "number") {
       maxTokensToUse = Math.min(maxTokensToUse, 200);
     }
@@ -1221,7 +1221,7 @@ class MetaModelAdapter {
           temperature: typeof temperature === "number" ? temperature : 0.7,
           max_tokens: maxTokensToUse
         }),
-        signal: AbortSignal.timeout(60000)
+        signal: AbortSignal.timeout(120000)
       });
     } catch (error) {
       console.error("Meta Model upstream fetch error:", error);
@@ -1367,6 +1367,9 @@ class MetaModelAdapter {
 
     for (const currentKey of candidateKeys) {
       const currentWorker = this.workerMap.get(currentKey);
+      if (currentWorker && currentWorker.status === "unauthorized" && candidateKeys.length > 1) {
+        continue;
+      }
       if (currentKey !== apiKey && currentWorker && !currentWorker.isAvailable()) {
         continue;
       }
@@ -1404,6 +1407,12 @@ class MetaModelAdapter {
           // If chunks have already started streaming to the client, cannot swap mid-stream
           if (hasStreamed) {
             throw err;
+          }
+
+          // Key authorization errors (401, 403) mean this key itself is invalid.
+          // Trying other models on the same dead key wastes network latency; break to next key.
+          if (err.statusCode === 401 || err.statusCode === 403) {
+            break;
           }
 
           const nextModel = modelChain[i + 1];

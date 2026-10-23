@@ -487,7 +487,7 @@ export default {
         const memory = typeof body.memory === "string" ? body.memory.trim() : "";
         const requestedModel = typeof body.model === "string" ? body.model.trim() : "";
         const requestedProvider = typeof body.provider === "string" ? body.provider.trim() : "";
-        const maxTokens = typeof body.maxTokens === "number" ? body.maxTokens : (typeof body.max_tokens === "number" ? body.max_tokens : undefined);
+        const maxTokens = typeof body.maxTokens === "number" ? body.maxTokens : (typeof body.max_tokens === "number" ? body.max_tokens : 4096);
         const baseSystemText = (requestedModel ? "" : "You are Bytes, a thoughtful, capable AI assistant. ") +
           "Be direct, concise, warm, practical, and highly token-efficient. Avoid rambling, boilerplate, or repetitive filler. Deliver maximum insight with crisp answers. Format answers with readable Markdown when useful." +
           (memory ? "\n\nUser context:\n" + memory : "") +

@@ -778,3 +778,60 @@ test("MetaModelAdapter: preserves identity affirmations and cleans conversationa
   assert.doesNotMatch(res.reply, /Good catch/i);
   assert.doesNotMatch(res.reply, /not Claude/i);
 });
+
+test("MetaModelAdapter: avoids false positive identity clamping on general 'are you sure' questions", async () => {
+  let capturedBody = null;
+  const mockFetch = async (url, options) => {
+    capturedBody = JSON.parse(options.body);
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Here is your landing page code." } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["test-key"],
+    fetchFn: mockFetch
+  });
+
+  await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [
+      { role: "user", text: "Are you sure you can write a complete landing page?" }
+    ]
+  });
+
+  // Should have full model budget (1536), NOT clamped to 200
+  assert.equal(capturedBody.max_tokens, 1536);
+});
+
+test("MetaModelAdapter: fails over immediately to candidate key on 401 unauthorized without retrying models on dead key", async () => {
+  const attempts = [];
+  const mockFetch = async (url, options) => {
+    const key = options.headers["Authorization"];
+    const body = JSON.parse(options.body);
+    attempts.push({ key, model: body.model });
+    if (key === "Bearer dead-key-1") {
+      return new Response(JSON.stringify({ error: { message: "Invalid API key" } }), { status: 401 });
+    }
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Success from candidate key" } }]
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const adapter = new MetaModelAdapter({
+    apiKeys: ["dead-key-1", "healthy-key-2"],
+    fetchFn: mockFetch
+  });
+
+  const res = await adapter.chat({
+    model: "openai/gpt-6-astra",
+    messages: [{ role: "user", text: "Hello" }]
+  });
+
+  assert.equal(res.reply, "Success from candidate key");
+  // Only 1 attempt on dead-key-1 before breaking immediately to healthy-key-2
+  const deadKeyAttempts = attempts.filter(a => a.key === "Bearer dead-key-1");
+  assert.equal(deadKeyAttempts.length, 1);
+  const healthyKeyAttempts = attempts.filter(a => a.key === "Bearer healthy-key-2");
+  assert.equal(healthyKeyAttempts.length, 1);
+});

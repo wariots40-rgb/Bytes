@@ -4038,6 +4038,13 @@ function safeUrl(url) {
 // Rich Markdown Parser
 function renderMarkdown(raw) {
   let source = String(raw || '').replace(/\r\n?/g, '\n');
+
+  // Auto-close open code fence if stream is currently in the middle of a code block
+  const fenceMatches = source.match(/```/g);
+  if (fenceMatches && fenceMatches.length % 2 === 1) {
+    source += '\n```';
+  }
+
   const codeBlocks = [];
 
   // Protect code blocks
@@ -4594,6 +4601,7 @@ async function sendMessage(text) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           stream: true,
+          maxTokens: 4096,
           memory: combinedMemory,
           webSearch: webSearchEnabled,
           ...modelRequest(),
