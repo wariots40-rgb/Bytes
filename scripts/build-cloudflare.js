@@ -21,8 +21,9 @@ fs.writeFileSync(path.join(dist, "index.html"), html);
 
 const runtime = {
   API_BASE_URL: "",
-  SUPABASE_URL: String(process.env.SUPABASE_URL || "").trim(),
-  SUPABASE_ANON_KEY: String(process.env.SUPABASE_ANON_KEY || "").trim()
+  SUPABASE_URL: String(process.env.SUPABASE_URL || "https://twslcchmbakezfynbafc.supabase.co").trim(),
+  SUPABASE_ANON_KEY: String(process.env.SUPABASE_ANON_KEY || "").trim(),
+  CLERK_PUBLISHABLE_KEY: String(process.env.CLERK_PUBLISHABLE_KEY || "").trim()
 };
 fs.writeFileSync(
   path.join(dist, "runtime-config.js"),

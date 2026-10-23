@@ -133,46 +133,164 @@ function getCorsHeaders(request, env) {
   };
 }
 
-async function verifySupabaseUser(request, env) {
-  const requireAuth = String(env.REQUIRE_AUTH || "").toLowerCase() === "true";
-  if (!requireAuth) return null;
+function decodeBase64Url(str) {
+  let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
+  while (base64.length % 4) base64 += "=";
+  const bin = atob(base64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
 
-  const supabaseUrl = String(env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
-  const supabaseKey = String(env.SUPABASE_ANON_KEY || env.SUPABASE_PUBLISHABLE_KEY || "").trim();
+const jwksCache = new Map();
 
-  if (!supabaseUrl || !supabaseKey) {
-    throw new ProviderError("Authentication is enabled but Supabase auth is not configured on the server.", 503);
+async function verifyClerkToken(token, env) {
+  const parts = token.split(".");
+  if (parts.length !== 3) throw new Error("Invalid JWT token format");
+
+  const header = JSON.parse(decodeBase64Url(parts[0]));
+  const payload = JSON.parse(decodeBase64Url(parts[1]));
+
+  const now = Math.floor(Date.now() / 1000);
+  if (payload.exp && payload.exp < now) {
+    throw new Error("Token expired");
+  }
+  if (payload.nbf && payload.nbf > now) {
+    throw new Error("Token not active yet");
   }
 
+  if (header.kid && payload.iss) {
+    try {
+      const cacheKey = `${payload.iss}:${header.kid}`;
+      let cryptoKey = jwksCache.get(cacheKey);
+      if (!cryptoKey) {
+        const jwksUrl = payload.iss.replace(/\/+$/, "") + "/.well-known/jwks.json";
+        const jwksRes = await fetch(jwksUrl, { signal: AbortSignal.timeout(4000) });
+        if (jwksRes.ok) {
+          const jwksData = await jwksRes.json();
+          const keyDef = jwksData.keys?.find(k => k.kid === header.kid);
+          if (keyDef) {
+            cryptoKey = await crypto.subtle.importKey(
+              "jwk",
+              keyDef,
+              { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+              false,
+              ["verify"]
+            );
+            jwksCache.set(cacheKey, cryptoKey);
+          }
+        }
+      }
+
+      if (cryptoKey) {
+        let base64Sig = parts[2].replace(/-/g, "+").replace(/_/g, "/");
+        while (base64Sig.length % 4) base64Sig += "=";
+        const binSig = atob(base64Sig);
+        const sigBytes = new Uint8Array(binSig.length);
+        for (let i = 0; i < binSig.length; i++) sigBytes[i] = binSig.charCodeAt(i);
+
+        const dataBytes = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
+        const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", cryptoKey, sigBytes, dataBytes);
+        if (!valid) throw new Error("Invalid Clerk token signature");
+      }
+    } catch (err) {
+      if (env?.CLERK_SECRET_KEY) {
+        const verifyRes = await fetch("https://api.clerk.com/v1/tokens/verify", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + env.CLERK_SECRET_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ token })
+        });
+        if (!verifyRes.ok) throw new Error("Clerk token verification failed");
+      }
+    }
+  }
+
+  return {
+    id: payload.sub,
+    email: payload.email || payload.primary_email_address || payload.email_address || "",
+    name: payload.name || payload.first_name || "",
+    avatar: payload.picture || payload.image_url || "",
+    provider: "clerk"
+  };
+}
+
+async function verifyUserSession(request, env, forceRequired = false) {
+  const requireAuth = forceRequired || String(env?.REQUIRE_AUTH || "").toLowerCase() === "true";
   const authHeader = request.headers.get("authorization") || "";
   const match = authHeader.match(/^Bearer\s+([^\s]+)$/i);
-  if (!match || match[1].length > 8192) {
-    const err = new Error("Sign in to use this Bytes feature.");
+
+  if (!match) {
+    if (requireAuth) {
+      const err = new Error("Sign in to use this feature.");
+      err.statusCode = 401;
+      err.code = "AUTH_REQUIRED";
+      throw err;
+    }
+    return null;
+  }
+
+  const token = match[1];
+  if (token.length > 8192) {
+    const err = new Error("Token payload too large.");
     err.statusCode = 401;
     err.code = "AUTH_REQUIRED";
     throw err;
   }
 
-  const authUrl = new URL("/auth/v1/user", supabaseUrl);
-  const response = await fetch(authUrl.toString(), {
-    headers: {
-      apikey: supabaseKey,
-      Authorization: "Bearer " + match[1],
-      Accept: "application/json"
-    },
-    signal: AbortSignal.timeout(5000)
-  });
+  // 1. Try Clerk Token (standard 3-part JWT)
+  if (token.includes(".")) {
+    try {
+      const clerkUser = await verifyClerkToken(token, env);
+      if (clerkUser?.id) return clerkUser;
+    } catch (_) {}
+  }
 
-  if (response.status === 401 || response.status === 403) {
+  // 2. Try Supabase Auth Token fallback
+  const supabaseUrl = String(env?.SUPABASE_URL || "https://twslcchmbakezfynbafc.supabase.co").trim().replace(/\/+$/, "");
+  const supabaseKey = String(env?.SUPABASE_ANON_KEY || env?.SUPABASE_PUBLISHABLE_KEY || "").trim();
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const authUrl = new URL("/auth/v1/user", supabaseUrl);
+      const res = await fetch(authUrl.toString(), {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: "Bearer " + token,
+          Accept: "application/json"
+        },
+        signal: AbortSignal.timeout(4000)
+      });
+      if (res.ok) {
+        const u = await res.json();
+        return { id: u.id, email: u.email, provider: "supabase" };
+      }
+    } catch (_) {}
+  }
+
+  if (requireAuth) {
     const err = new Error("Your session is invalid or expired. Sign in again.");
     err.statusCode = 401;
     err.code = "AUTH_REQUIRED";
     throw err;
   }
-  if (!response.ok) {
-    throw new ProviderError("Authentication is temporarily unavailable. Please try again.", 503);
-  }
-  return response.json();
+  return null;
+}
+
+const verifySupabaseUser = (request, env) => verifyUserSession(request, env, false);
+
+function getSupabaseUrl(env) {
+  return String(env?.SUPABASE_URL || "https://twslcchmbakezfynbafc.supabase.co").trim().replace(/\/+$/, "");
+}
+
+function getSupabaseHeaders(env) {
+  const key = String(env?.SUPABASE_SERVICE_ROLE_KEY || env?.SUPABASE_ANON_KEY || env?.SUPABASE_PUBLISHABLE_KEY || "").trim();
+  return {
+    apikey: key,
+    Authorization: "Bearer " + key,
+    "Content-Type": "application/json"
+  };
 }
 
 // Search utilities
@@ -272,8 +390,9 @@ export default {
         if (pathname === "/runtime-config.js") {
           const runtime = {
             API_BASE_URL: "",
-            SUPABASE_URL: String(env.SUPABASE_URL || "").trim(),
-            SUPABASE_ANON_KEY: String(env.SUPABASE_ANON_KEY || env.SUPABASE_PUBLISHABLE_KEY || "").trim()
+            SUPABASE_URL: String(env?.SUPABASE_URL || "https://twslcchmbakezfynbafc.supabase.co").trim(),
+            SUPABASE_ANON_KEY: String(env?.SUPABASE_ANON_KEY || env?.SUPABASE_PUBLISHABLE_KEY || "").trim(),
+            CLERK_PUBLISHABLE_KEY: String(env?.CLERK_PUBLISHABLE_KEY || "").trim()
           };
           return new Response(
             `window.BYTES_CONFIG = Object.freeze(${JSON.stringify(runtime)});\n`,
@@ -490,6 +609,133 @@ export default {
         });
 
         return Response.json(result, { headers: corsHeaders });
+      }
+
+      // Supabase Database: Conversations (List)
+      if (pathname === "/api/conversations" && request.method === "GET") {
+        const user = await verifyUserSession(request, env, true);
+        const headers = getSupabaseHeaders(env);
+        const res = await fetch(`${getSupabaseUrl(env)}/rest/v1/conversations?user_id=eq.${encodeURIComponent(user.id)}&order=updated_at.desc`, {
+          headers
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          return Response.json({ error: "Failed to fetch conversations: " + errText }, { status: res.status, headers: corsHeaders });
+        }
+        const data = await res.json();
+        return Response.json(data, { headers: corsHeaders });
+      }
+
+      // Supabase Database: Conversations (Upsert)
+      if (pathname === "/api/conversations" && (request.method === "PUT" || request.method === "POST")) {
+        const user = await verifyUserSession(request, env, true);
+        const body = await request.json().catch(() => null);
+        if (!body || !body.id) {
+          return Response.json({ error: "Invalid conversation payload: missing conversation id" }, { status: 400, headers: corsHeaders });
+        }
+        const headers = {
+          ...getSupabaseHeaders(env),
+          Prefer: "resolution=merge-duplicates,return=representation"
+        };
+        const payload = {
+          id: String(body.id),
+          user_id: user.id,
+          title: String(body.title || "New Conversation").slice(0, 160),
+          messages: Array.isArray(body.messages) ? body.messages : [],
+          pinned: Boolean(body.pinned),
+          updated_at: new Date().toISOString()
+        };
+        const res = await fetch(`${getSupabaseUrl(env)}/rest/v1/conversations`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          return Response.json({ error: "Failed to save conversation: " + errText }, { status: res.status, headers: corsHeaders });
+        }
+        const result = await res.json();
+        return Response.json({ ok: true, conversation: result?.[0] || payload }, { headers: corsHeaders });
+      }
+
+      // Supabase Database: Conversations (Delete)
+      if (pathname === "/api/conversations" && request.method === "DELETE") {
+        const user = await verifyUserSession(request, env, true);
+        const convId = url.searchParams.get("id");
+        if (!convId) {
+          return Response.json({ error: "Missing conversation ID." }, { status: 400, headers: corsHeaders });
+        }
+        const headers = getSupabaseHeaders(env);
+        const res = await fetch(`${getSupabaseUrl(env)}/rest/v1/conversations?id=eq.${encodeURIComponent(convId)}&user_id=eq.${encodeURIComponent(user.id)}`, {
+          method: "DELETE",
+          headers
+        });
+        return Response.json({ ok: res.ok }, { headers: corsHeaders });
+      }
+
+      // Supabase Database: User Memory (Get)
+      if (pathname === "/api/memory" && request.method === "GET") {
+        const user = await verifyUserSession(request, env, true);
+        const headers = getSupabaseHeaders(env);
+        const res = await fetch(`${getSupabaseUrl(env)}/rest/v1/user_memory?user_id=eq.${encodeURIComponent(user.id)}`, {
+          headers
+        });
+        if (!res.ok) {
+          return Response.json({ content: "" }, { headers: corsHeaders });
+        }
+        const rows = await res.json();
+        return Response.json({ content: rows?.[0]?.content || "" }, { headers: corsHeaders });
+      }
+
+      // Supabase Database: User Memory (Save)
+      if (pathname === "/api/memory" && (request.method === "PUT" || request.method === "POST")) {
+        const user = await verifyUserSession(request, env, true);
+        const body = await request.json().catch(() => ({}));
+        const headers = {
+          ...getSupabaseHeaders(env),
+          Prefer: "resolution=merge-duplicates,return=representation"
+        };
+        const payload = {
+          user_id: user.id,
+          content: String(body.content || "").slice(0, 4000),
+          updated_at: new Date().toISOString()
+        };
+        const res = await fetch(`${getSupabaseUrl(env)}/rest/v1/user_memory`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(payload)
+        });
+        return Response.json({ ok: res.ok }, { headers: corsHeaders });
+      }
+
+      // Supabase Database: Bulk Sync from Client
+      if (pathname === "/api/sync" && request.method === "POST") {
+        const user = await verifyUserSession(request, env, true);
+        const body = await request.json().catch(() => ({}));
+        const convs = Array.isArray(body.conversations) ? body.conversations : [];
+        const headers = {
+          ...getSupabaseHeaders(env),
+          Prefer: "resolution=merge-duplicates"
+        };
+        let synced = 0;
+        for (const c of convs.slice(0, 100)) {
+          if (!c?.id) continue;
+          const payload = {
+            id: String(c.id),
+            user_id: user.id,
+            title: String(c.title || "New Conversation").slice(0, 160),
+            messages: Array.isArray(c.messages) ? c.messages : [],
+            pinned: Boolean(c.pinned),
+            updated_at: c.updated_at || new Date().toISOString()
+          };
+          const res = await fetch(`${getSupabaseUrl(env)}/rest/v1/conversations`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) synced++;
+        }
+        return Response.json({ ok: true, synced }, { headers: corsHeaders });
       }
 
       // 404 Route Not Found

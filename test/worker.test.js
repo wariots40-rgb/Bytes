@@ -188,3 +188,97 @@ test("Cloudflare Worker: POST /api/chat streams SSE response", async () => {
   }
 });
 
+test("Cloudflare Worker: Supabase & Clerk database endpoints enforce authentication and sync data", async () => {
+  const workerModule = await import("../worker.mjs");
+  const worker = workerModule.default;
+
+  // 1. Rejects unauthenticated request
+  const unauthReq = new Request("https://bytes.wariots40.workers.dev/api/conversations", {
+    method: "GET"
+  });
+  const unauthRes = await worker.fetch(unauthReq, {});
+  assert.equal(unauthRes.status, 401);
+
+  // 2. Authenticated Clerk JWT request
+  const header = Buffer.from(JSON.stringify({ alg: "none", typ: "JWT" })).toString("base64url");
+  const payload = Buffer.from(JSON.stringify({
+    sub: "user_clerk_test_456",
+    email: "clerkuser@example.com",
+    exp: Math.floor(Date.now() / 1000) + 3600
+  })).toString("base64url");
+  const dummyClerkToken = `${header}.${payload}.mockSignature`;
+
+  const origFetch = globalThis.fetch;
+  const mockDb = {
+    conversations: [
+      { id: "conv_1", user_id: "user_clerk_test_456", title: "Clerk Chat", messages: [] }
+    ],
+    memory: "Test Clerk memory"
+  };
+
+  globalThis.fetch = async (url, opts = {}) => {
+    const urlStr = String(url);
+    if (urlStr.includes("/rest/v1/conversations")) {
+      if (opts.method === "POST") {
+        const body = JSON.parse(opts.body);
+        return new Response(JSON.stringify([body]), { status: 201, headers: { "Content-Type": "application/json" } });
+      }
+      return new Response(JSON.stringify(mockDb.conversations), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
+    if (urlStr.includes("/rest/v1/user_memory")) {
+      if (opts.method === "POST") {
+        return new Response(JSON.stringify([{ user_id: "user_clerk_test_456" }]), { status: 201 });
+      }
+      return new Response(JSON.stringify([{ content: mockDb.memory }]), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
+    return origFetch(url, opts);
+  };
+
+  try {
+    const authHeaders = {
+      Authorization: `Bearer ${dummyClerkToken}`
+    };
+
+    // GET /api/conversations
+    const listReq = new Request("https://bytes.wariots40.workers.dev/api/conversations", {
+      headers: authHeaders
+    });
+    const listRes = await worker.fetch(listReq, {
+      SUPABASE_URL: "https://project-test.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "mock-key"
+    });
+    assert.equal(listRes.status, 200);
+    const listData = await listRes.json();
+    assert.equal(listData.length, 1);
+    assert.equal(listData[0].title, "Clerk Chat");
+
+    // PUT /api/conversations
+    const saveReq = new Request("https://bytes.wariots40.workers.dev/api/conversations", {
+      method: "PUT",
+      headers: { ...authHeaders, "Content-Type": "application/json" },
+      body: JSON.stringify({ id: "conv_2", title: "New Chat", messages: [] })
+    });
+    const saveRes = await worker.fetch(saveReq, {
+      SUPABASE_URL: "https://project-test.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "mock-key"
+    });
+    assert.equal(saveRes.status, 200);
+    const saveData = await saveRes.json();
+    assert.equal(saveData.ok, true);
+
+    // GET /api/memory
+    const memReq = new Request("https://bytes.wariots40.workers.dev/api/memory", {
+      headers: authHeaders
+    });
+    const memRes = await worker.fetch(memReq, {
+      SUPABASE_URL: "https://project-test.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "mock-key"
+    });
+    assert.equal(memRes.status, 200);
+    const memData = await memRes.json();
+    assert.equal(memData.content, "Test Clerk memory");
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+

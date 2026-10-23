@@ -39,8 +39,9 @@ html = html.replace(marker, '<script src="/runtime-config.js"></script>');
 fs.writeFileSync(path.join(dist, "index.html"), html);
 const runtime = {
   API_BASE_URL: apiUrl,
-  SUPABASE_URL: String(process.env.SUPABASE_URL || "").trim(),
-  SUPABASE_ANON_KEY: String(process.env.SUPABASE_ANON_KEY || "").trim()
+  SUPABASE_URL: String(process.env.SUPABASE_URL || "https://twslcchmbakezfynbafc.supabase.co").trim(),
+  SUPABASE_ANON_KEY: String(process.env.SUPABASE_ANON_KEY || "").trim(),
+  CLERK_PUBLISHABLE_KEY: String(process.env.CLERK_PUBLISHABLE_KEY || "").trim()
 };
 fs.writeFileSync(path.join(dist, "runtime-config.js"), "window.BYTES_CONFIG = Object.freeze(" + JSON.stringify(runtime) + ");\n");
 console.log("Built Bytes frontend into dist/ (API URL configured; Supabase public config " + (runtime.SUPABASE_URL && runtime.SUPABASE_ANON_KEY ? "present" : "not set yet") + ").");

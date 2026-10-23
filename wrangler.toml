@@ -12,8 +12,11 @@ binding = "ASSETS"
 [vars]
 FRONTEND_URL = "https://bytes.wariots40.workers.dev"
 REQUIRE_AUTH = "false"
-# Add your environment variables or secrets using `wrangler secret put <KEY>`:
-# META_API_KEY_1 = "..."
-# META_API_KEY_2 = "..."
-# ...
-# META_API_KEY_10 = "..."
+SUPABASE_URL = "https://twslcchmbakezfynbafc.supabase.co"
+# Clerk & Supabase Database Configuration
+# Public key can also be placed in [vars]:
+# CLERK_PUBLISHABLE_KEY = "pk_test_..."
+# Secrets to add via `wrangler secret put <KEY>`:
+# SUPABASE_SERVICE_ROLE_KEY = "..."
+# CLERK_SECRET_KEY = "..."
+# META_API_KEY_1 through META_API_KEY_10
