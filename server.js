@@ -140,33 +140,10 @@ async function requireSupabaseUser(req, res, next) {
 
 app.get("/api/health", (_req, res) => {
   res.setHeader("Cache-Control", "no-store");
-  const providerHealth = searchProviderRunner.snapshot();
-  const safeProviderHealth = Object.fromEntries(Object.entries(providerHealth).map(([name, state]) => [name, {
-    calls: state.calls,
-    successes: state.successes,
-    failures: state.failures,
-    successRate: state.successRate,
-    averageLatencyMs: state.averageLatencyMs,
-    circuit: state.circuit
-  }]));
   res.json({
     ok: true,
-    providerConfigured: providerGateway.hasConfiguredProvider(),
-    frontierEngine: {
-      active: true,
-      modelsAvailable: 10,
-      keyPoolConfigured: providerGateway.meta ? providerGateway.meta.isConfigured() : false,
-      keyPoolSize: providerGateway.meta ? providerGateway.meta.apiKeys.length : 0
-    },
-    search: {
-      searxngConfigured: Boolean(process.env.SEARXNG_URL),
-      generalProviders: process.env.SEARXNG_URL ? ["SearXNG", "FreeSerp"] : ["FreeSerp"],
-      newsProviders: ["FreeNewsAPI", "Google News RSS", ...(process.env.SEARXNG_URL ? ["SearXNG"] : []), "FreeSerp"],
-      cacheTtlSeconds: Math.round(SEARCH_CACHE_TTL_MS / 1000),
-      providerHealth: safeProviderHealth
-    },
-    defaultModel: "anthropic/claude-sonnet-5-5",
-    imageModel: "openai/gpt-image-2.5"
+    status: "healthy",
+    providerConfigured: providerGateway.hasConfiguredProvider()
   });
 });
 

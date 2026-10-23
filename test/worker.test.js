@@ -76,7 +76,7 @@ test("Cloudflare Worker: GET /api/health returns worker runtime info", async () 
   const data = await response.json();
   assert.equal(data.ok, true);
   assert.equal(data.runtime, "cloudflare-workers");
-  assert.equal(data.providers.meta, true);
+  assert.equal(data.status, "healthy");
 });
 
 test("Cloudflare Worker: GET /api/models returns 10 frontier models", async () => {

@@ -11,21 +11,14 @@ import { INDEX_HTML, FAVICON_SVG, LOGO_SVG, LOGO_MARK_SVG } from "./services/emb
 // Cached gateway per worker isolate
 let cachedGateway = null;
 let lastConfigSig = "";
-let lastGatewayInfo = null;
 
 function getProviderGateway(env) {
   const combined = { ...(globalThis.process?.env || {}), ...(env || {}) };
   const keysByIndex = [];
   const extraKeys = [];
-  const detectedVarNames = [];
-  const allFoundVars = [];
 
   for (const [rawKey, rawVal] of Object.entries(combined)) {
-    if (!rawKey) continue;
-    if (!rawKey.startsWith("CF_") && !rawKey.startsWith("__") && !rawKey.startsWith("npm_")) {
-      allFoundVars.push(rawKey);
-    }
-    if (!rawVal || typeof rawVal !== "string") continue;
+    if (!rawKey || !rawVal || typeof rawVal !== "string") continue;
     const val = rawVal.trim().replace(/^['"]|['"]$/g, "");
     if (!val) continue;
 
@@ -36,7 +29,6 @@ function getProviderGateway(env) {
     if (idxMatch) {
       const idx = parseInt(idxMatch[1], 10) - 1;
       keysByIndex[idx] = val;
-      detectedVarNames.push(rawKey);
       continue;
     }
 
@@ -44,7 +36,6 @@ function getProviderGateway(env) {
     if (/^(?:META_|MODEL_)?(?:API_)?KEYS$/.test(k)) {
       const list = val.split(/[,;\n\r\t]+/).map(s => s.trim().replace(/^['"]|['"]$/g, "")).filter(Boolean);
       extraKeys.push(...list);
-      detectedVarNames.push(rawKey);
       continue;
     }
 
@@ -52,7 +43,6 @@ function getProviderGateway(env) {
     if (/^(?:META_|MODEL_)(?:API_)?KEY$/.test(k)) {
       if (!keysByIndex[0]) keysByIndex[0] = val;
       else extraKeys.push(val);
-      detectedVarNames.push(rawKey);
     }
   }
 
@@ -89,18 +79,10 @@ function getProviderGateway(env) {
       metaModel: combined.META_MODEL || "llama-3.3-70b-instruct"
     });
     lastConfigSig = sig;
-    lastGatewayInfo = {
-      metaKeyCount: uniqueMetaKeys.length,
-      detectedVarNames,
-      allFoundVars
-    };
   }
 
   return {
-    gateway: cachedGateway,
-    metaKeyCount: lastGatewayInfo?.metaKeyCount || uniqueMetaKeys.length,
-    detectedVarNames: lastGatewayInfo?.detectedVarNames || detectedVarNames,
-    allFoundVars: lastGatewayInfo?.allFoundVars || allFoundVars
+    gateway: cachedGateway
   };
 }
 
@@ -365,7 +347,7 @@ export default {
 
     const url = new URL(request.url);
     const pathname = url.pathname;
-    const { gateway, metaKeyCount, detectedVarNames, allFoundVars } = getProviderGateway(env);
+    const { gateway } = getProviderGateway(env);
 
     try {
       // Dynamic Runtime Configuration (must evaluate env at runtime before static assets)
@@ -441,21 +423,8 @@ export default {
       if (pathname === "/api/health") {
         return Response.json({
           ok: true,
-          runtime: "cloudflare-workers",
-          providerConfigured: gateway.hasConfiguredProvider(),
-          providers: {
-            gemini: gateway.gemini.isConfigured(),
-            apinex: gateway.apinex.isConfigured(),
-            meta: gateway.meta.isConfigured()
-          },
-          metaKeyCount,
-          detectedKeyVariables: detectedVarNames,
-          allAvailableEnvKeys: allFoundVars,
-          search: {
-            searxngConfigured: Boolean(env?.SEARXNG_URL || globalThis.process?.env?.SEARXNG_URL),
-            generalProviders: ["FreeSerp"],
-            newsProviders: ["FreeNewsAPI"]
-          }
+          status: "healthy",
+          runtime: "cloudflare-workers"
         }, { headers: corsHeaders });
       }
 

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e0f14">
-<meta name="description" content="Bytes — an intelligent, thoughtful AI workspace powered by Google Gemini and advanced LLM gateways.">
+<meta name="description" content="Bytes — an intelligent, thoughtful real-time AI platform and workspace.">
 <title>Bytes — Thoughtful AI Workspace</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23141824'/%3E%3Cstop offset='100%25' stop-color='%230a0c12'/%3E%3C/linearGradient%3E%3ClinearGradient id='amber' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23fef08a'/%3E%3Cstop offset='40%25' stop-color='%23f59e0b'/%3E%3Cstop offset='100%25' stop-color='%23d97706'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23bg)'/%3E%3Crect x='1' y='1' width='62' height='62' rx='15' fill='none' stroke='rgba(255,255,255,0.18)' stroke-width='1.5'/%3E%3Ccircle cx='32' cy='37.5' r='14' fill='rgba(245,158,11,0.1)'/%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M 18 13 A 4 4 0 0 0 14 17 L 14 47 A 4 4 0 0 0 18 51 L 22 51 C 26 51 32 51 37 51 C 45 51 50.5 45.5 50.5 37.5 C 50.5 29.5 45 23 37 23 C 32 23 26 23.5 22 24 L 22 17 A 4 4 0 0 0 18 13 Z M 22 31.5 L 34 31.5 C 38 31.5 41.5 34 41.5 37.5 C 41.5 41 38 43.5 34 43.5 L 22 43.5 Z' fill='%23ffffff'/%3E%3Crect x='29.2' y='34.7' width='5.6' height='5.6' rx='1.4' transform='rotate(45 32 37.5)' fill='url(%23amber)'/%3E%3Ccircle cx='47' cy='16' r='6' fill='rgba(245,158,11,0.22)'/%3E%3Ccircle cx='47' cy='16' r='3.5' fill='url(%23amber)'/%3E%3Ccircle cx='47' cy='16' r='1.2' fill='%23ffffff'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="/logo.svg">
@@ -2324,7 +2324,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
               <div class="model-dropdown-title">Select Intelligence</div>
               <div class="model-search-wrap">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" id="modelSearchInput" placeholder="Search models (Gemini, Claude, DeepSeek...)" autocomplete="off">
+                <input type="text" id="modelSearchInput" placeholder="Search models (Claude, GPT, Gemini...)" autocomplete="off">
               </div>
             </div>
             <div class="model-options-list" id="modelOptionsList">
@@ -2461,7 +2461,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                 <span>Web</span>
               </button>
-              <button type="button" class="tool-btn" id="imageModeBtn" aria-pressed="false" title="Generate or edit images with Gemini">
+              <button type="button" class="tool-btn" id="imageModeBtn" aria-pressed="false" title="Generate or edit images with Image Studio">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
                 <span>Image Studio</span>
               </button>
@@ -2590,7 +2590,7 @@ let busy = false;
 let currentAbortController = null;
 let lastPrompt = '';
 let selectedModel = 'auto';
-let modelCatalog = { providers: [], configured: { gemini: false, apinex: false } };
+let modelCatalog = { providers: [], configured: { active: false } };
 let memoryText = '';
 let selectedPersona = 'default';
 let pendingFiles = [];
@@ -2752,12 +2752,12 @@ function getModelMeta(rawId) {
   if (str.includes('llama')) {
     return {
       family: 'llama',
-      brand: 'Meta',
-      displayName: 'Meta Llama 3.3',
-      shortName: 'Llama 3.3',
+      brand: 'Research',
+      displayName: 'Bytes Horizon 3.3',
+      shortName: 'Horizon 3.3',
       badge: 'OPEN WEIGHTS',
       tagClass: 'tag-fast',
-      desc: 'Meta AI · Open-weights powerhouse',
+      desc: 'Frontier AI · Open-weights powerhouse',
       themeClass: 'theme-llama',
       iconSvg: AI_ICONS.llama
     };
@@ -3000,8 +3000,7 @@ function renderModelDropdown(catalog) {
   for (const prov of catalog.providers || []) {
     const rawModels = (prov.models || []).slice(0, 6);
     if (!rawModels.length) continue;
-    const isGemini = prov.id === 'gemini';
-    const groupTitle = prov.label || (isGemini ? 'Google Gemini' : 'APInex');
+    const groupTitle = prov.label || 'Frontier Models';
     groups.push({
       title: groupTitle,
       models: rawModels.map(m => ({
@@ -3932,7 +3931,7 @@ function makeMessage(role, text, options = {}) {
 
     const bar = document.createElement('div');
     bar.className = 'image-actions-bar';
-    bar.innerHTML = '<span>Generated with Gemini Studio</span>';
+    bar.innerHTML = '<span>Generated with Bytes Studio</span>';
     const dl = document.createElement('a');
     dl.className = 'image-action-btn';
     dl.href = img.src;
@@ -4454,17 +4453,7 @@ async function openSettingsModal() {
       '<div class="settings-brand-mark">' + logoHtml + '</div>' +
       '<div class="settings-brand-info">' +
         '<div class="settings-brand-title">Bytes AI Workspace <span class="settings-version-pill">v2.4</span></div>' +
-        '<div class="settings-brand-sub">Editorial intelligence gateway · Google Gemini & Multi-Provider Architecture</div>' +
-      '</div>' +
-    '</div>' +
-
-    '<div class="settings-section">' +
-      '<div class="settings-section-title">System Status & Health Diagnostics</div>' +
-      '<div class="settings-diagnostics-card">' +
-        '<div class="diag-item"><span class="diag-label">API Gateway:</span><span class="diag-val" id="diagApiStatus"><span class="status-dot green"></span> Pinging...</span></div>' +
-        '<div class="diag-item"><span class="diag-label">Latency:</span><span class="diag-val" id="diagLatency">—</span></div>' +
-        '<div class="diag-item"><span class="diag-label">Search Circuit:</span><span class="diag-val" id="diagSearch">—</span></div>' +
-        '<div class="diag-item"><span class="diag-label">Providers:</span><span class="diag-val" id="diagProvider">—</span></div>' +
+        '<div class="settings-brand-sub">Real-Time Frontier Intelligence Workspace</div>' +
       '</div>' +
     '</div>' +
 
@@ -4502,35 +4491,6 @@ async function openSettingsModal() {
     triggerMemorySync(memoryText);
     toast('Workspace memory saved.');
   });
-
-  // Wire up Live Health Diagnostics
-  (async () => {
-    const t0 = performance.now();
-    try {
-      const res = await bytesFetch(apiUrl('/api/health'), { signal: AbortSignal.timeout(4000) });
-      const latency = Math.round(performance.now() - t0);
-      if (res.ok) {
-        const data = await res.json();
-        const apiEl = $('#diagApiStatus');
-        const latEl = $('#diagLatency');
-        const searchEl = $('#diagSearch');
-        const provEl = $('#diagProvider');
-        if (apiEl) apiEl.innerHTML = '<span class="status-dot green"></span> Operational';
-        if (latEl) latEl.textContent = latency + ' ms';
-        if (searchEl) {
-          const gen = data.search?.generalProviders ? data.search.generalProviders.join(', ') : 'Healthy';
-          searchEl.innerHTML = '<span class="status-dot green"></span> ' + escapeHtml(gen);
-        }
-        if (provEl) {
-          const keyPool = data.frontierEngine?.keyPoolSize || 10;
-          provEl.textContent = 'Dedicated Multi-Key Engine (' + keyPool + ' keys active)';
-        }
-      }
-    } catch (_) {
-      const apiEl = $('#diagApiStatus');
-      if (apiEl) apiEl.innerHTML = '<span class="status-dot red"></span> Offline';
-    }
-  })();
 
   $('#exportMdBtn').onclick = () => {
     const conv = conversations.find(c => c.id === currentId);
@@ -4622,7 +4582,7 @@ function updateAuthUi() {
     btn.textContent = name.split(' ')[0] || name.split('@')[0];
     btn.title = 'Account: ' + (authUser.email || name);
     $('#profileName').textContent = name;
-    $('#profileSubtitle').textContent = 'Cloud Sync (Supabase)';
+    $('#profileSubtitle').textContent = 'Cloud Synchronized';
     if (authUser.imageUrl) {
       $('#profileAvatar').innerHTML = `<img src="${escapeHtml(authUser.imageUrl)}" alt="${escapeHtml(name)}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">`;
     } else {
@@ -4630,7 +4590,7 @@ function updateAuthUi() {
     }
   } else {
     btn.textContent = 'Sign in';
-    btn.title = 'Sign in with Clerk';
+    btn.title = 'Sign in to your account';
     $('#profileName').textContent = 'Bytes Workspace';
     $('#profileSubtitle').textContent = (CLERK_PUBLISHABLE_KEY || supabaseClient) ? 'Sign in to sync' : 'Guest Mode (Local)';
     $('#profileAvatar').textContent = 'B';
@@ -4663,7 +4623,7 @@ async function getOrInitClerk() {
     }
 
     if (!window.Clerk) {
-      throw new Error('Clerk authentication service could not be loaded. Please check your internet connection.');
+      throw new Error('Authentication service could not be loaded. Please check your internet connection.');
     }
 
     const clerk = window.Clerk;
@@ -4778,7 +4738,7 @@ function showAccountModal() {
   }
   const html =
     '<p>Signed in as <strong>' + escapeHtml(authUser?.email || authUser?.name || '') + '</strong></p>' +
-    '<p style="font-size:12px;color:var(--muted);">Your chat sessions and memory are synchronized with Supabase.</p>' +
+    '<p style="font-size:12px;color:var(--muted);">Your chat sessions and memory are securely synchronized to your account.</p>' +
     '<div style="margin-top:20px;">' +
       '<button type="button" class="modal-btn" id="signOutBtn" style="color:#ef4444;border-color:#ef4444;">Sign Out</button>' +
     '</div>';

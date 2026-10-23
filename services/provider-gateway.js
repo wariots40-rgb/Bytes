@@ -1342,8 +1342,7 @@ class ProviderGateway {
         auto: true,
         default: { provider: "claude", model: "anthropic/claude-sonnet-5-5" },
         configured: {
-          active: true,
-          keyCount: this.meta.apiKeys.length
+          active: true
         },
         errors: {}
       };
