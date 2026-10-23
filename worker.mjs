@@ -503,6 +503,44 @@ export default {
           const runner = ctx && typeof ctx.waitUntil === "function" ? ctx.waitUntil.bind(ctx) : (p) => p;
 
           runner((async () => {
+            let isClosed = false;
+
+            // Heartbeat ping every 8s prevents edge proxy / browser socket idle timeouts
+            const keepAliveTimer = setInterval(() => {
+              if (isClosed) {
+                clearInterval(keepAliveTimer);
+                return;
+              }
+              try {
+                writer.write(encoder.encode(": keepalive\n\n")).catch(() => {
+                  isClosed = true;
+                  clearInterval(keepAliveTimer);
+                });
+              } catch (_) {
+                isClosed = true;
+                clearInterval(keepAliveTimer);
+              }
+            }, 8000);
+
+            const safeWrite = async (data) => {
+              if (isClosed) return;
+              try {
+                await writer.write(encoder.encode(data));
+              } catch (_) {
+                isClosed = true;
+                clearInterval(keepAliveTimer);
+              }
+            };
+
+            const safeClose = async () => {
+              if (isClosed) return;
+              isClosed = true;
+              clearInterval(keepAliveTimer);
+              try {
+                await writer.close();
+              } catch (_) {}
+            };
+
             try {
               await gateway.streamChat({
                 provider: requestedProvider,
@@ -514,30 +552,32 @@ export default {
                 maxTokens,
                 webSearchFallback: body.webSearch === true && requestedProvider === "apinex"
               }, {
-                onChunk: (chunk) => {
-                  writer.write(encoder.encode("data: " + JSON.stringify({ text: chunk }) + "\n\n"));
+                onChunk: async (chunk) => {
+                  await safeWrite("data: " + JSON.stringify({ text: chunk }) + "\n\n");
                 },
-                onError: (err) => {
-                  writer.write(encoder.encode("data: " + JSON.stringify({ error: err }) + "\n\n"));
+                onError: async (err) => {
+                  await safeWrite("data: " + JSON.stringify({ error: err }) + "\n\n");
+                  await safeClose();
                 },
-                onDone: () => {
-                  writer.write(encoder.encode("data: [DONE]\n\n"));
-                  writer.close();
+                onDone: async () => {
+                  await safeWrite("data: [DONE]\n\n");
+                  await safeClose();
                 }
               });
             } catch (err) {
-              try {
-                writer.write(encoder.encode("data: " + JSON.stringify({ error: err.message || "Streaming failed." }) + "\n\n"));
-                writer.close();
-              } catch (_) {}
+              await safeWrite("data: " + JSON.stringify({ error: err.message || "Streaming failed." }) + "\n\n");
+              await safeClose();
+            } finally {
+              await safeClose();
             }
           })());
 
           return new Response(readable, {
             headers: {
               "Content-Type": "text/event-stream; charset=utf-8",
-              "Cache-Control": "no-cache",
+              "Cache-Control": "no-cache, no-transform",
               "Connection": "keep-alive",
+              "X-Accel-Buffering": "no",
               ...corsHeaders
             }
           });

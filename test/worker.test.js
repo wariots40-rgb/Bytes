@@ -39,6 +39,9 @@ test("Cloudflare Worker: GET / serves Bytes frontend HTML directly", async () =>
   assert.match(response.headers.get("content-type"), /text\/html/);
   const text = await response.text();
   assert.ok(text.includes("<title>Bytes — Thoughtful AI Workspace</title>"));
+  assert.ok(text.includes('id="templatesModal"'));
+  assert.ok(text.includes('id="templatesBtn"'));
+  assert.ok(text.includes('code-dots'));
 });
 
 test("Cloudflare Worker: GET /runtime-config.js serves self-origin configuration", async () => {

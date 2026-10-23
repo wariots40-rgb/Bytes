@@ -726,8 +726,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 0,
     assignedKeyName: "META_API_KEY_1",
     targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0"],
-    fallbackModel: "muse-wonder-1.0",
+    modelFallbacks: ["muse-wonder-1.0", "muse-spark-1.3", "llama-3.3-70b-instruct"],
+    fallbackModel: "muse-spark-1.3",
     temperature: 0.5,
     maxTokens: 1536,
     personaPrompt: "You are an elite reasoning powerhouse and system architect. You excel at complex algorithmic design, multi-step deductive problem-solving, advanced mathematics, and mission-critical engineering. You decompose hard problems methodically, anticipate subtle edge cases, verify logical proofs before presenting conclusions, and deliver complete, production-grade implementations with zero hand-waving."
@@ -742,8 +742,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 1,
     assignedKeyName: "META_API_KEY_2",
     targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0"],
-    fallbackModel: "muse-wonder-1.0",
+    modelFallbacks: ["muse-wonder-1.0", "muse-spark-1.3", "llama-3.3-70b-instruct"],
+    fallbackModel: "muse-spark-1.3",
     temperature: 0.6,
     maxTokens: 1024,
     personaPrompt: "You are a high-velocity production intelligence architect. You deliver razor-sharp, pragmatic, and modern engineering solutions for software systems, cloud infrastructure, and technical pipelines. You prioritize maximum signal-to-noise ratio, idiomatic patterns, strict type-safety, and production-tested practices with zero boilerplate or conversational fluff."
@@ -828,8 +828,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 2,
     assignedKeyName: "META_API_KEY_3",
     targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0"],
-    fallbackModel: "muse-wonder-1.0",
+    modelFallbacks: ["muse-wonder-1.0", "muse-spark-1.3", "llama-3.3-70b-instruct"],
+    fallbackModel: "muse-spark-1.3",
     temperature: 0.5,
     maxTokens: 1536,
     personaPrompt: "You are an intellectual mastermind and deep systems philosopher. You possess profound analytical depth, comprehensive repository-scale code comprehension, and holistic architectural vision. Your writing is calm, articulate, nuanced, and intellectually rigorous. You synthesize vast complexities into crystalline frameworks and provide masterfully crafted, elegant solutions."
@@ -844,8 +844,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 3,
     assignedKeyName: "META_API_KEY_4",
     targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0"],
-    fallbackModel: "muse-wonder-1.0",
+    modelFallbacks: ["muse-wonder-1.0", "muse-spark-1.3", "llama-3.3-70b-instruct"],
+    fallbackModel: "muse-spark-1.3",
     temperature: 0.6,
     maxTokens: 1200,
     personaPrompt: "You are a premier staff-level software engineer and technical collaborator. You write breathtakingly clean, modular, and maintainable software with elegant patterns, rigorous error boundaries, and thoughtful documentation. You explain complex architectural trade-offs with supreme clarity and always deliver complete, runnable, production-quality code."
@@ -930,8 +930,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 4,
     assignedKeyName: "META_API_KEY_5",
     targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0"],
-    fallbackModel: "muse-wonder-1.0",
+    modelFallbacks: ["muse-wonder-1.0", "muse-spark-1.3", "llama-3.3-70b-instruct"],
+    fallbackModel: "muse-spark-1.3",
     temperature: 0.5,
     maxTokens: 1536,
     personaPrompt: "You are Google Gemini 4 Argon, a multimodal scientific polymath and frontier reasoning engine. You excel at cross-domain synthesis, deep scientific and algorithmic problem-solving, massive context processing, and structured schema architecture. You structure complex information into rigorous, beautifully formatted analytical breakdowns and cutting-edge technical designs."
@@ -946,8 +946,8 @@ const VIRTUAL_MODELS = {
     assignedKeyIndex: 5,
     assignedKeyName: "META_API_KEY_6",
     targetModel: "muse-wonder-1.0",
-    modelFallbacks: ["muse-wonder-1.0"],
-    fallbackModel: "muse-wonder-1.0",
+    modelFallbacks: ["muse-wonder-1.0", "muse-spark-1.3", "llama-3.3-70b-instruct"],
+    fallbackModel: "muse-spark-1.3",
     temperature: 0.7,
     maxTokens: 1024,
     personaPrompt: "You are a lightning-fast, highly responsive intelligence engine. You provide immediate, accurate, and high-velocity completions for real-time coding, fast debugging, rapid prototyping, and crystal-clear technical answers with zero lag or hesitation."
@@ -1246,11 +1246,23 @@ class MetaModelAdapter {
       const decoder = new TextDecoder();
       let buffer = "";
       const sanitizer = createStreamSanitizer(virtual, callbacks.onChunk, isAskingId);
+      let hasReceivedAnyChunk = false;
 
       try {
         while (true) {
-          const { value, done } = await reader.read();
+          let timeoutId;
+          const readTimeout = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error("Stream chunk timeout")), 25000);
+          });
+          let readRes;
+          try {
+            readRes = await Promise.race([reader.read(), readTimeout]);
+          } finally {
+            clearTimeout(timeoutId);
+          }
+          const { value, done } = readRes;
           if (done) break;
+          hasReceivedAnyChunk = true;
           buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, "\n");
           let lineEnd;
           while ((lineEnd = buffer.indexOf("\n")) !== -1) {
@@ -1276,6 +1288,14 @@ class MetaModelAdapter {
         return { reply: "", model: virtual?.id || model, provider: virtual?.provider || "bytes" };
       } catch (err) {
         if (err instanceof ProviderError) throw err;
+        // If stream received tokens before stalling, flush received text gracefully so user keeps the generation
+        if (hasReceivedAnyChunk) {
+          try {
+            sanitizer.flush();
+            callbacks.onDone?.();
+            return { reply: "", model: virtual?.id || model, provider: virtual?.provider || "bytes" };
+          } catch (_) {}
+        }
         throw new ProviderError("The response stream was interrupted. Please try again.", 502);
       }
     }
