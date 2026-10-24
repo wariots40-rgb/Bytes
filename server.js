@@ -486,12 +486,26 @@ app.post("/api/chat", requireSupabaseUser, chatLimiter, async (req, res) => {
     webSearchContext;
 
   const stream = req.body?.stream === true;
+  let keepAliveTimer = null;
   if (stream) {
     res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
     res.setHeader("Cache-Control", "no-cache, no-transform");
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders?.();
+
+    keepAliveTimer = setInterval(() => {
+      if (!res.writableEnded) {
+        try { res.write(": keepalive\n\n"); } catch (_) {}
+      }
+    }, 6000);
   }
+
+  const cleanupStream = () => {
+    if (keepAliveTimer) {
+      clearInterval(keepAliveTimer);
+      keepAliveTimer = null;
+    }
+  };
 
   try {
     const result = await providerGateway.streamChat({
@@ -504,21 +518,37 @@ app.post("/api/chat", requireSupabaseUser, chatLimiter, async (req, res) => {
       maxTokens,
       webSearchFallback: req.body?.webSearch === true && requestedProvider === "apinex"
     }, {
-      onChunk: chunk => res.write("data: " + JSON.stringify({ text: chunk }) + "\n\n"),
-      onError: err => res.write("data: " + JSON.stringify({ error: err }) + "\n\n"),
+      onChunk: chunk => {
+        if (!res.writableEnded) res.write("data: " + JSON.stringify({ text: chunk }) + "\n\n");
+      },
+      onError: err => {
+        cleanupStream();
+        if (!res.writableEnded) {
+          res.write("data: " + JSON.stringify({ error: err }) + "\n\n");
+          res.end();
+        }
+      },
       onDone: () => {
-        res.write("data: [DONE]\n\n");
-        res.end();
+        cleanupStream();
+        if (!res.writableEnded) {
+          res.write("data: [DONE]\n\n");
+          res.end();
+        }
       }
     });
 
+    cleanupStream();
     if (!stream) {
       return res.json(result);
     }
   } catch (error) {
+    cleanupStream();
     if (stream && res.headersSent) {
-      res.write("data: " + JSON.stringify({ error: error.message || "The response stream was interrupted." }) + "\n\n");
-      return res.end();
+      if (!res.writableEnded) {
+        res.write("data: " + JSON.stringify({ error: error.message || "The response stream was interrupted." }) + "\n\n");
+        return res.end();
+      }
+      return;
     }
     const status = error instanceof ProviderError ? error.statusCode : 502;
     return res.status(status).json({ error: error.message });

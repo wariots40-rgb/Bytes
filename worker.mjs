@@ -504,46 +504,50 @@ export default {
 
           runner((async () => {
             let isClosed = false;
+            let lastWriteTime = Date.now();
+            let writeChain = Promise.resolve();
 
-            // Heartbeat ping every 8s prevents edge proxy / browser socket idle timeouts
+            const safeWrite = (data) => {
+              if (isClosed) return writeChain;
+              writeChain = writeChain
+                .then(async () => {
+                  if (isClosed) return;
+                  try {
+                    await writer.write(encoder.encode(data));
+                    lastWriteTime = Date.now();
+                  } catch (_) {
+                    isClosed = true;
+                    clearInterval(keepAliveTimer);
+                  }
+                })
+                .catch(() => {
+                  isClosed = true;
+                  clearInterval(keepAliveTimer);
+                });
+              return writeChain;
+            };
+
+            // Heartbeat ping prevents edge proxy / browser socket idle timeouts.
+            // Crucial: always enqueued via safeWrite() so it NEVER collides with in-flight chunk writes.
+            // Only sent when stream has been idle for >= 6 seconds without any token chunk.
             const keepAliveTimer = setInterval(() => {
               if (isClosed) {
                 clearInterval(keepAliveTimer);
                 return;
               }
-              try {
-                writer.write(encoder.encode(": keepalive\n\n")).catch(() => {
-                  isClosed = true;
-                  clearInterval(keepAliveTimer);
-                });
-              } catch (_) {
-                isClosed = true;
-                clearInterval(keepAliveTimer);
+              if (Date.now() - lastWriteTime >= 6000) {
+                safeWrite(": keepalive\n\n");
               }
-            }, 8000);
-
-            let writeChain = Promise.resolve();
-
-            const safeWrite = (data) => {
-              writeChain = writeChain.then(async () => {
-                if (isClosed) return;
-                try {
-                  await writer.write(encoder.encode(data));
-                } catch (_) {
-                  isClosed = true;
-                  clearInterval(keepAliveTimer);
-                }
-              });
-              return writeChain;
-            };
+            }, 6000);
 
             const safeClose = async () => {
+              clearInterval(keepAliveTimer);
+              if (isClosed) return;
               try {
                 await writeChain;
               } catch (_) {}
               if (isClosed) return;
               isClosed = true;
-              clearInterval(keepAliveTimer);
               try {
                 await writer.close();
               } catch (_) {}

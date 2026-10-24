@@ -5012,18 +5012,21 @@ async function readStream(response, onText, signal) {
   const decoder = new TextDecoder();
   let answer = '';
   let buffer = '';
+  let isDone = false;
+  let interrupted = false;
+  let interruptError = null;
 
   try {
-    while (true) {
+    while (!isDone) {
       if (signal?.aborted) {
         try { reader.cancel(); } catch (_) {}
         break;
       }
 
-      // 35-second watchdog: if no bytes or heartbeats arrive within 35s, abort gracefully
+      // 65-second watchdog: if no bytes or heartbeats arrive within 65s, abort gracefully
       let timeoutId;
       const timeoutPromise = new Promise((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error('Stream activity timeout')), 35000);
+        timeoutId = setTimeout(() => reject(new Error('Stream activity timeout')), 65000);
       });
 
       let readResult;
@@ -5045,7 +5048,12 @@ async function readStream(response, onText, signal) {
         if (!trimmed || trimmed.startsWith(':')) continue;
         if (!trimmed.startsWith('data:')) continue;
         const payload = trimmed.slice(5).trim();
-        if (!payload || payload === '[DONE]') continue;
+        if (!payload) continue;
+        if (payload === '[DONE]') {
+          isDone = true;
+          try { reader.cancel(); } catch (_) {}
+          break;
+        }
         let data;
         try {
           data = JSON.parse(payload);
@@ -5060,7 +5068,7 @@ async function readStream(response, onText, signal) {
       }
     }
 
-    if (buffer.trim()) {
+    if (!isDone && buffer.trim()) {
       const trimmed = buffer.trim();
       if (trimmed.startsWith('data:')) {
         const payload = trimmed.slice(5).trim();
@@ -5077,12 +5085,14 @@ async function readStream(response, onText, signal) {
       }
     }
   } catch (err) {
-    if (err.name === 'AbortError' || signal?.aborted) return answer;
+    if (err.name === 'AbortError' || signal?.aborted) return { text: answer, aborted: true };
+    interrupted = true;
+    interruptError = err;
     // If partial answer was streamed, preserve it rather than discarding the response!
-    if (answer.trim()) return answer;
+    if (answer.trim()) return { text: answer, interrupted: true, error: err };
     throw err;
   }
-  return answer;
+  return { text: answer, interrupted, error: interruptError };
 }
 
 // Send Message Flow
@@ -5253,7 +5263,7 @@ async function sendMessage(text) {
         throw new Error(errJson.error || ('Request failed (status ' + response.status + ')'));
       }
 
-      const answer = await readStream(response, partial => {
+      const streamResult = await readStream(response, partial => {
         if (!assistantWrap) {
           typingRow.remove();
           assistantWrap = makeMessage('assistant', '', { model: selectedModel });
@@ -5266,12 +5276,32 @@ async function sendMessage(text) {
       }, currentAbortController.signal);
 
       typingRow.remove();
-      const finalReply = (answer && answer.trim()) ? answer : '_No response came back — please try again._';
+      const rawText = typeof streamResult === 'string' ? streamResult : (streamResult?.text || '');
+      const finalReply = (rawText && rawText.trim()) ? rawText : '_No response came back — please try again._';
       if (!assistantWrap) {
         assistantWrap = makeMessage('assistant', finalReply, { model: selectedModel });
       } else {
         const markdownNode = assistantWrap.querySelector('.rendered-markdown');
         if (markdownNode) markdownNode.innerHTML = renderMarkdown(finalReply);
+      }
+
+      if (streamResult?.interrupted && rawText.trim()) {
+        const actionsBar = assistantWrap?.querySelector('.message-actions-bar');
+        if (actionsBar && !actionsBar.querySelector('.continue-btn')) {
+          const contBtn = document.createElement('button');
+          contBtn.type = 'button';
+          contBtn.className = 'msg-btn continue-btn';
+          contBtn.style.color = 'var(--accent, #3b82f6)';
+          contBtn.style.borderColor = 'var(--accent, #3b82f6)';
+          contBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> <span>Continue generating</span>';
+          contBtn.title = 'The response was paused or interrupted. Click to continue generation from here.';
+          contBtn.onclick = () => {
+            contBtn.remove();
+            sendMessage('Continue directly from where you left off. Do not repeat what was already written.');
+          };
+          actionsBar.prepend(contBtn);
+        }
+        toast('Response stream was paused. Click "Continue generating" to finish.');
       }
 
       conv.messages.push({ role: 'assistant', text: finalReply, model: selectedModel });
