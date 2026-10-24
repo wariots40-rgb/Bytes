@@ -3983,7 +3983,7 @@ function selectModelOption(val) {
   updateActiveModelDisplay(selectedModel);
   closeModelDropdown();
   const meta = getModelMeta(selectedModel);
-  const isImg = meta?.isImage || selectedModel.startsWith('studio/') || selectedModel.includes('gpt-image') || selectedModel.includes('banana') || selectedModel.includes('canvas');
+  const isImg = meta?.isImage || selectedModel.includes('dall-e') || selectedModel.includes('imagen') || selectedModel.startsWith('studio/') || selectedModel.includes('gpt-image') || selectedModel.includes('banana') || selectedModel.includes('canvas');
   if (isImg && !imageMode) {
     toggleImageMode(true);
   } else if (!isImg && imageMode) {
@@ -4861,7 +4861,7 @@ function makeMessage(role, text, options = {}) {
 
   if (options.imageData) {
     const imgMeta = getModelMeta(options.model || selectedModel);
-    const imgSrc = 'data:' + (options.mimeType || 'image/png') + ';base64,' + options.imageData;
+    const imgSrc = options.imageData.startsWith('data:') ? options.imageData : ('data:' + (options.mimeType || 'image/png') + ';base64,' + options.imageData);
     const downloadFilename = (imgMeta.shortName || 'artwork').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString(36) + '.png';
 
     const imgCard = document.createElement('div');
@@ -5059,6 +5059,23 @@ async function readStream(response, onText, signal) {
         }
       }
     }
+
+    if (buffer.trim()) {
+      const trimmed = buffer.trim();
+      if (trimmed.startsWith('data:')) {
+        const payload = trimmed.slice(5).trim();
+        if (payload && payload !== '[DONE]') {
+          try {
+            const data = JSON.parse(payload);
+            if (data.error) throw new Error(data.error);
+            if (data.text) {
+              answer += data.text;
+              onText(answer);
+            }
+          } catch (_) {}
+        }
+      }
+    }
   } catch (err) {
     if (err.name === 'AbortError' || signal?.aborted) return answer;
     // If partial answer was streamed, preserve it rather than discarding the response!
@@ -5230,6 +5247,11 @@ async function sendMessage(text) {
         }),
         signal: currentAbortController.signal
       });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson.error || ('Request failed (status ' + response.status + ')'));
+      }
 
       const answer = await readStream(response, partial => {
         if (!assistantWrap) {
